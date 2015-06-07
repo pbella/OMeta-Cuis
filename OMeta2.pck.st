@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2332] on 22 May 2015 at 8:32:43.272722 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2343] on 7 June 2015 at 5:49:17.625421 pm'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2332 or later.'!
-!provides: 'OMeta2' 1 1!
+!provides: 'OMeta2' 1 2!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -504,8 +504,8 @@ transInside :t =
 |	trans:x transInside(t):xs -> [xs addFirst: x; yourself]
 |	empty -> [OrderedCollection new]! !
 
-!OMeta2Optimizer methodsFor: 'as yet unclassified' stamp: 'aw 5/20/2009 12:53'!
-optimizeRule = _:ans (foreign(OMeta2AndOrOpt. #optimize. ans):ans)* -> [ans]! !
+!OMeta2Optimizer methodsFor: 'as yet unclassified' stamp: 'pb 6/7/2015 17:47'!
+optimizeRule = _:ans (OMeta2AndOrOpt.optimize(ans):ans)* -> [ans]! !
 
 !OMeta2RuleParser methodsFor: 'as yet unclassified' stamp: 'pb 5/22/2015 18:59'!
 application =
@@ -651,10 +651,8 @@ space =
 
 	^space | fromTo('/*'. '*/') | fromTo('//'. Character lf asString)! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified' stamp: 'aw 2/25/2009 11:08'!
-squeakExpression =
-
-	foreign(O2SqueakRecognizer. #squeakExpr):ans spaces -> [ans]! !
+!OMeta2RuleParser methodsFor: 'as yet unclassified' stamp: 'pb 6/7/2015 17:48'!
+squeakExpression = O2SqueakRecognizer.squeakExpr:ans spaces -> [ans]! !
 
 !OMeta2RuleParser methodsFor: 'as yet unclassified' stamp: 'pb 5/22/2015 19:06'!
 stringLiteral =

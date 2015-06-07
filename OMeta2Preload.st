@@ -959,14 +959,27 @@ upper
 
 !OMeta2RuleParser methodsFor: 'as yet unclassified'!
 application
-	| t1 t2 t3 |
-	self ometaOr: {[self apply: #token withArgs: {'^'}.
-		t1 := #SuperApp]. [t1 := #App]}.
-	t2 := self apply: #name.
-	t3 := self apply: #args.
-	^ (OrderedCollection with: t1) add: t2;
-		 addAll: t3;
-		 yourself! !
+        | temp1 temp3 temp4 |
+        ^ self ometaOr: {[
+                true ifTrue: [
+                        self
+                                apply: #token
+                                withArgs: {'^'}.
+                        temp3 := self apply: #name.
+                        temp4 := self apply: #args.
+                        {#SuperApp. temp3} , temp4 ]]. [
+                true ifTrue: [
+                        temp1 := self apply: #name.
+                        self
+                                apply: #exactly
+                                withArgs: {$.}.
+                        temp3 := self apply: #nsName.
+                        temp4 := self apply: #args.
+                        {#App. #foreign. temp1. ('#' , temp3) asSymbol} , temp4 ]]. [
+                true ifTrue: [
+                        temp3 := self apply: #name.
+                        temp4 := self apply: #args.
+                        {#App. temp3} , temp4 ]]}.! !
 
 !OMeta2RuleParser methodsFor: 'as yet unclassified'!
 args
