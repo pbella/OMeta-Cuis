@@ -1,7 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2337] on 29 May 2015 at 10:35:24.91306 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2343] on 10 June 2015 at 12:46:08.792221 am'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 1 2!
-!requires: 'OMeta2' 1 0 nil!
+!provides: 'OMeta2Examples' 2 0!
+!requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2Examples category: #OMeta2Examples!
 OMeta2 subclass: #OMeta2Examples
 	instanceVariableNames: ''
@@ -30,6 +30,16 @@ OMeta2 subclass: #OMeta2LispExample
 	category: 'OMeta2Examples'!
 !classDefinition: 'OMeta2LispExample class' category: #OMeta2Examples!
 OMeta2LispExample class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2StepByStepExample category: #OMeta2Examples!
+OMeta2 subclass: #OMeta2StepByStepExample
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2StepByStepExample class' category: #OMeta2Examples!
+OMeta2StepByStepExample class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2TreeWalkerExample category: #OMeta2Examples!
@@ -109,6 +119,11 @@ There are several examples at this site.  Unfortunately for Smalltalk users, the
 To run this example:
 
 OMeta2LispExample demo!
+
+!OMeta2StepByStepExample commentStamp: '<historical>' prior: 0!
+This grammar will be the kitchen sink: exercise every aspect of OMeta syntax.  In addition, it should also be a good starting point to learn all about OMeta syntax.  After you've played around with some of the other examples, look at QOMeta2StepByStepTests tests for usage examples.
+
+WIP / todo core syntax including: lookahead, grouping, form, parameterized rules, index consumed by, foreign rules.  Also many remaining predefined rules (i.e. listOf, fromTo, fromToEnd, range, etc.)!
 
 !OMeta2TreeWalkerExample commentStamp: '<historical>' prior: 0!
 See OMeta2TreeExample!
@@ -410,6 +425,96 @@ evalDebug: x
 !OMeta2LispExample class methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 17:31'!
 evalDebugAll: x
 	^ self debugMatchAll: x with: #sexp! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:08'!
+testAnything =
+	anything! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:07'!
+testConsumedBy =
+	// Sometimes you'll want everything consumed by (i.e. matched) by an expression or a rule.  For sequences of characters, this has the useful side-effect of converting the consumed input to strings
+	<testManyAnything>! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:44'!
+testConsumedByIndex =
+	// Sometimes you may only care about the positional indexes of the consumed range
+	@<testManyAnything>! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 23:58'!
+testLiteralChar =
+	$a! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:34'!
+testLiteralString =
+	'abc'! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/10/2015 00:44'!
+testLookaheadNot =
+	// Anything but a "
+	(~$" char)*! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:30'!
+testMany1Char =
+	// + matches 1 or more occurrences
+	$a+! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:30'!
+testMany1String =
+	// + matches 1 or more occurrences
+	'abc'+! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:07'!
+testManyAnything =
+	// * matches 0 or more occurrences
+	anything*! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:27'!
+testManyChar =
+	// * matches 0 or more occurrences
+	$a*! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:27'!
+testManyString =
+	// * matches 0 or more occurrences
+	'abc'*! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:40'!
+testOpt =
+	// expr? tests for 0 or 1 occurrence, returns nil if 0.
+	"abc"?! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 20:49'!
+testPrioritizedChoice =
+	// | is the prioritized choice operator and behaves like a switch statement.  When the first test fails, it moves on to the second one.  Had the first test succeeded, the second one would be ignored.
+	testSemanticAction
+	| testConsumedBy! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:19'!
+testSemanticAction =
+	// -> is the action to perform if the predicate succeeds
+	testConsumedBy:x ?[x='testing'] -> ['got it!!']! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:32'!
+testSemanticPredicate =
+	// ?expr is the semantic predicate, if it succeeds the match continues.  We're also assigning the match to x so that we can use it in the predicate.
+	testConsumedBy:x ?[x='testing']! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 18:30'!
+testSeqObject =
+	// Sequences aren't limited to strings...
+	seq(#(1 2 3))! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 20:38'!
+testSeqString =
+	// ``item'' is syntactic sugar for a sequence of characters i.e. seq('item')
+	// While this rule expects two 'item' sequences, OMeta only returns the last match from the rule by default
+	``item'' seq('item')! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 18:08'!
+testToken =
+	// "item" syntactic sugar for token('item') - be careful to use the correct quotes!!
+	// While this rule expects two 'item' tokens, OMeta only returns the last match from the rule by default
+	"item" token('item')! !
 
 !OMeta2TreeWalkerExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 14:49'!
 depth =

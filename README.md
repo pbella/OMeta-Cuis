@@ -18,7 +18,7 @@ C. File in in the following sequence
 	3. OMeta2Examples.pck.st (optional)
 	4. OMeta2Tests.pck.st (optional)
 
-D. Check examples in the OMeta2Examples class (for more examples, see class comments in OMeta2Examples category)
+D. Check examples in the OMeta2Examples class (for more examples, see class comments in OMeta2Examples category, for a more detailed look at OMeta syntax see OMeta2StepByStepTests)
 
 	- OMeta2Examples match: 5 with: #fact.
 	- OMeta2Examples matchAll: '1234' with: #number.
@@ -26,7 +26,7 @@ D. Check examples in the OMeta2Examples class (for more examples, see class comm
 	- OMeta2Examples matchAll: #($a $b $c 1 2 3 #(4 5)) with: #structure.
 	- OMeta2Examples matchAll: 'howdy' with: #greeting.
 
-The general idea is that the examples progress in complexity: OMeta2Examples (trivial) -> OMeta2TreeExample (simple but actually does something useful) -> OMeta2LamdaCalculusParserExample (parses a simple language but doesn't do anything with it) -> OMeta2LispExample (parses a minimal subset of a real language and executes it.)  Also, for more usage examples, see the tests which are currently all using the example parsers.
+The general idea is that the examples progress in complexity: OMeta2Examples (trivial) -> OMeta2StepByStepTests (test cases more thoroughly describing OMeta syntax) -> OMeta2TreeExample (simple but actually does something useful) -> OMeta2LamdaCalculusParserExample (parses a simple language but doesn't do anything with it) -> OMeta2LispExample (parses a minimal subset of a real language and executes it.)  Also, for more usage examples, see the tests which are currently all using the example parsers.
 
 # Notes
 - OMeta2Preload.st was named OMeta2-stage1.st in the Cuis-Ports repository
