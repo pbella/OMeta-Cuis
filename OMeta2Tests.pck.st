@@ -1,8 +1,18 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2343] on 10 June 2015 at 12:46:11.336188 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 12 June 2015 at 3:04:51.433221 pm'!
 'Description Tests for OMeta2'!
-!provides: 'OMeta2Tests' 2 0!
-!requires: 'OMeta2' 2 0 nil!
+!provides: 'OMeta2Tests' 2 1!
 !requires: 'OMeta2Examples' 2 0 nil!
+!requires: 'OMeta2' 2 0 nil!
+!classDefinition: #OMeta2DebugTests category: #OMeta2Tests!
+TestCase subclass: #OMeta2DebugTests
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Tests'!
+!classDefinition: 'OMeta2DebugTests class' category: #OMeta2Tests!
+OMeta2DebugTests class
+	instanceVariableNames: ''!
+
 !classDefinition: #OMeta2ExampleTests category: #OMeta2Tests!
 TestCase subclass: #OMeta2ExampleTests
 	instanceVariableNames: ''
@@ -28,6 +38,17 @@ OMeta2StepByStepTests class
 This class is intended both to be a test of core OMeta functionality as well as a step by step tutorial of sorts demonstrating every aspect of OMeta that you can use in your grammars.  If you go through the tests in sequence, it should all make sense when you are done.
 
 Everything used in these tests should be considered part of the supported language/API.!
+
+!OMeta2DebugTests methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 15:04'!
+testInfiniteRecursion
+	self flag: #fixme. "Also need to handle case where not eos but input not advancing"
+	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #infiniteRecursion] raise: OMeta2DebugError "Infinite recursion detected".
+! !
+
+!OMeta2DebugTests methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:59'!
+testNotASequence
+	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #notASequence] raise: OMeta2DebugError "Not a sequence: a".
+! !
 
 !OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/26/2015 03:43'!
 testFactorial
@@ -255,3 +276,11 @@ test06PrioritizedChoice
 test07Lookahead
 	"fixme - todo & operator"
 	self should: (OMeta2StepByStepExample matchAll: '''not a double quote''' with: #testLookaheadNot) = #($' $n $o $t $  $a $  $d $o $u $b $l $e $  $q $u $o $t $e $') asOrderedCollection. "we get a sequence of characters back because this rule matches character by character."! !
+
+!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/10/2015 14:36'!
+test08RuleParameters
+	self should: (OMeta2StepByStepExample matchAll: 'looking for test text' with: #testRuleParameters) = 'looking for test text'! !
+
+!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/10/2015 15:00'!
+test10FromTo
+	self should: (OMeta2StepByStepExample matchAll: '/* finding */ the test text...' with: #testFromTo) = #($f $i $n $d $i $n $g $  $t $e $x $t $. $. $.) asOrderedCollection! !

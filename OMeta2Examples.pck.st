@@ -1,7 +1,28 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2343] on 10 June 2015 at 12:46:08.792221 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 12 June 2015 at 5:09:11.329705 pm'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 0!
+!provides: 'OMeta2Examples' 2 1!
 !requires: 'OMeta2' 2 0 nil!
+!requires: 'OMeta2Extensions' 2 0 nil!
+!classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
+OMeta2 subclass: #OMeta2CsvExample
+	instanceVariableNames: 'delimRow delimCol curRow rows'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2CsvExample class' category: #OMeta2Examples!
+OMeta2CsvExample class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2DebugExample category: #OMeta2Examples!
+OMeta2Debug subclass: #OMeta2DebugExample
+	instanceVariableNames: 'delimCol delimRow'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2DebugExample class' category: #OMeta2Examples!
+OMeta2DebugExample class
+	instanceVariableNames: ''!
+
 !classDefinition: #OMeta2Examples category: #OMeta2Examples!
 OMeta2 subclass: #OMeta2Examples
 	instanceVariableNames: ''
@@ -93,6 +114,16 @@ OMeta2TreeNodeExample class
 	instanceVariableNames: ''!
 
 
+!OMeta2CsvExample commentStamp: '<historical>' prior: 0!
+This is a trivial CSV importer.  Just to make it a bit more interesting, the column and row delimiters are variables so this could easily be adapted to other delimiters either by subclassing or by parameterizing the csv rule.
+
+To run this example:
+
+OMeta2CsvExample demo!
+
+!OMeta2DebugExample commentStamp: '<historical>' prior: 0!
+Examples of the kinds of issues OMeta2Debug should catch!
+
 !OMeta2Examples commentStamp: '<historical>' prior: 0!
 Here's how to run these examples:
 
@@ -123,7 +154,7 @@ OMeta2LispExample demo!
 !OMeta2StepByStepExample commentStamp: '<historical>' prior: 0!
 This grammar will be the kitchen sink: exercise every aspect of OMeta syntax.  In addition, it should also be a good starting point to learn all about OMeta syntax.  After you've played around with some of the other examples, look at QOMeta2StepByStepTests tests for usage examples.
 
-WIP / todo core syntax including: lookahead, grouping, form, parameterized rules, index consumed by, foreign rules.  Also many remaining predefined rules (i.e. listOf, fromTo, fromToEnd, range, etc.)!
+WIP / todo core syntax including: lookahead, grouping, form, foreign rules.  Also many remaining predefined rules (i.e. listOf, range, etc.)!
 
 !OMeta2TreeWalkerExample commentStamp: '<historical>' prior: 0!
 See OMeta2TreeExample!
@@ -146,6 +177,54 @@ See OMeta2TreeExample!
 
 !OMeta2TreeNodeExample commentStamp: '<historical>' prior: 0!
 See OMeta2TreeExample!
+
+!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:29'!
+csv = row* -> [rows]! !
+
+!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 05:17'!
+field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]
+	// <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [curRow add: field]! !
+
+!OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
+initialize
+	super initialize.
+	curRow := OrderedCollection new.
+	rows := OrderedCollection new.
+	delimRow := Character lf.
+	delimCol := $,.! !
+
+!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 17:08'!
+row = //~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [rows add: curRow. curRow := OrderedCollection new.]
+	// working
+	~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]
+	// fixme - infinite loop at end.  The issue seems to be that we are successful matching nothing (due to * matches) and continuing to search at eos over and over...
+	//field (exactly(delimCol) field)* exactly(delimRow)? -> [[rows add: curRow. curRow := OrderedCollection new. Transcript show: 'found row'; finishEntry] value]
+	// infinite loop when not using exactly (i.e. field (colDelim field)*)
+	! !
+
+!OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
+demo
+	^ self matchAll: 'abc,123,xyz
+	def,456,test' with: #csv.! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:44'!
+infiniteRecursion  = irRule*! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:46'!
+initialize
+	super initialize.
+	delimRow := Character lf.
+	delimCol := $,.! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:46'!
+irField = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:46'!
+irRule = irField (exactly(delimCol) irField)* exactly(delimRow)?! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:31'!
+notASequence =
+	seq($a)! !
 
 !OMeta2Examples methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 02:35'!
 aSqueakMethod
@@ -271,11 +350,6 @@ relExpr  = relExpr:x ">" logExpr:y   -> [{'gt'. x. y}]
 
 !OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 19:09'!
 root = root:r  ";" expr:ef -> [r, ef]
-         | expr:e                  -> [e]! !
-
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 19:24'!
-rootHang = root:r  ';' expr:ef -> [{r. ef}]
-	// FIXME - Added an error above.. why do we go into an infinite loop attempting when calling via debugMatchAll:?
          | expr:e                  -> [e]! !
 
 !OMeta2LambdaCalculusParserExample class methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 19:22'!
@@ -440,6 +514,69 @@ testConsumedByIndex =
 	// Sometimes you may only care about the positional indexes of the consumed range
 	@<testManyAnything>! !
 
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 02:15'!
+testFromTo =
+	// fromTo will find items between the from and to parameters
+	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
+	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
+	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// Wrap in consumed by to get the entire text.
+	<fromToEnd('tex')>:last -> [first, ' ', last]
+	
+	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 03:23'!
+testFromToObject =
+	/* fixme - wip.  trying to get this to work:
+	OMeta2StepByStepExample
+			matchAll: #((1 1) (2 2) (3 3) (4 4) (5 5) ($a 1) ($b 2) ($c 3) 'text' (123 456)) 
+			with: #testFromToObject.
+			*/
+	// fromTo will find items between (spatially) the from and to parameters
+	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
+	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
+	[#(3 3)]:fromSeq (~seq(fromSeq) anything)* fromTo(fromSeq. #($b 2)):first  anything* //(~``text'' anything)+
+	-> [first]
+	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// Wrap in consumed by to get the entire text.
+	//<fromToOrEnd('text'. nil)>:last -> [{first. last}]
+	
+	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 02:10'!
+testFromToOrEnd =
+	// fixme - broken.  the following should work when called from workspace:
+	//OMeta2StepByStepExample matchAll: '/* finding */ the test text...' with: #testFromToOrEnd.
+	// my best guess is that the issue is attempting to pass the variable rather than its value?
+
+	// fromTo will find items between the from and to parameters
+	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
+	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// Wrap in consumed by to get the entire text.
+	[Character newLineCharacter asString]:nl
+	<fromToOrEnd('tex'. nl)>:last -> [first, ' ', last]
+	
+	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 19:11'!
+testFromToString =
+	// fromTo will find items between (spatially) the from and to parameters
+	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
+	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
+	// spaces is a built in rule which consumes any whitespace
+	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// Wrap in consumed by to get the entire text.
+	<fromToEnd('tex')>:last -> [first, ' ', last]
+	
+	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+
 !OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 23:58'!
 testLiteralChar =
 	$a! !
@@ -489,6 +626,11 @@ testPrioritizedChoice =
 	testSemanticAction
 	| testConsumedBy! !
 
+!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/10/2015 14:37'!
+testRuleParameters =
+	// rule parameters use a function call syntax
+	<wordParam('test')>! !
+
 !OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:19'!
 testSemanticAction =
 	// -> is the action to perform if the predicate succeeds
@@ -515,6 +657,16 @@ testToken =
 	// "item" syntactic sugar for token('item') - be careful to use the correct quotes!!
 	// While this rule expects two 'item' tokens, OMeta only returns the last match from the rule by default
 	"item" token('item')! !
+
+!OMeta2StepByStepExample methodsFor: 'as yet unclassified' stamp: 'pb 6/11/2015 03:25'!
+testZZZ =
+	// OMeta2StepByStepExample matchAll: 'test' with: #testZZZ.
+	seq($a)! !
+
+!OMeta2StepByStepExample methodsFor: 'support rules and methods' stamp: 'pb 6/10/2015 14:39'!
+wordParam :useWord =
+	// :var before the = is used as a method parameter as opposed to after the = where it is used to bind a match result to a local variable
+	"looking" "for" token(useWord) "text"! !
 
 !OMeta2TreeWalkerExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 14:49'!
 depth =

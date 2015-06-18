@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2343] on 9 June 2015 at 4:08:19.128705 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 11 June 2015 at 7:11:52.92854 pm'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 0!
+!provides: 'OMeta2' 2 1!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -106,24 +106,38 @@ OMeta2Flattener is phase 4 of OMeta code compilation.  I take the rendered code 
 OMeta implementation!
 
 !OMeta2NullOpt commentStamp: '<historical>' prior: 0!
-Base class to perform code transformations. Currrently not used directly as its subclass, OMeta2AndOrOpt, is called during phase 2.
+Base syntax tree grammar to perform code transformations. Currrently not used directly as its subclass, OMeta2AndOrOpt, is called during phase 2.
 
 OMeta implementation!
 
 !OMeta2AndOrOpt commentStamp: '<historical>' prior: 0!
-Used by OMeta2Optimizer in stage 2 of compilation.
+Syntax tree grammar used by OMeta2Optimizer in stage 2 of compilation.
 
 OMeta implementation!
 
 !OMeta2Optimizer commentStamp: '<historical>' prior: 0!
-OMeta2Optimizer is phase 2 of OMeta code compilation.  I take the parse tree from phase 1 and apply OMeta2AndOrOpt which looks for any obvious and/or transformations to produce a simplified parse tree.
+OMeta2Optimizer is phase 2 of OMeta code compilation.  I take the parse tree from phase 1 and apply an syntax tree grammar (OMeta2AndOrOpt) which looks for any obvious and/or transformations to produce a simplified syntax tree.
 
 fixme - clean up comment.
 
 OMeta implementation!
 
 !OMeta2RuleParser commentStamp: '<historical>' prior: 0!
-OMeta2RuleParser is phase 1 of OMeta code compilation.  I take arbitrary source code and produce a parse tree of raw operations.
+OMeta2RuleParser is phase 1 of OMeta code compilation.  I take arbitrary source code and produce an syntax tree of raw operations in a Lispy nested list containing elements in the form #(arg1. arg2...) where:
+
+arg1 is the OMeta primitive to perform (#Act, #And, #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Or, #Lookahead, #Many, #Many1, #Not, #Pred, #Rule, #Set, #SuperApp) each corresponding to an OMeta primitive operation:
+- #And and #Or correspond to Smalltalk #and: and #or:
+- #Act and #Rule indicate a method call defined in arg2
+- #Set indicates a collection (implemented as an array)
+- #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Lookahead, #Many, #Many1, #Not, #Pred and #SuperApp have corresponding methods in OMeta2Base
+
+arg2 is either an operand for the atomic operation (an OMeta or application rule name or semantic predicate/action code snippet) or a list of child operations in the case of #And and #Or operations.
+
+arg3, if it exists, is either an operand for the atomic operation (often an operand for the rule supplied in arg2 such as a string literal) or a list of child operations.
+
+And so on... arg4 and greater occur in more complex #And and #Or lists or for rules/method calls requiring additional parameters passed.
+
+The syntax tree produced represents the worst case application logic as no optmization is performed yet.  Stages 2 and 3 require this simple form to perform their transformations. (i.e. any changes/extensions here will have significant implications downstream)
 
 OMeta implementation!
 
@@ -132,19 +146,19 @@ OMeta2RuleTranslator is phase 3 of OMeta code compilation.  I take the parse tre
 
 OMeta implementation!
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:23'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:23'!
 char =
 
 	anything:x ?[x isKindOf: Character] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:24'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:24'!
 digit =
 
 	char:x ?[x isDigit] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - todo' stamp: 'pb 6/6/2015 17:32'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:53'!
 empty
-	"inline?"
+	"fixme - inline?"
 	^ true.! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:23'!
@@ -157,30 +171,53 @@ exactly :wanted =
 
 	anything:got ?[wanted = got] -> [wanted]! !
 
-!OMeta2 methodsFor: 'ometa grammar - todo' stamp: 'pb 6/6/2015 08:24'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:53'!
 firstAndRest
-	"A meta rule for 'first rest+' where the rule names are substituted with the values of first and rest.  See listOf for another example of a meta rule"
+	"A meta rule for 'first rest+' where the rule names are substituted with the values of first and rest.  See listOf for another example of a meta rule.  fixme - rewrite in OMeta"
 	| first rest |
 	first := self apply: #anything.
 	rest := self apply: #anything.
 	^ self genericMany: [self apply: rest] into: (OrderedCollection with: (self apply: first))! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/5/2015 21:51'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:55'!
 fromTo :x :y =
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
-	seq(x) (~seq(y) char)*:t seq(y) -> [t]! !
+	seq(x) (~seq(y) anything)*:t seq(y) -> [t]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/5/2015 22:51'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
 fromToEnd :from =
-	// Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
-	[Character newLineCharacter asString]:eol seq(from) (~seq(eol) char)*:t (seq(eol) | end) -> [t]! !
+	// fixme - broken
+	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
+	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
+	//[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]
+	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:28'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
+fromToEndNew :from =
+	// fixme - broken
+	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
+	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
+	//[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]
+	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:11'!
+fromToEndOld :from =
+	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
+	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
+	[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]! !
+
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/11/2015 01:48'!
+fromToOrEnd :x :y =
+	// fixme - not working
+	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
+	seq(x) (~seq(y) anything)*:t (seq(y) | end) -> [t]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
 letter =
 
 	char:x ?[x isLetter] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:28'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
 letterOrDigit =
 
 	char:x ?[x isAlphaNumeric] -> [x]! !
@@ -191,7 +228,7 @@ listOf :rule :delim =
 		apply(rule):x (token(delim) apply(rule))*:xs -> [xs addFirst: x; yourself]
 	|	empty -> [#()]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:30'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:30'!
 lower =
 
 	char:x ?[x isLowercase] -> [x]! !
@@ -211,17 +248,17 @@ range :a :b =
 	// Is the next object within the range of a .. b?  Example usage: checking if an input character falls within the given range.
 	anything:x ?[a <= x & (x <= b)] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:32'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:32'!
 space =
 
 	char:x ?[x asciiValue <= 32] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:33'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:33'!
 spaces =
 
 	space*! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:34'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
 string =
 
 	anything:x ?[x isString] -> [x]! !
@@ -231,12 +268,12 @@ symbol =
 
 	anything:x ?[x isSymbol] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:34'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
 token :t =
 
 	spaces seq(t)! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:35'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:35'!
 upper =
 
 	char:x ?[x isUppercase] -> [x]! !
@@ -549,14 +586,14 @@ characters =
 
 	"``" (~($' $') char)*:xs $' $' -> [{#App. #seq. (String withAll: xs) storeString}]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:01'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 19:05'!
 expr =
-
+	// Wrap the sub-expressions with an 'or'.  If it's not needed, we'll optimize it away later.
 	listOf(#expr4. '|'):xs -> [(OrderedCollection with: #Or) addAll: xs; yourself]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:01'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 18:56'!
 expr1 =
-
+	// Handle any syntactic sugar and parse the final expression
 	(keyword('true') | keyword('false') | keyword('nil')):lit -> [{#App. #exactly. lit}]
 |	application
 |	semanticAction
@@ -572,25 +609,25 @@ expr1 =
 |	"@<" expr:e ">" -> [{#IdxConsBy. e}]
 |	"("  expr:e ")" -> [e]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:01'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 18:49'!
 expr2 =
-
+	// Handle lookahead
 	"~" expr2:x -> [{#Not. x}]
 |	"&" expr2:x -> [{#Lookahead. x}]
 |	expr1! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 18:49'!
 expr3 =
-
+	// Handle arity and variable assignment
 	expr2:x optIter(x):x
 		(	$: nsName:n [temps add: n]	-> [{#Set. n. x}]
 		|	empty								-> [x]
 		)
 |	":" nsName:n [temps add: n]			-> [{#Set. n. {#App. #anything}}]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 18:57'!
 expr4 =
-
+	// Wrap related rule sub-expressions with an 'and'.  If it's not needed, we'll optimize it away later
 	expr3*:xs -> [(OrderedCollection with: #And) addAll: xs; yourself]! !
 
 !OMeta2RuleParser methodsFor: 'initialization' stamp: 'aw 2/18/2009 15:04'!
@@ -640,10 +677,9 @@ optIter :x =
 |	"?" ~$[	-> [{#Opt. x}]
 |	empty		-> [x]! !
 
-!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 5/22/2015 19:04'!
+!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 6/11/2015 19:04'!
 rule =
-
-	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}]
+	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}] // This isn't OMeta code so we'll handoff to Squeak when the time comes
 |	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
 		-> [{#Rule. n. temps asSortedCollection. (OrderedCollection with: #Or with: x) addAll: xs; yourself}]! !
 

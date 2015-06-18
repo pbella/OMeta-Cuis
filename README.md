@@ -15,8 +15,11 @@ C. File in in the following sequence
 
 	1. OMeta2Preload.st
 	2. OMeta2.pck.st
-	3. OMeta2Examples.pck.st (optional)
-	4. OMeta2Tests.pck.st (optional)
+	3. OMeta2Extensions.pck.st (optional)
+	4. OMeta2Examples.pck.st (optional)
+	5. OMeta2Tests.pck.st (optional)
+
+	(Items 2-5 can be loaded automatically via dependencies by loading OMeta2Tests)
 
 D. Check examples in the OMeta2Examples class (for more examples, see class comments in OMeta2Examples category, for a more detailed look at OMeta syntax see OMeta2StepByStepTests)
 
@@ -29,8 +32,16 @@ D. Check examples in the OMeta2Examples class (for more examples, see class comm
 The general idea is that the examples progress in complexity: OMeta2Examples (trivial) -> OMeta2StepByStepTests (test cases more thoroughly describing OMeta syntax) -> OMeta2TreeExample (simple but actually does something useful) -> OMeta2LamdaCalculusParserExample (parses a simple language but doesn't do anything with it) -> OMeta2LispExample (parses a minimal subset of a real language and executes it.)  Also, for more usage examples, see the tests which are currently all using the example parsers.
 
 # Notes
-- OMeta2Preload.st was named OMeta2-stage1.st in the Cuis-Ports repository
+- OMeta2Preload.st was previously named OMeta2-stage1.st in the Cuis-Ports repository
 - OMeta2.pck.st overrides some of the methods in OMeta2Preload.st that are needed to load the package.  This is why *Preload has not been moved into a package (i.e. to not give the illusion that its contents can be changed and saved out once the full OMeta2 package has been loaded)
 - Debugging support is weak (a known issue with OMeta in general... let's work to improve it)
 - More test cases and examples are need.
 
+# Syntax highlighting WIP notes
+- Install OMeta with optional packages as described above
+- Install 2359-CuisCore-PhilBellalouna-2015Jun09-23h06m-pb.1.cs.st
+- Open a workspace and execute (when prompted, declare global): DefaultStyler:= SHTextStylerST80.
+- Open a code browser and navigate to any Smalltalk method to confirm functional
+- Go back to the workspace and execute: DefaultStyler:= SHTextStylerOMeta2.
+- Open a new code browser and navigate to any OMeta method to confirm functionality (in the category OMeta2Extensions, class OMeta2ExtendedParser any method source that starts with '<methodName> =' should now be styled)
+- Easy way to tell which styler is in use: with the stock styler, OMeta methods are in red from = on while Smalltalk methods are styled.  With the OMeta styler, Smalltalk methods are entirely black text while OMeta methods are styled.
