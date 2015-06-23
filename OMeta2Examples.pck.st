@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 12 June 2015 at 5:09:11.329705 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2384] on 22 June 2015 at 8:44:19.91377 pm'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 1!
+!provides: 'OMeta2Examples' 2 2!
 !requires: 'OMeta2' 2 0 nil!
 !requires: 'OMeta2Extensions' 2 0 nil!
 !classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
@@ -181,9 +181,8 @@ See OMeta2TreeExample!
 !OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:29'!
 csv = row* -> [rows]! !
 
-!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 05:17'!
-field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]
-	// <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [curRow add: field]! !
+!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/22/2015 20:43'!
+field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]! !
 
 !OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
 initialize
@@ -193,14 +192,8 @@ initialize
 	delimRow := Character lf.
 	delimCol := $,.! !
 
-!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 17:08'!
-row = //~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [rows add: curRow. curRow := OrderedCollection new.]
-	// working
-	~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]
-	// fixme - infinite loop at end.  The issue seems to be that we are successful matching nothing (due to * matches) and continuing to search at eos over and over...
-	//field (exactly(delimCol) field)* exactly(delimRow)? -> [[rows add: curRow. curRow := OrderedCollection new. Transcript show: 'found row'; finishEntry] value]
-	// infinite loop when not using exactly (i.e. field (colDelim field)*)
-	! !
+!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/22/2015 20:43'!
+row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]! !
 
 !OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
 demo

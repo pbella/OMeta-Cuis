@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2359] on 17 June 2015 at 11:44:41.747607 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2384] on 23 June 2015 at 4:04:28.496138 am'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 0!
+!provides: 'OMeta2Extensions' 2 1!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugCompiler category: #OMeta2Extensions!
 OMeta2Compiler subclass: #OMeta2DebugCompiler
@@ -54,7 +54,7 @@ OMeta2DebugRuleTranslator class
 
 !classDefinition: #SHTextStylerOMeta2 category: #OMeta2Extensions!
 SHTextStyler subclass: #SHTextStylerOMeta2
-	instanceVariableNames: ''
+	instanceVariableNames: 'smalltalkFallbackStyler useOMetaStyler'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
@@ -101,6 +101,10 @@ WORK IN PROGRESS... not ready for normal use!!!
 
 !SyntaxTreeNode commentStamp: '<historical>' prior: 0!
 A simple, generic syntax tree node which can be used for both concrete and abstract trees.!
+
+!OMeta2Compiler class methodsFor: '*OMeta2Extensions' stamp: 'pb 6/22/2015 20:01'!
+textStylerClass
+	^ SHTextStylerOMeta2! !
 
 !OMeta2DebugCompiler class methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 02:22'!
 ometa2RuleTranslatorClass
@@ -665,37 +669,67 @@ rule =
 	trans:body
 	-> [{name. ' | debugTmpResult debugTmpTransId '. self delim: temps asSortedCollection with: ' '. ' | '. self debugWrapRule: name body: body}]! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/16/2015 23:55'!
+!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:01'!
 attributesFor: aSymbol
-	^ self class attributesFor: aSymbol.! !
+	^ useOMetaStyler
+		ifTrue: [ self class attributesFor: aSymbol ]
+		ifFalse: [ smalltalkFallbackStyler class attributesFor: aSymbol ].! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:28'!
+!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:02'!
 classOrMetaClass: anObject
-! !
+	useOMetaStyler
+		ifTrue: [ self ]
+		ifFalse: [ smalltalkFallbackStyler classOrMetaClass: anObject ].! !
 
 !SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:33'!
 disableFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 03:31'!
+!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 02:59'!
 initialize
-	super initialize.! !
+	super initialize.
+	useOMetaStyler := true.
+	smalltalkFallbackStyler := SHTextStylerST80 new.! !
 
 !SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 15:45'!
+!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:00'!
 privateStyle
 	| ranges |
-	ranges := [OMeta2ExtendedParser rangesFor: formattedText] on: OM2Fail do: [nil].
-	"Smalltalk fallback
-	ranges ifNil: [
-		].
+	ranges := [
+	useOMetaStyler := true.
+	OMeta2ExtendedParser rangesFor: formattedText ]
+		on: OM2Fail
+		do: [ ].
 	"
 	ranges ifNotNil: [
-		self setAttributesIn: formattedText
-		fromRanges: ranges
-		in: nil
-		].! !
+		useOMetaStyler
+			ifTrue: [
+				self
+					setAttributesIn: formattedText
+					fromRanges: ranges
+					in: nil ]
+			ifFalse: [
+				smalltalkFallbackStyler
+					setAttributesIn: formattedText
+					fromRanges: ranges
+					in: nil ]].
+			"
+	ranges ifNil: [
+		"
+		Transcript
+			show: 'falling back';
+			finishEntry.
+			"
+		ranges := smalltalkFallbackStyler
+			rangesIn: formattedText
+			setWorkspace: true.
+		useOMetaStyler := false ].
+	ranges ifNotNil: [
+		self
+			setAttributesIn: formattedText
+			fromRanges: ranges
+			in: nil ].! !
 
 !SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/16/2015 23:13'!
 setAttributesIn: aText fromRanges: ranges in: anInterval

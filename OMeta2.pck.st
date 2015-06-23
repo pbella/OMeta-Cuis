@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 11 June 2015 at 7:11:52.92854 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2384] on 23 June 2015 at 4:07:52.935955 am'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 1!
+!provides: 'OMeta2' 2 2!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -807,13 +807,13 @@ pred =
 
 	string:x -> [{'(self pred: ('. x. '))'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:11'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 6/23/2015 04:07'!
 rule =
 
 	symbol:name
 	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
 	trans:body
-	-> [{name. ' |'. self delim: temps asSortedCollection with: ' '. ' | ^ '. body}]! !
+	-> [{name. '"OMeta generated code... edit the rule, not this Smalltalk code"'. ' |'. self delim: temps asSortedCollection with: ' '. ' | ^ '. body}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:12'!
 set =

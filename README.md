@@ -38,6 +38,8 @@ The general idea is that the examples progress in complexity: OMeta2Examples (tr
 - More test cases and examples are need.
 
 # Syntax highlighting WIP notes
+If you have Cuis 4.2 2383 or newer, the installing the OMeta2Extensions package will automatically enable syntax highlighting.  For older versions, the following still applies:
+
 - Install OMeta with optional packages as described above
 - Install 2359-CuisCore-PhilBellalouna-2015Jun09-23h06m-pb.1.cs.st
 - Open a workspace and execute (when prompted, declare global): DefaultStyler:= SHTextStylerST80.
