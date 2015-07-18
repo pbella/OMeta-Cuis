@@ -7,7 +7,7 @@ OMeta/Cuis started as a port of OMeta/Squeak to Cuis but is quickly turning into
 
 # Installation
 
-A. Download Cuis4.2-2337 or later
+A. Download Cuis4.2-2400 or later
 
 B. Pull down the OMeta*.st files from https://github.com/pbella/OMeta-Cuis
 
@@ -36,14 +36,4 @@ The general idea is that the examples progress in complexity: OMeta2Examples (tr
 - OMeta2.pck.st overrides some of the methods in OMeta2Preload.st that are needed to load the package.  This is why *Preload has not been moved into a package (i.e. to not give the illusion that its contents can be changed and saved out once the full OMeta2 package has been loaded)
 - Debugging support is weak (a known issue with OMeta in general... let's work to improve it)
 - More test cases and examples are need.
-
-# Syntax highlighting WIP notes
-If you have Cuis 4.2 2383 or newer, the installing the OMeta2Extensions package will automatically enable syntax highlighting.  For older versions, the following still applies:
-
-- Install OMeta with optional packages as described above
-- Install 2359-CuisCore-PhilBellalouna-2015Jun09-23h06m-pb.1.cs.st
-- Open a workspace and execute (when prompted, declare global): DefaultStyler:= SHTextStylerST80.
-- Open a code browser and navigate to any Smalltalk method to confirm functional
-- Go back to the workspace and execute: DefaultStyler:= SHTextStylerOMeta2.
-- Open a new code browser and navigate to any OMeta method to confirm functionality (in the category OMeta2Extensions, class OMeta2ExtendedParser any method source that starts with '<methodName> =' should now be styled)
-- Easy way to tell which styler is in use: with the stock styler, OMeta methods are in red from = on while Smalltalk methods are styled.  With the OMeta styler, Smalltalk methods are entirely black text while OMeta methods are styled.
+- The OMeta styler works reasonably well but is still a work in progress.  One notable bug is that the first time you browse a Smalltalk method in an otherwise OMeta class, the formatting will be incorrect.  Select a different method and then select the Smalltalk method again to work around this issue for the time being.

@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2384] on 23 June 2015 at 4:04:28.496138 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2404] on 18 July 2015 at 5:46:32.491487 pm'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 1!
+!provides: 'OMeta2Extensions' 2 2!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugCompiler category: #OMeta2Extensions!
 OMeta2Compiler subclass: #OMeta2DebugCompiler
@@ -34,7 +34,7 @@ OMeta2Debug class
 
 !classDefinition: #OMeta2ExtendedParser category: #OMeta2Extensions!
 OMeta2Debug subclass: #OMeta2ExtendedParser
-	instanceVariableNames: 'ast curNode temps'
+	instanceVariableNames: 'ast curNode temps blockLevel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
@@ -91,7 +91,11 @@ todo: infinite recursion detection!
 !OMeta2ExtendedParser commentStamp: '<historical>' prior: 0!
 WORK IN PROGRESS... not ready for normal use!!
 
-This is a more full-featured OMeta parser that renders to a labelled syntax tree.  While significantly larger than the default parser, it will allow for much more flexibility.!
+This is a more full-featured OMeta parser that renders to a labelled syntax tree.  While significantly larger than the default parser, it will allow for much more flexibility.
+
+Open issues:
+- should I even be trying to re-use Smalltalk themes?  There is no clean mapping so even if we do it, using other themes may look unacceptably bad.
+- need to finalize approach: extend existing ast or go with a more annotated version?!
 
 !OMeta2DebugRuleTranslator commentStamp: '<historical>' prior: 0!
 WORK IN PROGRESS... not ready for normal use!!!
@@ -105,6 +109,16 @@ A simple, generic syntax tree node which can be used for both concrete and abstr
 !OMeta2Compiler class methodsFor: '*OMeta2Extensions' stamp: 'pb 6/22/2015 20:01'!
 textStylerClass
 	^ SHTextStylerOMeta2! !
+
+!SHRange methodsFor: '*OMeta2Extensions' stamp: 'pb 6/25/2015 05:05'!
+printOn: aStream
+	aStream nextPutAll: 'a SHRange('.
+	start printOn: aStream.
+	aStream nextPutAll: '..'.
+	end printOn: aStream.
+	aStream nextPut: $:.
+	type printOn: aStream.
+	aStream nextPut: $).! !
 
 !OMeta2DebugCompiler class methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 02:22'!
 ometa2RuleTranslatorClass
@@ -154,13 +168,15 @@ apply: aRule withArgs: args
 		apply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 05:51'!
+!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/29/2015 06:09'!
 debugFinishTrans: name id: transId
 	self debugShouldTrace ifTrue: [
 		self flag: #todo.
+		"
 		Transcript
 			show: name , ' matched';
 			finishEntry.
+			"
 		(om2Trans at: transId)
 			at: #matched
 			put: true ].! !
@@ -174,13 +190,15 @@ debugLogTrace
 debugShouldTrace
 	^ false! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 05:52'!
+!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/29/2015 06:09'!
 debugStartTrans: name
 	self debugShouldTrace ifTrue: [
 		self flag: #todo.
+		"
 		Transcript
 			show: name , ' entered';
 			finishEntry.
+		"
 		om2TransId := om2TransId + 1.
 		om2Trans
 			at: om2TransId
@@ -294,27 +312,26 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 				finishEntry.
 			^ ans ].! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 16:53'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:45'!
 application =
 
-	@<"^" name:rule args:as>:superIdx	-> [(self newNode: #SuperApp)
+	@<"^" name:rule>:superIdx args:as	-> [(self newNode: #SuperApp)
 				properties: {#op -> rule.
 							#args -> as.
 							self newRange: superIdx type: #blockTempVar};
 				yourself]
 										//-> [{#SuperApp. rule}, as]
-|	@<name:grm $. nsName:rule args:as>:app1Idx	-> [(self newNode: #App)
+|	@<name:grm $. nsName:rule>:app1Idx	 @<args:as>:app2Idx -> [(self newNode: #App)
 				properties: {#op -> #foreign.
 					#parm -> grm.
 					#huh1 -> ('#', rule) asSymbol.
 					#huh2 -> as.
-					self newRange: app1Idx type: #blockTempVar}]
+					self newRange: app1Idx type: #blockTempVar with: app2Idx type: #externalFunctionCallingConvention}]
 										//-> [{#App. #foreign. grm. ('#', rule) asSymbol}, as]
-|	@<name:rule args:as>:app2Idx					-> [(self newNode: #App)
+|	@<name:rule>:app1Idx @<args:as>:app2Idx					-> [(self newNode: #App)
 				properties: { #op -> rule.
 					#parm -> as.
-					self newRange: app2Idx type: #blockTempVar.
-					}]
+					self newRange: app1Idx type: #blockTempVar with: app2Idx type: #externalFunctionCallingConvention}]
 										//-> [{#App. rule}, as]! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:43'!
@@ -322,6 +339,37 @@ args =
 	// fixme - best way to style?
 	$( listOf(#squeakExpression. '.'):ans ")" -> [ans]
 |	~$( -> [#()]! !
+
+!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 6/26/2015 01:45'!
+blockEnter
+	blockLevel := blockLevel+1.
+	"Transcript show: 'bl: ', blockLevel asString; finishEntry"! !
+
+!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 7/18/2015 17:45'!
+blockLeave
+	self halt.
+	self flag: #deprecated.
+	blockLevel := blockLevel-1! !
+
+!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 7/18/2015 17:45'!
+blockLevel
+	self halt.
+	self flag: #deprecated.
+	^ blockLevel! !
+
+!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 01:18'!
+blockLevelAndLeave
+	| retVal |
+	retVal _ #blockStart1.
+	blockLevel > 1 ifTrue: [
+		blockLevel > 2
+			ifTrue: [
+				blockLevel > 3
+					ifTrue: [ retVal _ #blockStart4 ]
+					ifFalse: [ retVal _ #blockStart3 ]]
+			ifFalse: [ retVal _ #blockStart2 ]].
+	blockLevel _ blockLevel - 1.
+	^ retVal.! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 17:27'!
 characterLiteral =
@@ -347,11 +395,11 @@ expr =
 	listOf(#expr4. '|'):xs -> [(self newNode: #Or) addChildren: xs]
 					//-> [(OrderedCollection with: #Or) addAll: xs; yourself]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:35'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:31'!
 expr1 =
 	// Handle any syntactic sugar and parse the final expression
 	@<(keyword('true') | keyword('false') | keyword('nil')):lit>:litIdx
-						-> [(self newNode: #App) properties: {#op -> #exactly. #parm -> lit. self newRange: litIdx type: #blockTempVar}]
+						-> [(self newNode: #App) properties: {#op -> #exactly. #parm -> lit. self newRange: litIdx type: #nil}]
 						//-> [{#App. #exactly. lit}]
 |	application
 |	semanticAction
@@ -362,26 +410,35 @@ expr1 =
 |	symbolLiteral
 |	numberLiteral
 |	characterLiteral
-|	"{"  expr:e "}" 		-> [(self newNode: #Form) properties: {#op -> e}]
+|	@<"{">:blkStart [self blockEnter]  expr:e @<"}">:blkEnd
+					-> [(self newNode: #Form) properties: {#op -> e.
+											self newRange: blkStart and: blkEnd type: self blockLevelAndLeave}]
+											/*self newRange: blkStart and: blkEnd type: #blockStart1}]*/
 						//-> [{#Form. e}]
-|	"<"  expr:e ">" 	-> [(self newNode: #ConsBy) properties: {#op -> e}]
+|	@<"<">:blkStart [self blockEnter]  expr:e @<">">:blkEnd
+				 	-> [(self newNode: #ConsBy) properties: {#op -> e.
+											self newRange: blkStart and: blkEnd type: self blockLevelAndLeave}]
+											/*self newRange: blkStart and: blkEnd type: #blockStart3}]*/
 						//-> [{#ConsBy. e}]
-|	"@<" expr:e ">" 	-> [(self newNode: #IdxConsBy) properties: {#op -> e}]
+|	@<"@<">:blkStart [self blockEnter] expr:e @<">">:blkEnd
+				 	-> [(self newNode: #IdxConsBy) properties: {#op -> e.
+											self newRange: blkStart and: blkEnd type: self blockLevelAndLeave}]
+											/*self newRange: blkStart and: blkEnd type: #blockStart2}]*/
 						//-> [{#IdxConsBy. e}]
-|	"("  expr:e ")" -> [e]! !
+|	@<"(">:blkStart  expr:e @<")">:blkEnd -> [e] // fixme - syntax highlighting! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 17:23'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:29'!
 expr2 =
 	// Handle lookahead
-	@<"~" expr2:x>:xIdx -> [(self newNode: #Not) properties: {#op -> x. self newRange: xIdx type: #blockArg}] //-> [{#Not. x}]
-|	@<"&" expr2:x>:xIdx -> [(self newNode: #Lookahead) properties: {#op -> x. self newRange: xIdx type: #blockArg}] //-> [{#Lookahead. x}]
+	@<"~">:xIdx expr2:x -> [(self newNode: #Not) properties: {#op -> x. self newRange: xIdx type: #blockArg}] //-> [{#Not. x}]
+|	@<"&">:xIdx expr2:x -> [(self newNode: #Lookahead) properties: {#op -> x. self newRange: xIdx type: #blockArg}] //-> [{#Lookahead. x}]
 |	expr1! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 22:42'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:02'!
 expr3 =
 	// Handle arity and variable assignment
 	expr2:x optIter(x):x
-		(	$: nsName:n [temps add: n] -> [(self newNode: #Set) properties: {#op -> n. #parm -> x}]
+		(	$: @<nsName:n>:tmpIdx [temps add: n] -> [(self newNode: #Set) properties: {#op -> n. #parm -> x. self newRange: tmpIdx type: #tempVar}]
 										 //-> [{#Set. n. x}]
 		|	empty						-> [x]
 		)
@@ -395,10 +452,11 @@ expr4 =
 	expr3*:xs -> [(self newNode: #And) addChildren: xs]
 			//-> [(OrderedCollection with: #And) addAll: xs; yourself]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/16/2015 22:02'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 00:43'!
 initialize
 	super initialize.
 	ast := self newNode: #rule.
+	blockLevel := 0.
 	curNode := ast.
 	curNode properties at: #comments put: OrderedCollection new.
 	temps := IdentitySet new.! !
@@ -452,6 +510,24 @@ newRange: assoc type: type
 					start: assoc key
 					end: assoc value - 1
 					type: type);
+			yourself).! !
+
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:41'!
+newRange: assoc type: type with: assoc2 type: type2
+	"create assoc to be use as a range property.  this currently covers every use case except comments in the space rule"
+	"#rangeIdxList -> (OrderedCollection new add: (SHRange start: app2Idx key end: app2Idx value type: #key); yourself)"
+	^ #rangeIdxList ->
+		(OrderedCollection new
+			add:
+				(SHRange
+					start: assoc key
+					end: assoc value - 1
+					type: type);
+			add:
+				(SHRange
+					start: assoc2 key
+					end: assoc2 value - 1
+					type: type2);
 			yourself).! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/13/2015 21:17'!
@@ -539,12 +615,12 @@ stringLiteral =
 											self newRange: strIdx type: #text}]
 									//-> [{#App. #exactly. (String withAll: xs) storeString}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/13/2015 20:02'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 00:40'!
 symbolLiteral =
 
 	// TODO: make this accept, e.g., #foo:bar:
-	"#" nsName:s -> [(self newNode: #App) properties: {#op -> #exactly.
-											#parm -> s storeString}]
+	@<"#" nsName:s>:symIdx -> [(self newNode: #App) properties: {#op -> #exactly.
+											#parm -> s storeString. self newRange: symIdx type: #symbol}]
 				//-> [{#App. #exactly. s storeString}]! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 16:48'!
@@ -555,51 +631,53 @@ tokenSugar =
 															self newRange: tokIdx type: #stringSymbol}]
 							//-> [{#App. #token. (String withAll: xs) storeString}]! !
 
-!OMeta2ExtendedParser class methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 05:13'!
+!OMeta2ExtendedParser class methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 05:11'!
 rangesFor: source
-	| recurseForRanges result |
+	| result |
 	(OMeta2ExtendedParser
 		matchAll: source
 		with: #isSmalltalkCode)
 		ifTrue: [ ^ nil ]
 		ifFalse: [
 			result := OrderedCollection new.
-			recurseForRanges := [ :ea :useResult | | p |
-			p := ea properties.
-			p
-				at: #rangeIdxList
-				ifPresent: [ :ranges |
-					useResult addAll: ranges ].
-			useResult ].
 			(OMeta2ExtendedParser
 				matchAll: source
-				with: #rule) do: [ :ea | | p |
-				p := ea properties.
-				p
-					at: #rangeIdxList
-					ifPresent: [ :ranges |
-						result addAll: ranges ].
-				p
-					at: #comments
-					ifPresent: [ :ranges |
-						result addAll: ranges ].
-				p
-					at: #op
-					ifPresent: [ :op |
-						(op isKindOf: SyntaxTreeNode) ifTrue: [
-							recurseForRanges
-								value: op
-								value: result ]].
-				p
-					at: #parm
-					ifPresent: [ :parm |
-						(parm isKindOf: SyntaxTreeNode) ifTrue: [
-							recurseForRanges
-								value: parm
-								value: result ]].
-				result ].
+				with: #rule) do: [ :ea |
+				self
+					recurseForRanges: ea
+					into: result ].
 			^ result sort: [ :a :b |
 				a start < b start ]].! !
+
+!OMeta2ExtendedParser class methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 05:10'!
+recurseForRanges: ea into: result
+	| p |
+	p := ea properties.
+	p
+		at: #rangeIdxList
+		ifPresent: [ :ranges |
+			result addAll: ranges ].
+	p
+		at: #comments
+		ifPresent: [ :ranges |
+			result addAll: ranges ].
+	p
+		at: #op
+		ifPresent: [ :op |
+			(op isKindOf: SyntaxTreeNode) ifTrue: [
+				op do: [ :opNode |
+					self
+						recurseForRanges: opNode
+						into: result ]]].
+	p
+		at: #parm
+		ifPresent: [ :parm |
+			(parm isKindOf: SyntaxTreeNode) ifTrue: [
+				parm do: [ :parmNode |
+					self
+						recurseForRanges: parmNode
+						into: result ]]].
+	result.! !
 
 !OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/17/2015 05:13'!
 scratchParserNew
@@ -818,94 +896,146 @@ attributesFor: aSymbol
 		at: aSymbol
 		ifAbsent: (self attributeArrayForColor: Color black emphasis: nil).! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 22:50'!
+!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/26/2015 02:17'!
 initialTextAttributes
 	"emphasis can be bold, italic, underlined... what about outline & strikethrough?"
 	| attrArray color dict element emphasis styleTable |
 	styleTable := Theme current generateShoutConfig.
 	dict := Dictionary new.
-	false ifTrue: [
-	styleTable do: [:each|
-		element := each first.
-		color := each at: 2 ifAbsent: nil.
-		color:=color ifNotNil: [ Color colorFrom: color].
-		emphasis := each at: 3 ifAbsent: nil.
-		attrArray := self attributeArrayForColor: color emphasis: emphasis.
-		attrArray notEmpty 
-			ifTrue: [
-				dict at: element put: attrArray]
-		].
-	^ dict
-	] ifFalse: [
-	^ Dictionary new
-		
-			at: #default
-			put:
-				(self
-					attributeArrayForColor: Color black
-					emphasis: nil);
-		
-			at: #comment
-			put:
-				(self
-					attributeArrayForColor: Color green
-					emphasis: #italic);
-		
-			at: #keyword "rule"
-			put:
-				(self
-					attributeArrayForColor: Color blue
-					emphasis: #bold);
-		
-			at: #blockArg "arity/lookahead"
-			put:
-				(self
-					attributeArrayForColor: Color orange
-					emphasis: #bold);
-		
-			at: #blockTempVar "apply/rule name"
-			put:
-				(self
-					attributeArrayForColor: Color gray
-					emphasis: nil);
-		
-			at: #text
-			put:
-				(self
-					attributeArrayForColor: Color blue
-					emphasis: #underlined);
-		
-			at: #stringSymbol "token"
-			put:
-				(self
-					attributeArrayForColor: Color darkBlue
-					emphasis: #underlined);
+	false
+		ifTrue: [
+			styleTable do: [ :each |
+				element := each first.
+				color := each
+					at: 2
+					ifAbsent: nil.
+				color := color ifNotNil: [ Color colorFrom: color ].
+				emphasis := each
+					at: 3
+					ifAbsent: nil.
+				attrArray := self
+					attributeArrayForColor: color
+					emphasis: emphasis.
+				attrArray notEmpty ifTrue: [
+					dict
+						at: element
+						put: attrArray ]].
+			^ dict ]
+		ifFalse: [ ^ Dictionary new
+					at: #nil "keywords (true/false/nil)"
+					put:
+						(self
+							attributeArrayForColor: Color red muchDarker
+							emphasis: nil);
 
-			at: #character
-			put:
-				(self
-					attributeArrayForColor: Color orange
-					emphasis: nil);
+					at: #tempVar "method vars"
+					put:
+						(self
+							attributeArrayForColor: Color grey muchDarker
+							emphasis: #italic);
 
-			at: #patternArg "semantic action/predicate"
-			put:
-				(self
-					attributeArrayForColor: Color cyan muchDarker
-					emphasis: nil);
-
-			at: #number
-			put:
-				(self
-					attributeArrayForColor: Color purple
-					emphasis: nil);
-
-			at: #externalFunctionCallingConvention "squeak code"
-			put:
-				(self
-					attributeArrayForColor: Color brown
-					emphasis: nil);
-		yourself.
-		]! !
+					at: #blockStart1
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.6 g: 0.6 b: 0.6) "Color aqua"
+							emphasis: nil);
+				
+					at: #blockStart2
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.45g: 0.45 b: 0.45) "Color teal"
+							emphasis: nil);
+				
+					at: #blockStart3
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.3 g: 0.3 b: 0.3) "Color blue"
+							emphasis: nil);
+				
+					at: #blockStart4
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.15 g: 0.15 b: 0.15) "Color navyBlue"
+							emphasis: nil);
+				
+					at: #blockStart5
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.0 g: 0.0 b: 0.0) "Color purple muchDarker"
+							emphasis: nil);
+				
+					at: #default
+					put:
+						(self
+							attributeArrayForColor: Color black
+							emphasis: nil);
+				
+					at: #comment "/* */ and // comments"
+					put:
+						(self
+							attributeArrayForColor: Color green
+							emphasis: #italic);
+				
+					at: #keyword "rule & parms"
+					put:
+						(self
+							attributeArrayForColor: Color blue lighter
+							emphasis: #bold);
+				
+					at: #blockArg "arity (*+?)/lookahead (&~)"
+					put:
+						(self
+							attributeArrayForColor: Color orange lighter
+							emphasis: #bold);
+				
+					at: #blockTempVar "apply/rule name"
+					put:
+						(self
+							attributeArrayForColor: Color blue
+							emphasis: nil);
+				
+					at: #text "'string'"
+					put:
+						(self
+							attributeArrayForColor: Color blue
+							emphasis: #bold);
+				
+					at: #stringSymbol "token"
+					put:
+						(self
+							attributeArrayForColor: Color navyBlue
+							emphasis: #bold);
+				
+					at: #symbol "#symbol"
+					put:
+						(self
+							attributeArrayForColor: Color blue darker
+							emphasis: #bold);
+				
+					at: #character "$c and ``abc''"
+					put:
+						(self
+							attributeArrayForColor: Color red muchDarker
+							emphasis: nil);
+				
+					at: #patternArg "semantic action/predicate"
+					put:
+						(self
+							attributeArrayForColor: Color cyan muchDarker
+							emphasis: nil);
+				
+					at: #number "123"
+					put:
+						(self
+							attributeArrayForColor: Color purple
+							emphasis: nil);
+				
+					at: #externalFunctionCallingConvention "squeak code"
+					put:
+						(self
+							attributeArrayForColor: Color cyan veryMuchDarker
+							emphasis: nil);
+				yourself].! !
 
 !SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
 resetAttributes
