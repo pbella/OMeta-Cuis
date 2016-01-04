@@ -70,8 +70,6 @@ OMeta2 subclass: #OMeta2Flattener
 	poolDictionaries: ''
 	category: 'OMeta2'!
 
-Smalltalk at: #OMeta2Fail put: OM2Fail new!
-
 !OMeta2Compiler commentStamp: '<historical>' prior: 0!
 I provide the interface that the Smalltalk environment expects.  In turn, I call out to various OMeta parsers that actually perform the compilation.
 
@@ -150,7 +148,7 @@ used
 value
 
 	used := true.
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 
 
@@ -369,7 +367,7 @@ for: aReadStream withPos: pos
 !OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/25/2009 11:29'!
 head
 
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 !OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:50'!
 initStream: s pos: p
@@ -390,7 +388,7 @@ pos
 !OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/25/2009 11:29'!
 tail
 
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 
 !OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'aw 2/18/2009 16:30'!
@@ -498,7 +496,7 @@ apply: aRule
 				[
 					input := origInput.
 					ans := self perform: aRule.
-					input == sentinel ifTrue: [OMeta2Fail signal].
+					input == sentinel ifTrue: [OM2Fail signal].
 					memoRec key: ans value: input.
 				] on: OM2Fail do: [keepGoing := false]
 			]
@@ -632,7 +630,7 @@ not: aBlock
 		input := origInput.
 		^ true
 	].
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/25/2009 11:28'!
 ometaOr: choices
@@ -643,7 +641,7 @@ ometaOr: choices
 		input := origInput.
 		[^ choice value] on: OM2Fail do: []
 	].
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/20/2009 14:33'!
 opt: aBlock
@@ -663,7 +661,7 @@ pred: aBooleanValue
 
 	" may want to have the compiler inline this automatically, for performance "
 	aBooleanValue ifTrue: [^ true].
-	OMeta2Fail signal! !
+	OM2Fail signal! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 16:16'!
 seq

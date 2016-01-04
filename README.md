@@ -37,3 +37,4 @@ The general idea is that the examples progress in complexity: OMeta2Examples (tr
 - Debugging support is weak (a known issue with OMeta in general... let's work to improve it)
 - More test cases and examples are need.
 - The OMeta styler works reasonably well but is still a work in progress.  One notable bug is that the first time you browse a Smalltalk method in an otherwise OMeta class, the formatting will be incorrect.  Select a different method and then select the Smalltalk method again to work around this issue for the time being.
+- Possible performance optimization: create an ivar for OM2Fail in OMeta2Base rather than creating an instance per exception. (This was previously accomplished via a global OMeta2Fail which resulted in a memory leak)
