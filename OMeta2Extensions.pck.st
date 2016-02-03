@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2404] on 18 July 2015 at 5:46:32.491487 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2658] on 23 January 2016 at 3:39:51.225659 am'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 2!
+!provides: 'OMeta2Extensions' 2 3!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugCompiler category: #OMeta2Extensions!
 OMeta2Compiler subclass: #OMeta2DebugCompiler
@@ -120,7 +120,7 @@ printOn: aStream
 	type printOn: aStream.
 	aStream nextPut: $).! !
 
-!OMeta2DebugCompiler class methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 02:22'!
+!OMeta2DebugCompiler class methodsFor: 'private' stamp: 'pb 6/15/2015 02:22'!
 ometa2RuleTranslatorClass
 	^ OMeta2DebugRuleTranslator! !
 
@@ -168,7 +168,7 @@ apply: aRule withArgs: args
 		apply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/29/2015 06:09'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/29/2015 06:09'!
 debugFinishTrans: name id: transId
 	self debugShouldTrace ifTrue: [
 		self flag: #todo.
@@ -181,16 +181,16 @@ debugFinishTrans: name id: transId
 			at: #matched
 			put: true ].! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 05:53'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/15/2015 05:53'!
 debugLogTrace
 	om2TraceLog add: om2Trans.
 	om2Trans := Dictionary new.! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 05:03'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/15/2015 05:03'!
 debugShouldTrace
 	^ false! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/29/2015 06:09'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/29/2015 06:09'!
 debugStartTrans: name
 	self debugShouldTrace ifTrue: [
 		self flag: #todo.
@@ -228,11 +228,11 @@ initialize
 	om2TransId := 0.
 	om2TraceLog := OrderedCollection new.! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 07:08'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/12/2015 07:08'!
 om2DebugPc
 	^ Dictionary new at: #applyPc put: om2ApplyPc; at: #applyWithArgsPc put: om2ApplyWithArgsPc; yourself! !
 
-!OMeta2Debug methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 07:17'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/12/2015 07:17'!
 om2DebugRoot: aRule
 	om2DebugRoot := aRule! !
 
@@ -255,16 +255,16 @@ seq
 				ifFalse: [ OMeta2DebugError new signal: 'Not a sequence: ' , xs asString
 					"we were probably passed in a character, number, etc..." ]].! !
 
-!OMeta2Debug class methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 02:21'!
+!OMeta2Debug class methodsFor: 'accessing' stamp: 'pb 6/15/2015 02:21'!
 compilerClass
 
         ^ OMeta2DebugCompiler! !
 
-!OMeta2Debug class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 06:20'!
+!OMeta2Debug class methodsFor: 'accessing' stamp: 'pb 6/12/2015 06:20'!
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 07:18'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 6/12/2015 07:18'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
@@ -340,24 +340,24 @@ args =
 	$( listOf(#squeakExpression. '.'):ans ")" -> [ans]
 |	~$( -> [#()]! !
 
-!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 6/26/2015 01:45'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/26/2015 01:45'!
 blockEnter
 	blockLevel := blockLevel+1.
 	"Transcript show: 'bl: ', blockLevel asString; finishEntry"! !
 
-!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 7/18/2015 17:45'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 7/18/2015 17:45'!
 blockLeave
 	self halt.
 	self flag: #deprecated.
 	blockLevel := blockLevel-1! !
 
-!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 7/18/2015 17:45'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 7/18/2015 17:45'!
 blockLevel
 	self halt.
 	self flag: #deprecated.
 	^ blockLevel! !
 
-!OMeta2ExtendedParser methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 01:18'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 01:18'!
 blockLevelAndLeave
 	| retVal |
 	retVal _ #blockStart1.
@@ -631,7 +631,7 @@ tokenSugar =
 															self newRange: tokIdx type: #stringSymbol}]
 							//-> [{#App. #token. (String withAll: xs) storeString}]! !
 
-!OMeta2ExtendedParser class methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 05:11'!
+!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/25/2015 05:11'!
 rangesFor: source
 	| result |
 	(OMeta2ExtendedParser
@@ -649,7 +649,7 @@ rangesFor: source
 			^ result sort: [ :a :b |
 				a start < b start ]].! !
 
-!OMeta2ExtendedParser class methodsFor: 'as yet unclassified' stamp: 'pb 6/25/2015 05:10'!
+!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/25/2015 05:10'!
 recurseForRanges: ea into: result
 	| p |
 	p := ea properties.
@@ -726,20 +726,20 @@ scratchRecurseSHRange
 		result ].
 	^ result sort: [:a :b| a start<b start].! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 04:11'!
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/15/2015 04:11'!
 debugWrapRule: rule body: body
 	^ {'debugTmpTransId:=self debugStartTrans: '''. rule. '''.
 debugTmpResult :='. body. '.
 self debugFinishTrans: '''. rule. ''' id: debugTmpTransId.
 ^ debugTmpResult'}.! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 03:56'!
+!OMeta2DebugRuleTranslator methodsFor: 'initialization' stamp: 'pb 6/15/2015 03:56'!
 initialize
 	super initialize.
 	transLog := OrderedCollection new.
 	transLogId := 1.! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'as yet unclassified' stamp: 'pb 6/15/2015 04:00'!
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/15/2015 04:00'!
 rule =
 
 	symbol:name
@@ -747,31 +747,31 @@ rule =
 	trans:body
 	-> [{name. ' | debugTmpResult debugTmpTransId '. self delim: temps asSortedCollection with: ' '. ' | '. self debugWrapRule: name body: body}]! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:01'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:01'!
 attributesFor: aSymbol
 	^ useOMetaStyler
 		ifTrue: [ self class attributesFor: aSymbol ]
 		ifFalse: [ smalltalkFallbackStyler class attributesFor: aSymbol ].! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:02'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:02'!
 classOrMetaClass: anObject
 	useOMetaStyler
 		ifTrue: [ self ]
 		ifFalse: [ smalltalkFallbackStyler classOrMetaClass: anObject ].! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:33'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:33'!
 disableFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 02:59'!
+!SHTextStylerOMeta2 methodsFor: 'initialization' stamp: 'pb 6/23/2015 02:59'!
 initialize
 	super initialize.
 	useOMetaStyler := true.
 	smalltalkFallbackStyler := SHTextStylerST80 new.! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:31'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/23/2015 03:00'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:00'!
 privateStyle
 	| ranges |
 	ranges := [
@@ -809,7 +809,7 @@ privateStyle
 			fromRanges: ranges
 			in: nil ].! !
 
-!SHTextStylerOMeta2 methodsFor: 'as yet unclassified' stamp: 'pb 6/16/2015 23:13'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/16/2015 23:13'!
 setAttributesIn: aText fromRanges: ranges in: anInterval
 	"modified by jmv to keep existing attributes if they answer true to #isParagraphAttribute"
 	| attributes defaultAttributes paragraphAttributes attr newRuns newValues lastAttr lastCount beginning chunkRuns end |
@@ -875,7 +875,13 @@ setAttributesIn: aText fromRanges: ranges in: anInterval
 		to: end
 		with: chunkRuns.! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 00:15'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 1/5/2016 01:18'!
+workspace: inst
+	"Needed for Debugger>>shoutAboutToStyle:"
+	self flag: #fixme.
+	^ nil.! !
+
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 00:15'!
 attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
 	"Answer a new Array containing any non nil TextAttributes specified"
 	| answer emphArray |
@@ -889,14 +895,14 @@ attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
 			each ~= #normal ifTrue: [ answer := answer , {TextEmphasis perform: each} ]]].
 	^ answer.! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/17/2015 01:19'!
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 01:19'!
 attributesFor: aSymbol
 	textAttributes ifNil: [ textAttributes := self initialTextAttributes ].
 	^ textAttributes
 		at: aSymbol
 		ifAbsent: (self attributeArrayForColor: Color black emphasis: nil).! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/26/2015 02:17'!
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/26/2015 02:17'!
 initialTextAttributes
 	"emphasis can be bold, italic, underlined... what about outline & strikethrough?"
 	| attrArray color dict element emphasis styleTable |
@@ -1148,7 +1154,7 @@ properties: propColl
 			at: prop key
 			put: prop value ].! !
 
-!SyntaxTreeNode class methodsFor: 'as yet unclassified' stamp: 'pb 6/13/2015 02:14'!
+!SyntaxTreeNode class methodsFor: 'instance creation' stamp: 'pb 6/13/2015 02:14'!
 node: aNode
 	^ (self
 		new)

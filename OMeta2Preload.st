@@ -128,13 +128,13 @@ methodNode
 			sourceText: source;
 			yourself! !
 
-!OM2Fail methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:03'!
+!OM2Fail methodsFor: 'exceptionDescription' stamp: 'aw 2/26/2009 11:03'!
 defaultAction
 
 	self error: 'match failed'! !
 
 
-!OM2Failer methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 14:23'!
+!OM2Failer methodsFor: 'initialization' stamp: 'aw 2/16/2009 14:23'!
 initialize
 
 	used := false! !
@@ -152,22 +152,22 @@ value
 
 
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:04'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:04'!
 basicTail
 
 	^ tail! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:38'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:38'!
 forgetEverything
 
 	memo := IdentityDictionary new! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 11:35'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 11:35'!
 head
 
 	^ head! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 13:38'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 13:38'!
 initHead: h tail: t
 
 	head := h.
@@ -178,17 +178,17 @@ initialize
 
 	memo := IdentityDictionary new! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:13'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:13'!
 inputSpecies
 
 	^ Array! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 14:13'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 14:13'!
 memo
 
 	^ memo! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:51'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:51'!
 pos
 
 	^ -1! !
@@ -218,12 +218,12 @@ printOn: aStream
 	].
 	aStream nextPutAll: '...)'! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 11:35'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 11:35'!
 tail
 
 	^ tail! !
 
-!OM2Stream methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:40'!
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:40'!
 transitiveForgetEverything
 
 	| curr |
@@ -233,40 +233,40 @@ transitiveForgetEverything
 		curr := curr basicTail
 	]! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:05'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:05'!
 basicTail
 
 	^ target basicTail! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 12:08'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 12:08'!
 head
 
 	head ifNil: [head := target head].
 	^ head
 ! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:45'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:45'!
 initTarget: anOM2Stream
 
 	target := anOM2Stream! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:13'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:13'!
 inputSpecies
 
 	^ target inputSpecies! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:51'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:51'!
 pos
 
 	^ target pos! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 12:07'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 12:07'!
 tail
 
 	tail ifNil: [tail := OM2StreamProxy for: target tail].
 	^ tail! !
 
-!OM2StreamProxy methodsFor: 'as yet unclassified' stamp: 'aw 2/16/2009 14:10'!
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 14:10'!
 target
 
 	^ target! !
@@ -276,28 +276,28 @@ target
 OM2StreamProxy class
 	instanceVariableNames: ''!
 
-!OM2StreamProxy class methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:44'!
+!OM2StreamProxy class methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:44'!
 for: anOM2Stream
 
 	^ self new initTarget: anOM2Stream! !
 
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 13:28'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:28'!
 forgetEverything
 
 	om2stream forgetEverything! !
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 13:40'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
 head
 
 	^ om2stream head! !
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 15:26'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:26'!
 initOm2stream: anOM2Stream
 
 	om2stream := anOM2Stream! !
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 13:27'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:27'!
 memo
 
 	^ om2stream memo! !
@@ -309,12 +309,12 @@ printOn: aStream
 	om2stream printOn: aStream.
 	aStream nextPut: $)! !
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 13:40'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
 tail
 
 	^ om2stream tail! !
 
-!OM2StreamDebugger methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 13:29'!
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:29'!
 transitiveForgetEverything
 
 	om2stream transitiveForgetEverything! !
@@ -324,29 +324,29 @@ transitiveForgetEverything
 OM2StreamDebugger class
 	instanceVariableNames: ''!
 
-!OM2StreamDebugger class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 15:28'!
+!OM2StreamDebugger class methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:28'!
 for: anOM2Stream
 
 	^ self new initOm2stream: anOM2Stream! !
 
-!OM2LazyStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:50'!
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
 initHead: h stream: s pos: p
 
 	head := h.
 	stream := s.
 	pos := p! !
 
-!OM2LazyStream methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:15'!
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:15'!
 inputSpecies
 
 	^ stream originalContents species! !
 
-!OM2LazyStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:43'!
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:43'!
 pos
 
 	^ pos! !
 
-!OM2LazyStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:42'!
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:42'!
 tail
 
 	tail ifNil: [tail := OM2LazyStream for: stream withPos: pos + 1].
@@ -357,41 +357,41 @@ tail
 OM2LazyStream class
 	instanceVariableNames: ''!
 
-!OM2LazyStream class methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:44'!
+!OM2LazyStream class methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:44'!
 for: aReadStream withPos: pos
 
 	^ aReadStream atEnd
 		ifTrue: [OM2EndOfStream new initStream: aReadStream pos: pos]
 		ifFalse: [self new initHead: aReadStream next stream: aReadStream pos: pos]! !
 
-!OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/25/2009 11:29'!
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
 head
 
 	OM2Fail signal! !
 
-!OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:50'!
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
 initStream: s pos: p
 
 	stream := s.
 	pos := p! !
 
-!OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/19/2009 23:14'!
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:14'!
 inputSpecies
 
 	^ stream originalContents species! !
 
-!OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:49'!
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:49'!
 pos
 
 	^ pos! !
 
-!OM2EndOfStream methodsFor: 'as yet unclassified' stamp: 'aw 2/25/2009 11:29'!
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
 tail
 
 	OM2Fail signal! !
 
 
-!OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'aw 2/18/2009 16:30'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/18/2009 16:30'!
 compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBlock
 
 	^ self compile: origCode in: cls notifying: notify ifFail: failBlock! !
@@ -412,7 +412,7 @@ ometa2RuleTranslatorClass
 ometa2FlattenerClass
 	^ OMeta2Flattener! !
 
-!OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'aw 5/20/2009 12:57'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 5/20/2009 12:57'!
 compile: origCode in: cls notifying: notify ifFail: failBlock
 
 	| origCodeStream parseTree structuredCode translatedCode |
@@ -433,12 +433,12 @@ compile: origCode in: cls notifying: notify ifFail: failBlock
 		notifying: notify
 		ifFail: failBlock! !
 
-!OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 13:10'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:10'!
 parserClass
 
 	^ self class! !
 
-!OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 13:11'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:11'!
 parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
 
 	^ [
@@ -451,7 +451,7 @@ parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req i
 		node
 	] on: OM2Fail do: [aBlock value]! !
 
-!OMeta2Compiler methodsFor: 'as yet unclassified' stamp: 'hmm 5/24/2010 10:51'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'hmm 5/24/2010 10:51'!
 parser
         ^ self parserClass new! !
 
@@ -692,37 +692,37 @@ super: superclass apply: aRule withArgs: args
 OMeta2Base class
 	instanceVariableNames: ''!
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:35'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:35'!
 debugMatchAll: aSequenceableCollection with: aRule
 
 	^ self debugMatchAll: aSequenceableCollection with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:53'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:53'!
 debugMatchAll: aSequenceableCollection with: aRule withArgs: args
 
 	^ self matchStream: aSequenceableCollection readStream with: aRule withArgs: args withPlaybackDebugging: true! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:52'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:52'!
 debugMatch: anObject with: aRule
 
 	^ self debugMatch: anObject with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:58'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:58'!
 debugMatch: anObject with: aRule withArgs: args
 
 	^ self debugMatchAll: {anObject} readStream with: aRule withArgs: args! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/18/2009 15:39'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/18/2009 15:39'!
 matchAll: aSequenceableCollection with: aRule
 
 	^ self matchAll: aSequenceableCollection with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:57'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:57'!
 matchAll: aSequenceableCollection with: aRule withArgs: args
 
 	^ self matchStream: aSequenceableCollection readStream with: aRule withArgs: args withPlaybackDebugging: false! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'tak 4/7/2009 14:58'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'tak 4/7/2009 14:58'!
 matcherOn: aReadStream
 
 	| input matcher |
@@ -730,7 +730,7 @@ matcherOn: aReadStream
 	matcher := self new initInput: input.
 	^ matcher! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 14:14'!
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 14:14'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 
 	| input matcher ans|
@@ -768,12 +768,12 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		^ ans
 	]! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 11:53'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 11:53'!
 match: anObject with: aRule
 
 	^ self match: anObject with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'as yet unclassified' stamp: 'aw 2/26/2009 12:55'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:55'!
 match: anObject with: aRule withArgs: args
 
 	^ self matchAll: {anObject} readStream with: aRule withArgs: args! !
@@ -831,30 +831,30 @@ Smalltalk implementation!
 !OMeta2AndOrOpt commentStamp: '<historical>' prior: 0!
 Smalltalk implementation!
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 char
 	| t1 |
 	t1 := self apply: #anything.
 	self pred: (t1 isKindOf: Character).
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 digit
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 isDigit.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 empty
 	^ true! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 end
 	^ self
 		not: [self apply: #anything]! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 exactly
 	| t1 t2 |
 	t1 := self apply: #anything.
@@ -862,7 +862,7 @@ exactly
 	self pred: t1 = t2.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 firstAndRest
 	| t1 t2 |
 	t1 := self apply: #anything.
@@ -872,7 +872,7 @@ firstAndRest
 		into: (OrderedCollection
 				with: (self apply: t1))! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 fromTo
 	| temp1 temp2 temp3 |
 	^ true ifTrue: [
@@ -893,7 +893,7 @@ fromTo
 			withArgs: {temp3}.
 		temp1 ].! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 fromToEnd
 	| temp1 temp2 temp3 |
 	^ true ifTrue: [
@@ -915,21 +915,21 @@ fromToEnd
 				withArgs: {temp1} ]. [ self apply: #end ]}.
 		temp3 ].! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 letter
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 isLetter.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 letterOrDigit
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 isAlphaNumeric.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 listOf
 	| t1 t2 t3 |
 	t1 := self apply: #anything.
@@ -940,14 +940,14 @@ listOf
 				self apply: t1]
 			into: (OrderedCollection with: t3)]. [#()]}! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 lower
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 isLowercase.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 notLast
 	| t1 t2 |
 	t1 := self apply: #anything.
@@ -956,14 +956,14 @@ notLast
 		lookahead: [self apply: t1].
 	^ t2! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 number
 	| t1 |
 	t1 := self apply: #anything.
 	self pred: t1 isNumber.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 range
 	| t1 t2 t3 |
 	t1 := self apply: #anything.
@@ -972,47 +972,47 @@ range
 	self pred: t1 <= t3 & (t3 <= t2).
 	^ t3! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 space
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 asciiValue <= 32.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 spaces
 	^ self
 		many: [self apply: #space]! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 string
 	| t1 |
 	t1 := self apply: #anything.
 	self pred: t1 isString.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 symbol
 	| t1 |
 	t1 := self apply: #anything.
 	self pred: t1 isSymbol.
 	^ t1! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 token
 	| t1 |
 	t1 := self apply: #anything.
 	self apply: #spaces.
 	^ self apply: #seq withArgs: {t1}! !
 
-!OMeta2 methodsFor: 'as yet unclassified'!
+!OMeta2 methodsFor: 'private-ometa2preload'!
 upper
 	| t1 |
 	t1 := self apply: #char.
 	self pred: t1 isUppercase.
 	^ t1! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 application
 	| temp1 temp3 temp4 |
 	^ self ometaOr: {[
@@ -1036,7 +1036,7 @@ application
 			temp4 := self apply: #args.
 			{#App. temp3} , temp4 ]]}.! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 args
 	| t1 |
 	^ self ometaOr: {[self apply: #exactly withArgs: {$(}.
@@ -1046,7 +1046,7 @@ args
 			not: [self apply: #exactly withArgs: {$(}].
 		#()]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 characterLiteral
 	| t1 |
 	self apply: #spaces.
@@ -1054,7 +1054,7 @@ characterLiteral
 	t1 := self apply: #char.
 	^ {#App. #exactly. t1 storeString}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 characters
 	| t1 |
 	self apply: #token withArgs: {'``'}.
@@ -1067,14 +1067,14 @@ characters
 	self apply: #exactly withArgs: {$'}.
 	^ {#App. #seq. (String withAll: t1) storeString}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr
 	| t1 |
 	t1 := self apply: #listOf withArgs: {#expr4. '|'}.
 	^ (OrderedCollection with: #Or) addAll: t1;
 		 yourself! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr1
 	| t1 t2 |
 	^ self ometaOr: {[t1 := self ometaOr: {[self apply: #keyword withArgs: {'true'}]. [self apply: #keyword withArgs: {'false'}]. [self apply: #keyword withArgs: {'nil'}]}.
@@ -1092,7 +1092,7 @@ expr1
 		self apply: #token withArgs: {')'}.
 		t2]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr2
 	| t1 |
 	^ self ometaOr: {[self apply: #token withArgs: {'~'}.
@@ -1101,7 +1101,7 @@ expr2
 		t1 := self apply: #expr2.
 		{#Lookahead. t1}]. [self apply: #expr1]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr3
 	| t1 t2 |
 	^ self ometaOr: {[t1 := self apply: #expr2.
@@ -1114,7 +1114,7 @@ expr3
 		temps add: t2.
 		{#Set. t2. {#App. #anything}}]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr4
 	| t1 |
 	t1 := self
@@ -1122,12 +1122,12 @@ expr4
 	^ (OrderedCollection with: #And) addAll: t1;
 		 yourself! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 initialize
 	super initialize.
 	temps := IdentitySet new! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 keyword
 	| t1 |
 	t1 := self apply: #anything.
@@ -1136,27 +1136,27 @@ keyword
 		not: [self apply: #letterOrDigit].
 	^ t1! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 name
 	self apply: #spaces.
 	^ self apply: #nsName! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nameFirst
 	^ self apply: #letter! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nameRest
 	^ self ometaOr: {[self apply: #nameFirst]. [self apply: #digit]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nsName
 	| t1 |
 	^ self ometaOr: {[t1 := self apply: #firstAndRest withArgs: {#nameFirst. #nameRest}.
 		(String withAll: t1) asSymbol]. [self apply: #exactly withArgs: {$_}.
 		^ #anything]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 numberLiteral
 	| t1 t2 |
 	self apply: #spaces.
@@ -1167,7 +1167,7 @@ numberLiteral
 				many1: [self apply: #digit].
 	^ {#App. #exactly. (t1 * (String withAll: t2) asNumber) storeString}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 optIter
 	| t1 |
 	t1 := self apply: #anything.
@@ -1178,7 +1178,7 @@ optIter
 			not: [self apply: #exactly withArgs: {$[}].
 		{#Opt. t1}]. [t1]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rule
 	| t1 t2 t3 t4 |
 	^ self ometaOr: {[self
@@ -1209,7 +1209,7 @@ rule
 		{#Rule. t1. temps asArray. (OrderedCollection with: #Or with: t2) addAll: t3;
 			 yourself}]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rulePart
 	| t1 t2 t3 |
 	t1 := self apply: #anything.
@@ -1220,7 +1220,7 @@ rulePart
 		t3 := self apply: #expr.
 		{#And. t2. t3}]. [t2]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 semanticAction
 	| t1 |
 	self ometaOr: {[self apply: #token withArgs: {'->'}]. []}.
@@ -1229,7 +1229,7 @@ semanticAction
 	self apply: #exactly withArgs: {$]}.
 	^ {#Act. t1}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 semanticPredicate
 	| t1 |
 	self apply: #token withArgs: {'?['}.
@@ -1237,7 +1237,7 @@ semanticPredicate
 	self apply: #exactly withArgs: {$]}.
 	^ {#Pred. t1}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 space
 	^ self ometaOr: {[self
 			super: OMeta2
@@ -1249,7 +1249,7 @@ space
 					apply: #space
 					withArgs: #()]]}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 squeakExpression
 	| t1 |
 	^ true
@@ -1257,7 +1257,7 @@ squeakExpression
 			self apply: #spaces.
 			t1]! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 stringLiteral
 	| t1 |
 	self apply: #token withArgs: {''''}.
@@ -1270,14 +1270,14 @@ stringLiteral
 	self apply: #exactly withArgs: {$'}.
 	^ {#App. #exactly. (String withAll: t1) storeString}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 symbolLiteral
 	| t1 |
 	self apply: #token withArgs: {'#'}.
 	t1 := self apply: #nsName.
 	^ {#App. #exactly. t1 storeString}! !
 
-!OMeta2RuleParser methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 tokenSugar
 	| t1 |
 	self apply: #token withArgs: {'"'}.
@@ -1293,7 +1293,7 @@ tokenSugar
 OMeta2RuleParser class
 	instanceVariableNames: ''!
 
-!OMeta2RuleParser class methodsFor: 'as yet unclassified'!
+!OMeta2RuleParser class methodsFor: 'private-ometa2preload'!
 isOMeta2Rule: t1 
 	^ [(self matchAll: t1 with: #rule) first ~= #Squeak]
 		on: OM2Fail
@@ -1303,7 +1303,7 @@ isOMeta2Rule: t1
 
 
 
-!OMeta2Optimizer methodsFor: 'as yet unclassified'!
+!OMeta2Optimizer methodsFor: 'private-ometa2preload'!
 optimizeRule
 	| t1 |
 	^ true
@@ -1313,7 +1313,7 @@ optimizeRule
 			t1]! !
 
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 arrayConstr
 	^ self ometaOr: {[true
 			ifTrue: [self apply: #token withArgs: {'{'}.
@@ -1327,7 +1327,7 @@ arrayConstr
 			ifTrue: [self apply: #token withArgs: {'{'}.
 				self apply: #token withArgs: {'}'}]]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 arrayLit
 	^ true
 		ifTrue: [self apply: #token withArgs: {'#'}.
@@ -1338,25 +1338,25 @@ arrayLit
 								self apply: #tsArraySymbol]]}].
 			self apply: #token withArgs: {')'}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 binary
 	^ true
 		ifTrue: [self apply: #spaces.
 			self apply: #tsBinary]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 binaryExpr
 	^ self ometaOr: {[true
 			ifTrue: [self apply: #binaryExpr.
 				self apply: #binaryMsg]]. [self apply: #unaryExpr]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 binaryMsg
 	^ true
 		ifTrue: [self apply: #binary.
 			self apply: #unaryExpr]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 block
 	^ true
 		ifTrue: [self apply: #token withArgs: {'['}.
@@ -1386,18 +1386,18 @@ block
 			self ometaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
 			self apply: #token withArgs: {']'}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 cascade
 	^ self ometaOr: {[self apply: #identifier]. [self apply: #binaryMsg]. [self apply: #keywordMsg]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 expr
 	^ self ometaOr: {[true
 			ifTrue: [self apply: #identifier.
 				self ometaOr: {[self apply: #token withArgs: {':='}]. [self apply: #token withArgs: {'_'}]}.
 				self apply: #expr]]. [self apply: #msgExpr]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 identifier
 	^ true
 		ifTrue: [self apply: #spaces.
@@ -1405,37 +1405,37 @@ identifier
 			self
 				not: [self apply: #exactly withArgs: {$:}]]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keyword
 	^ true
 		ifTrue: [self apply: #spaces.
 			self apply: #tsKeyword]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keywordExpr
 	^ true
 		ifTrue: [self apply: #binaryExpr.
 			self apply: #keywordMsg]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keywordMsg
 	^ self ometaOr: {[true
 			ifTrue: [self apply: #keywordMsg.
 				self apply: #keywordMsgPart]]. [self apply: #keywordMsgPart]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keywordMsgPart
 	^ true
 		ifTrue: [self apply: #keyword.
 			self apply: #binaryExpr]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 literal
 	^ true
 		ifTrue: [self apply: #spaces.
 			self ometaOr: {[self apply: #tsNumber]. [self apply: #tsCharacter]. [self apply: #tsString]. [self apply: #tsSymbol]}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 msgExpr
 	^ true
 		ifTrue: [self ometaOr: {[self apply: #keywordExpr]. [self apply: #binaryExpr]}.
@@ -1444,12 +1444,12 @@ msgExpr
 						ifTrue: [self apply: #token withArgs: {';'}.
 							self apply: #cascade]]]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 squeakExpr
 	^ self
 		consumedBy: [self apply: #expr]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 symbol
 	^ true
 		ifTrue: [self apply: #token withArgs: {'#'}.
@@ -1458,7 +1458,7 @@ symbol
 					ifTrue: [self apply: #tsKeyword.
 						self ometaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tcBinaryChar
 	| t1 |
 	^ true
@@ -1466,51 +1466,51 @@ tcBinaryChar
 			self pred: (TypeTable at: t1 asciiValue)
 					== #xBinary]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsArraySymbol
 	^ self ometaOr: {[true
 			ifTrue: [self
 					many1: [self apply: #tsKeyword].
 				self ometaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]. [self apply: #tsIdentifier]}! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsBinary
 	^ true
 		ifTrue: [self ometaOr: {[self apply: #exactly withArgs: {$|}]. [self apply: #tcBinaryChar]}.
 			self
 				many: [self apply: #tcBinaryChar]]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsCharacter
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$$}.
 			self apply: #char]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsIdentifier
 	^ true
 		ifTrue: [self apply: #letter.
 			self
 				many: [self ometaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsKeyword
 	^ true
 		ifTrue: [self apply: #tsIdentifier.
 			self apply: #exactly withArgs: {$:}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsNatural
 	^ self
 		many1: [self apply: #digit]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsNumber
 	^ true
 		ifTrue: [self ometaOr: {[self apply: #exactly withArgs: {$+}]. [self apply: #exactly withArgs: {$-}]. [self apply: #empty]}.
 			self apply: #tsNatural]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsString
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$'}.
@@ -1523,21 +1523,21 @@ tsString
 								self apply: #char]]}].
 			self apply: #exactly withArgs: {$'}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsSymbol
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$#}.
 			self apply: #spaces.
 			self ometaOr: {[self apply: #tsString]. [self apply: #tsArraySymbol]}]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 unaryExpr
 	^ true
 		ifTrue: [self apply: #unit.
 			self
 				many: [self apply: #identifier]]! !
 
-!O2SqueakRecognizer methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 unit
 	^ self ometaOr: {[self apply: #literal]. [self apply: #identifier]. [self apply: #arrayLit]. [self apply: #arrayConstr]. [self apply: #block]. [true
 			ifTrue: [self apply: #token withArgs: {'('}.
@@ -1549,7 +1549,7 @@ unit
 O2SqueakRecognizer class
 	instanceVariableNames: ''!
 
-!O2SqueakRecognizer class methodsFor: 'as yet unclassified'!
+!O2SqueakRecognizer class methodsFor: 'private-ometa2preload'!
 initialize
 	TypeTable := #(#xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xDelimiter #xDelimiter #xBinary #xDelimiter #xDelimiter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #doIt #xBinary #xDelimiter #xBinary #xDoubleQuote #xLitQuote #xDollar #xBinary #xBinary #xSingleQuote #leftParenthesis #rightParenthesis #xBinary #xBinary #xBinary #xBinary #period #xBinary #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xColon #semicolon #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBracket #xBinary #rightBracket #upArrow #leftArrow #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBrace #verticalBar #rightBrace #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary )! !
 
@@ -1557,7 +1557,7 @@ initialize
 O2SqueakRecognizer initialize!
 
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 and
 	| t1 |
 	^ true
@@ -1566,72 +1566,72 @@ and
 			t1 addFirst: #And;
 				 yourself]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 consby
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#ConsBy. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 form
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Form. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 helped
 	^ self pred: didSomething! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 idxconsby
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#IdxConsBy. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 initialize
 	super initialize.
 	didSomething := false! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 lookahead
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Lookahead. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 many
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Many. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 many1
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Many1. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 not
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Not. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 opt
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #trans.
 			{#Opt. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 optimize
 	| t1 |
 	^ true
@@ -1639,7 +1639,7 @@ optimize
 			self apply: #helped.
 			t1]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 or
 	| t1 |
 	^ true
@@ -1648,7 +1648,7 @@ or
 			t1 addFirst: #Or;
 				 yourself]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 rule
 	| t1 t2 t3 |
 	^ true
@@ -1657,7 +1657,7 @@ rule
 			t1 := self apply: #trans.
 			{#Rule. t2. t3. t1}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 set
 	| t1 t2 |
 	^ true
@@ -1665,11 +1665,11 @@ set
 			t2 := self apply: #trans.
 			{#Set. t1. t2}]! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 setHelped
 	^ didSomething := true! !
 
-!OMeta2NullOpt methodsFor: 'as yet unclassified'!
+!OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 trans
 	| t1 t2 |
 	^ self ometaOr: {[true
@@ -1683,7 +1683,7 @@ trans
 				t2]]. [self apply: #anything]}! !
 
 
-!OMeta2AndOrOpt methodsFor: 'as yet unclassified'!
+!OMeta2AndOrOpt methodsFor: 'private-ometa2preload'!
 and
 	| t1 t2 |
 	^ self ometaOr: {[true
@@ -1695,7 +1695,7 @@ and
 				t1 addFirst: #And;
 					 yourself]]}! !
 
-!OMeta2AndOrOpt methodsFor: 'as yet unclassified'!
+!OMeta2AndOrOpt methodsFor: 'private-ometa2preload'!
 or
 	| t1 t2 |
 	^ self ometaOr: {[true
@@ -1707,7 +1707,7 @@ or
 				t1 addFirst: #Or;
 					 yourself]]}! !
 
-!OMeta2AndOrOpt methodsFor: 'as yet unclassified'!
+!OMeta2AndOrOpt methodsFor: 'private-ometa2preload'!
 transInside
 	| t1 t2 t3 t4 |
 	^ true
@@ -1728,20 +1728,20 @@ transInside
 						OrderedCollection new]]}]! !
 
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 act
 	| t1 |
 	t1 := self apply: #string.
 	^ {'('. t1. ')'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 and
 	| t1 |
 	t1 := self
 				many: [self apply: #trans].
 	^ {'(true ifTrue: ['. self delim: t1 with: '. '. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 app
 	| t1 t2 |
 	t1 := self apply: #symbol.
@@ -1750,13 +1750,13 @@ app
 		t2 := self delim: t2 with: '. '.
 		{'(self apply: '. t1 storeString. ' withArgs: {'. t2. '})'}]. [{'(self apply: '. t1 storeString. ')'}]}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 consby
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self consumedBy: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 delim: t1 with: t2 
 	| t3 t4 |
 	t3 := true.
@@ -1769,49 +1769,49 @@ delim: t1 with: t2
 			t4 add: t5].
 	^ t4! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 form
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self form: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 idxconsby
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self indexConsumedBy: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 lookahead
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self lookahead: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self many: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many1
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self many1: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 not
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self not: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 opt
 	| t1 |
 	t1 := self apply: #trans.
 	^ {'(self opt: ['. t1. '])'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 or
 	| t1 t2 |
 	t1 := self
@@ -1819,13 +1819,13 @@ or
 					{'['. t2. ']'}].
 	^ {'(self ometaOr: {'. self delim: t1 with: '. '. '})'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 pred
 	| t1 |
 	t1 := self apply: #string.
 	^ {'(self pred: ('. t1. '))'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 rule
 	| temp1 temp2 temp3 |
 	^ true ifTrue: [
@@ -1838,18 +1838,18 @@ rule
 			delim: temp3 asSortedCollection
 			with: ' '. ' | ^ '. temp1} ].! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 set
 	| t1 t2 |
 	t1 := self apply: #symbol.
 	t2 := self apply: #trans.
 	^ {'('. t1 asString. ' := '. t2. ')'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 squeak
 	^ self apply: #string! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 superapp
 	| t1 t2 |
 	t1 := self apply: #symbol.
@@ -1858,7 +1858,7 @@ superapp
 	t2 := self delim: t2 with: '. '.
 	^ {'(self super: '. grammarClass superclass name. ' apply: '. t1 storeString. ' withArgs: {'. t2. '})'}! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 trans
 	| t1 t2 |
 	self
@@ -1866,20 +1866,20 @@ trans
 			t2 := self apply: t1 asLowercase asSymbol].
 	^ t2! !
 
-!OMeta2RuleTranslator methodsFor: 'as yet unclassified'!
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 translate
 	grammarClass := self apply: #anything.
 	^ self apply: #trans! !
 
 
-!OMeta2Flattener methodsFor: 'as yet unclassified'!
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
 flatten
 	| t1 |
 	t1 := self apply: #anything.
 	self apply: #iFlatten withArgs: {t1}.
 	^ ws contents! !
 
-!OMeta2Flattener methodsFor: 'as yet unclassified'!
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
 iFlatten
 	| t1 |
 	^ self ometaOr: {[t1 := self apply: #string.
@@ -1887,7 +1887,7 @@ iFlatten
 			form: [self
 					many: [self apply: #iFlatten]]]}! !
 
-!OMeta2Flattener methodsFor: 'as yet unclassified'!
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
 initialize
 	super initialize.
 	ws := (String new: 64) writeStream! !
