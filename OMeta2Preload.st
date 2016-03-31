@@ -73,7 +73,7 @@ OMeta2 subclass: #OMeta2Flattener
 !OMeta2Compiler commentStamp: '<historical>' prior: 0!
 I provide the interface that the Smalltalk environment expects.  In turn, I call out to various OMeta parsers that actually perform the compilation.
 
-The indirection provided by my class methods make things a bit easier when trying out new extensions and optimization ideas for OMeta!
+I use the indirection provided by OMeta2 class methods to allow for overriding of various functionality and make things a bit easier when trying out new extensions and optimization ideas for OMeta.! 
 
 !OMeta2Base commentStamp: '<historical>' prior: 0!
 I provide the core language/library runtime support for OMeta that cannot be rewritten as OMeta code.!
@@ -396,22 +396,6 @@ compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBl
 
 	^ self compile: origCode in: cls notifying: notify ifFail: failBlock! !
 
-!OMeta2Compiler class methodsFor: 'private' stamp: 'pb 6/08/2015 15:45'!
-ometa2RuleParserClass
-	^ OMeta2RuleParser! !
-
-!OMeta2Compiler class methodsFor: 'private' stamp: 'pb 6/08/2015 15:45'!
-ometa2OptimizerClass
-	^ OMeta2Optimizer! !
-
-!OMeta2Compiler class methodsFor: 'private' stamp: 'pb 6/08/2015 15:45'!
-ometa2RuleTranslatorClass
-	^ OMeta2RuleTranslator! !
-
-!OMeta2Compiler class methodsFor: 'private' stamp: 'pb 6/08/2015 15:45'!
-ometa2FlattenerClass
-	^ OMeta2Flattener! !
-
 !OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 5/20/2009 12:57'!
 compile: origCode in: cls notifying: notify ifFail: failBlock
 
@@ -419,10 +403,10 @@ compile: origCode in: cls notifying: notify ifFail: failBlock
 	origCodeStream := origCode asString readStream.
 	self from: origCodeStream class: cls context: nil notifying: notify.
 	[
-		parseTree := self class ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
-		parseTree := self class ometa2OptimizerClass match: parseTree with: #optimizeRule.
-		structuredCode := self class ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
-		translatedCode := self class ometa2FlattenerClass match: structuredCode with: #flatten
+		parseTree := cls ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
+		parseTree := cls ometa2OptimizerClass match: parseTree with: #optimizeRule.
+		structuredCode := cls ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
+		translatedCode := cls ometa2FlattenerClass match: structuredCode with: #flatten
 	] on: OM2Fail do: [
 		self notify: '<-- parse error around here -->' at: origCodeStream position.
 		^ failBlock value
@@ -443,9 +427,9 @@ parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req i
 
 	^ [
 		| parseTree structuredCode code node |
-		parseTree := self class ometa2RuleParserClass matchAll: aStream contents with: #rule.
-		structuredCode := self class ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
-		code := self class ometa2FlattenerClass match: structuredCode with: #flatten.
+		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
+		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
+		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
 		node := Parser new parse: code readStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
 		OMeta2MethodNode adoptInstance: node.
 		node
@@ -546,12 +530,19 @@ forgetEverything
 	input transitiveForgetEverything.
 	self om2streams valuesDo: [:s | s transitiveForgetEverything]! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/26/2009 11:33'!
+!OMeta2Base methodsFor: 'private' stamp: 'pb 3/14/2016 02:39'!
+isForm: obj
+	^ (obj isCollection and: [obj isSequenceable and: [obj isSymbol not]])! !
+
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 3/14/2016 02:39'!
 form: aBlock
 
 	| v origInput |
 	v := self apply: #anything.
+	"FIXME - delete once confirmed
 	self pred: (v isCollection and: [v isSequenceable and: [v isSymbol not]]).
+	"
+	self pred: (self isForm: v).
 	origInput := input.
 	input := self om2streams at: v ifAbsentPut: [OM2LazyStream for: v readStream withPos: 1].
 	aBlock value.
@@ -717,9 +708,9 @@ matchAll: aSequenceableCollection with: aRule
 
 	^ self matchAll: aSequenceableCollection with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:57'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'pb 3/14/2016 02:39'!
 matchAll: aSequenceableCollection with: aRule withArgs: args
-
+	"Recommended for use with unstructured data (i.e. strings and simple arrays)"
 	^ self matchStream: aSequenceableCollection readStream with: aRule withArgs: args withPlaybackDebugging: false! !
 
 !OMeta2Base class methodsFor: 'matching' stamp: 'tak 4/7/2009 14:58'!
@@ -759,7 +750,7 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		matcher
 			initInput: input;
 			forgetEverything.
-		curr ifNil: [self error: 'you''ve found a bug -- please tell Alex'].
+		curr ifNil: [self error: 'you''ve found a bug -- please report it'].
 		curr become: (OM2StreamDebugger for: curr copy).
 		matcher haltingPoint: curr.
 		matcher apply: #empty withArgs: args.
@@ -768,8 +759,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		^ ans
 	]! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 11:53'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'pb 3/14/2016 02:39'!
 match: anObject with: aRule
+	"Recommended for use with structured data (i.e. arrays of arrays etc)"
 
 	^ self match: anObject with: aRule withArgs: #()! !
 
@@ -1902,6 +1894,22 @@ initialize
 compilerClass
 
         ^ OMeta2Compiler! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2RuleParserClass
+	^ OMeta2RuleParser! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2OptimizerClass
+	^ OMeta2Optimizer! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2RuleTranslatorClass
+	^ OMeta2RuleTranslator! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2FlattenerClass
+	^ OMeta2Flattener! !
 
 
 OM2Fail initialize!

@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2384] on 22 June 2015 at 8:44:19.91377 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 3:07:56.83006 am'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 2!
-!requires: 'OMeta2' 2 0 nil!
+!provides: 'OMeta2Examples' 2 3!
 !requires: 'OMeta2Extensions' 2 0 nil!
+!requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
 OMeta2 subclass: #OMeta2CsvExample
 	instanceVariableNames: 'delimRow delimCol curRow rows'
@@ -178,10 +178,10 @@ See OMeta2TreeExample!
 !OMeta2TreeNodeExample commentStamp: '<historical>' prior: 0!
 See OMeta2TreeExample!
 
-!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:29'!
+!OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 6/12/2015 04:29'!
 csv = row* -> [rows]! !
 
-!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/22/2015 20:43'!
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
 field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]! !
 
 !OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
@@ -192,7 +192,7 @@ initialize
 	delimRow := Character lf.
 	delimCol := $,.! !
 
-!OMeta2CsvExample methodsFor: 'as yet unclassified' stamp: 'pb 6/22/2015 20:43'!
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
 row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]! !
 
 !OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
@@ -287,52 +287,52 @@ structure =
 
 	$a $b $c 1 2 3 {anything*}! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 18:06'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:06'!
 addExpr  = addExpr:x "+" mulExpr:y  -> [{'add'. x. y}]
          | addExpr:x "-" mulExpr:y             -> [{'sub'. x. y}]         
          | mulExpr! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 17:17'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 17:17'!
 digit    = ^digit:d                 -> [d digitValue]! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 05:07'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 05:07'!
 expr = addExpr:e -> [{e}]! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 17:57'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 17:57'!
 iName        = firstAndRest(#nameFirst. #nameRest):r -> [(String withAll: r) asSymbol]! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 18:06'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:06'!
 logExpr  = logExpr:x "and" primExpr:y -> [{'and'. x. y}]
          | logExpr:x "or" primExpr:y           -> [{'or'. x. y}]
          | logExpr:x "xor" primExpr:y          -> [{'xor'. x. y}]
          | "not" logExpr:x                           -> [{'not'. x}]
          | primExpr! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 18:07'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:07'!
 mulExpr  = mulExpr:x "*" powExpr:y                  -> [{'mul'. x. y}]
          | mulExpr:x "/" powExpr:y                           -> [{'div'. x. y}]
          | powExpr! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 05:06'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 05:06'!
 nameFirst    = letter! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 05:06'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 05:06'!
 nameRest     = nameFirst | digit! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 05:01'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 05:01'!
 number   = number:n digit:d         -> [n * 10 + d]
          | digit! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 18:07'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:07'!
 powExpr  = powExpr:x "^" relExpr:y  -> [{'pow'. x. y}]
          | relExpr! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 22:08'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 22:08'!
 primExpr = "(" expr:x ")"               -> [x]
          | spaces iName:nn spaces   -> [{'name'. nn}]
          | spaces number:n spaces   -> [{'num'. n}]! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 18:07'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:07'!
 relExpr  = relExpr:x ">" logExpr:y   -> [{'gt'. x. y}]
          | relExpr:x "<" logExpr:y          -> [{'lt'. x. y}]
          | relExpr:x ">=" logExpr:y       -> [{'gte'. x. y}]
@@ -341,7 +341,7 @@ relExpr  = relExpr:x ">" logExpr:y   -> [{'gt'. x. y}]
          | relExpr:x "!!=" logExpr:y         -> [{'neq'. x. y}]
          | logExpr! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 19:09'!
+!OMeta2LambdaCalculusParserExample methodsFor: 'ometa grammar' stamp: 'pb 5/23/2015 19:09'!
 root = root:r  ";" expr:ef -> [r, ef]
          | expr:e                  -> [e]! !
 
@@ -349,7 +349,7 @@ root = root:r  ";" expr:ef -> [r, ef]
 demo
 	^ self matchAll: 'x and y;x*y' with: #root.! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 21:43'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:43'!
 app = #car                {{:hd anything*}}                -> [hd]
          | #cdr                {{:hd anything*:tl}}             -> [tl]
          | #cons               {:hd :tl}                              -> [{hd. tl}]
@@ -359,21 +359,21 @@ app = #car                {{:hd anything*}}                -> [hd]
              enter bind(fs. args) ev(body):ans leave     -> [ans]
 ! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 19:00'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 19:00'!
 bind   = {}                {}
          | {:f anything*:fs} {:a anything*:as} bind(fs. as) -> [self envAt: f put: a]! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 04:07'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2015 04:07'!
 condF  = ~condT anything! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 21:32'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:32'!
 condT  = {ev:x ?[x] ev:ans}                                 -> [ans]! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 18:08'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:08'!
 enter = -> [self push]
 ! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 22:34'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 22:34'!
 envAt: key
 	| value |
 	value := env
@@ -386,7 +386,7 @@ envAt: key
 		"
 	^ value.! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 22:35'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 22:35'!
 envAt: key put: value
 	"
 	Transcript
@@ -397,14 +397,14 @@ envAt: key put: value
 		at: key
 		put: value.! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/26/2015 18:09'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/26/2015 18:09'!
 ev    = string:a                                                    -> [self envAt: a]
          | {#lambda :fs :body}                                 -> [{#lambda. fs. body}]
          | {#quote   :ans}                                        -> [ans]
          | {#cond    evCond:ans}                             -> [ans]
          | {ev:f        ev*:xs}     app(f. xs):ans            -> [ans]! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 21:35'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:35'!
 evCond = 
 //	condF* condT:ans anything*                       -> [x]
 //	| condF* anything*	-> [nil]
@@ -412,7 +412,7 @@ evCond =
 	| condF* anything*	-> [nil]
 ! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 18:13'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:13'!
 initialize
 	envStack := OrderedCollection new.
 	envStackPointer := 0.
@@ -442,18 +442,18 @@ initialize
 			put: true;
 		yourself.! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 18:25'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:25'!
 leave = -> [self pop]
 ! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 18:10'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:10'!
 pop
 	env := envStack at: envStackPointer.
 	envStack removeAt: envStackPointer.
 	envStackPointer := envStackPointer - 1.
 ! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 20:55'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 20:55'!
 push
 	| savedEnv |
 	envStackPointer := envStackPointer + 1.
@@ -465,7 +465,7 @@ push
 				at: envStackPointer
 				put: savedEnv ].! !
 
-!OMeta2LispExample methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 17:28'!
+!OMeta2LispExample methodsFor: 'ometa grammar' stamp: 'pb 5/29/2015 17:28'!
 sexp = sexp:s ev:e -> [e]
 	| ev:e                 -> [e]
 ! !
@@ -493,21 +493,21 @@ evalDebug: x
 evalDebugAll: x
 	^ self debugMatchAll: x with: #sexp! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:08'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 22:08'!
 testAnything =
 	anything! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:07'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 22:07'!
 testConsumedBy =
 	// Sometimes you'll want everything consumed by (i.e. matched) by an expression or a rule.  For sequences of characters, this has the useful side-effect of converting the consumed input to strings
 	<testManyAnything>! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:44'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 22:44'!
 testConsumedByIndex =
 	// Sometimes you may only care about the positional indexes of the consumed range
 	@<testManyAnything>! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 02:15'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 02:15'!
 testFromTo =
 	// fromTo will find items between the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
@@ -520,7 +520,7 @@ testFromTo =
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
 	// fixme - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 03:23'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 03:23'!
 testFromToObject =
 	/* fixme - wip.  trying to get this to work:
 	OMeta2StepByStepExample
@@ -539,7 +539,7 @@ testFromToObject =
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
 	// fixme - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 02:10'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 02:10'!
 testFromToOrEnd =
 	// fixme - broken.  the following should work when called from workspace:
 	//OMeta2StepByStepExample matchAll: '/* finding */ the test text...' with: #testFromToOrEnd.
@@ -556,7 +556,7 @@ testFromToOrEnd =
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
 	// fixme - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/11/2015 19:11'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 19:11'!
 testFromToString =
 	// fromTo will find items between (spatially) the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
@@ -570,82 +570,82 @@ testFromToString =
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
 	// fixme - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 23:58'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 23:58'!
 testLiteralChar =
 	$a! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:34'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 05:34'!
 testLiteralString =
 	'abc'! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/10/2015 00:44'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/10/2015 00:44'!
 testLookaheadNot =
 	// Anything but a "
 	(~$" char)*! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:30'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 05:30'!
 testMany1Char =
 	// + matches 1 or more occurrences
 	$a+! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:30'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 05:30'!
 testMany1String =
 	// + matches 1 or more occurrences
 	'abc'+! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:07'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 22:07'!
 testManyAnything =
 	// * matches 0 or more occurrences
 	anything*! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:27'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 05:27'!
 testManyChar =
 	// * matches 0 or more occurrences
 	$a*! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 05:27'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 05:27'!
 testManyString =
 	// * matches 0 or more occurrences
 	'abc'*! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:40'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 19:40'!
 testOpt =
 	// expr? tests for 0 or 1 occurrence, returns nil if 0.
 	"abc"?! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 20:49'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 20:49'!
 testPrioritizedChoice =
 	// | is the prioritized choice operator and behaves like a switch statement.  When the first test fails, it moves on to the second one.  Had the first test succeeded, the second one would be ignored.
 	testSemanticAction
 	| testConsumedBy! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/10/2015 14:37'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/10/2015 14:37'!
 testRuleParameters =
 	// rule parameters use a function call syntax
 	<wordParam('test')>! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:19'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 19:19'!
 testSemanticAction =
 	// -> is the action to perform if the predicate succeeds
 	testConsumedBy:x ?[x='testing'] -> ['got it!!']! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 19:32'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 19:32'!
 testSemanticPredicate =
 	// ?expr is the semantic predicate, if it succeeds the match continues.  We're also assigning the match to x so that we can use it in the predicate.
 	testConsumedBy:x ?[x='testing']! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 18:30'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 18:30'!
 testSeqObject =
 	// Sequences aren't limited to strings...
 	seq(#(1 2 3))! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 20:38'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 20:38'!
 testSeqString =
 	// ``item'' is syntactic sugar for a sequence of characters i.e. seq('item')
 	// While this rule expects two 'item' sequences, OMeta only returns the last match from the rule by default
 	``item'' seq('item')! !
 
-!OMeta2StepByStepExample methodsFor: 'test cases' stamp: 'pb 6/9/2015 18:08'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 18:08'!
 testToken =
 	// "item" syntactic sugar for token('item') - be careful to use the correct quotes!!
 	// While this rule expects two 'item' tokens, OMeta only returns the last match from the rule by default

@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2400] on 6 July 2015 at 11:13:17.13749 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 4:59:43.248683 am'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 3!
+!provides: 'OMeta2' 2 4!
 !requires: 'Cuis-Base' 42 2400 nil!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
@@ -88,7 +88,15 @@ OMeta2RuleTranslator class
 !OMeta2 commentStamp: '<historical>' prior: 0!
 OMeta Implementation
 
-TODOS:
+Parser Notes:
+========
+
+If your input consists of strings you want to parse (source code, text files, etc.), you most likely want to call the class-side 'MatchAll' methods (i.e. #matchAll:with:).  If your input consists of structured data (nested arrays etc) to parse, you probably want to call the class-side 'Match' methods (i.e. #match:with:).
+
+For more unconventional parsing needs, you will likely need to override some OMeta2Base methods in your parser subclass.  It is highly suggested that you do not change OMeta2Base directly as any bugs or changes in behavior will likely break OMeta2 itself.  Therefore, overriding in your subclass is the recommended approach.
+
+Todos:
+====
 
 * implement OMeta -> Squeak translator
 * implement Squeak parser

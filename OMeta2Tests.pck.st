@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2358] on 12 June 2015 at 3:04:51.433221 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2689] on 28 February 2016 at 7:05:26.708249 am'!
 'Description Tests for OMeta2'!
-!provides: 'OMeta2Tests' 2 1!
+!provides: 'OMeta2Tests' 2 2!
 !requires: 'OMeta2Examples' 2 0 nil!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugTests category: #OMeta2Tests!
@@ -39,38 +39,38 @@ This class is intended both to be a test of core OMeta functionality as well as 
 
 Everything used in these tests should be considered part of the supported language/API.!
 
-!OMeta2DebugTests methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 15:04'!
+!OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 6/12/2015 15:04'!
 testInfiniteRecursion
 	self flag: #fixme. "Also need to handle case where not eos but input not advancing"
 	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #infiniteRecursion] raise: OMeta2DebugError "Infinite recursion detected".
 ! !
 
-!OMeta2DebugTests methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:59'!
+!OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 6/12/2015 14:59'!
 testNotASequence
 	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #notASequence] raise: OMeta2DebugError "Not a sequence: a".
 ! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/26/2015 03:43'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/26/2015 03:43'!
 testFactorial
 	self should: (OMeta2Examples match: 0 with: #fact) = 1.
 	self should: (OMeta2Examples match: 5 with: #fact) = 120.
 	self should: (OMeta2Examples match: 10 with: #fact) = 3628800.! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/22/2015 16:54'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:54'!
 testGreeting
 	self should: (OMeta2Examples matchAll: 'howdy' with: #greeting) = 'howdy'! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/22/2015 16:56'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:56'!
 testIdentifierIndex
 	self should: (OMeta2Examples matchAll: 'abc123sd' with: #identifierIdx) = (Association key: 1 value: 9)! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/23/2015 22:01'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/23/2015 22:01'!
 testLambdaCalculus
 	self should: (OMeta2LambdaCalculusParserExample matchAll: '4' with: #digit) = 4.
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y' with: #root) =   #(#('and' #('name' #x) #('name' #y))).
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y;x*y' with: #root) =   #(#('and' #('name' #x) #('name' #y)) #('mul' #('name' #x) #('name' #y)))! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/29/2015 21:16'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/29/2015 21:16'!
 testLisp
 	| lispClass |
 	lispClass := OMeta2LispExample.
@@ -170,23 +170,23 @@ testLisp
 				(t (quote invalid))))
 			(quote c))) = #invalid.! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/26/2015 03:34'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/26/2015 03:34'!
 testNumber
 	self should: (OMeta2Examples matchAll: '1234' with: #number) = 1234.
 	self should: [OMeta2Examples match: '1234' with: #number] raise: OM2Fail.
 ! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/22/2015 16:53'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:53'!
 testObjectStructure
 	self should: (OMeta2Examples matchAll: #($a $b $c 1 2 3 #(4 5)) with: #structure) = #(4 5)
 ! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/22/2015 16:52'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:52'!
 testStringMatch
 	self should: (OMeta2Examples matchAll: 'abc123' with: #identifier) = 'abc123'
 ! !
 
-!OMeta2ExampleTests methodsFor: 'test cases' stamp: 'pb 5/23/2015 16:22'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/23/2015 16:22'!
 testTree
 	| tree |
 	tree := OMeta2TreeExample demoTree.
@@ -194,7 +194,7 @@ testTree
 	self should: tree depth = 5.
 	self should: tree sum = 11.! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:36'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:36'!
 test00Anything
 	"Understanding how OMeta views input is critical.  To OMeta, the input stream is just one or more objects."
 
@@ -211,7 +211,7 @@ test00Anything
 	self should: (OMeta2StepByStepExample matchAll: #($a 'b' (1 2 3) nil) with: #testManyAnything) = (OrderedCollection new add: $a; add: 'b'; add: #(1 2 3); add: nil; yourself). "in this case, the array is treated as a collection of objects to be matched"
 	self should: (OMeta2StepByStepExample matchAll: 'aaa' with: #testManyAnything) = (OrderedCollection new add: $a; add: $a; add: $a; yourself) "a string is just a collection of characters.  this will be hit on a couple of more times... it's important!!"! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 23:04'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 23:04'!
 test01Character
 	| emptyOC aOC aaaaaOC |
 	"fixme - need to cover letter, digit, etc."
@@ -228,7 +228,7 @@ test01Character
 	self should: (OMeta2StepByStepExample matchAll: 'aaaaa' with: #testMany1Char) = aaaaaOC.
 	self should: (OMeta2StepByStepExample matchAll: 'a' with: #testMany1Char) = aOC. "#test04ConsumedBy  shows you one way to get strings back"! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:37'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:37'!
 test02String
 	| abcOC abcabcOC |
 	"covers the use of literals, *, +, ? and tokens with string matches"
@@ -247,40 +247,40 @@ test02String
 	"Tokens are strings that ignore leading spaces.  You could override the definition of #spaces to include other types of whitespace if you want for your grammar."
 	self should: (OMeta2StepByStepExample matchAll: '   item      item' with: #testToken) = 'item'.! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:37'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:37'!
 test03Sequence
 	"Sequences (i.e. ordered collections) of objects"
 	self should: (OMeta2StepByStepExample matchAll: 'itemitem' with: #testSeqString) = 'item'.
 	self should: (OMeta2StepByStepExample matchAll: #($i $t $e $m $i $t $e $m) with: #testSeqString) = 'item'. "sequences of characters are strings as far as seq is concerned"
 	self should: (OMeta2StepByStepExample matchAll: #(1 2 3) with: #testSeqObject) = #(1 2 3). "not just for strings though"! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:58'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:58'!
 test04ConsumedBy
 	"consumedBy <> and consumedByIndex @<>"
 	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedBy) = 'feed me'. "Returns the input 'consumed' by the rule.  Now we don't have to deal with a collection of characters"
 	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedByIndex) =
 (Association key: 1 value: 8) "this returns the positional index range of the beginning and end of the match"! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:59'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:59'!
 test05PredicateAction
 	self should: (OMeta2StepByStepExample matchAll: 'testing' with: #testSemanticPredicate) = true. "notice that the predicate, being the last expression in the rule, again overrides the default return value.  This rule also introduces the assignment operator."
 	self should: (OMeta2StepByStepExample matchAll: 'testing' with: #testSemanticAction) = 'got it!!'. "we can use a semantic action to return the value we actually want.  But the match will fail if anything other than 'testing' is passed in..."! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/9/2015 22:58'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:58'!
 test06PrioritizedChoice
 	self should: (OMeta2StepByStepExample matchAll: 'testing' with: #testPrioritizedChoice) = 'got it!!'. "prioritized choice to the rescue!!"
 	self should: (OMeta2StepByStepExample matchAll: 'not' with: #testPrioritizedChoice) = 'not'.
 ! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/10/2015 00:45'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/10/2015 00:45'!
 test07Lookahead
 	"fixme - todo & operator"
 	self should: (OMeta2StepByStepExample matchAll: '''not a double quote''' with: #testLookaheadNot) = #($' $n $o $t $  $a $  $d $o $u $b $l $e $  $q $u $o $t $e $') asOrderedCollection. "we get a sequence of characters back because this rule matches character by character."! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/10/2015 14:36'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/10/2015 14:36'!
 test08RuleParameters
 	self should: (OMeta2StepByStepExample matchAll: 'looking for test text' with: #testRuleParameters) = 'looking for test text'! !
 
-!OMeta2StepByStepTests methodsFor: 'test cases' stamp: 'pb 6/10/2015 15:00'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/10/2015 15:00'!
 test10FromTo
 	self should: (OMeta2StepByStepExample matchAll: '/* finding */ the test text...' with: #testFromTo) = #($f $i $n $d $i $n $g $  $t $e $x $t $. $. $.) asOrderedCollection! !

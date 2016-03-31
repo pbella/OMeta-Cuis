@@ -1,17 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2658] on 23 January 2016 at 3:39:51.225659 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 3:07:39.436917 am'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 3!
+!provides: 'OMeta2Extensions' 2 4!
 !requires: 'OMeta2' 2 0 nil!
-!classDefinition: #OMeta2DebugCompiler category: #OMeta2Extensions!
-OMeta2Compiler subclass: #OMeta2DebugCompiler
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Extensions'!
-!classDefinition: 'OMeta2DebugCompiler class' category: #OMeta2Extensions!
-OMeta2DebugCompiler class
-	instanceVariableNames: ''!
-
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
 	instanceVariableNames: ''
@@ -73,9 +63,6 @@ SyntaxTreeNode class
 	instanceVariableNames: ''!
 
 
-!OMeta2DebugCompiler commentStamp: '<historical>' prior: 0!
-WORK IN PROGRESS... not ready for normal use!!!
-
 !OMeta2DebugError commentStamp: '<historical>' prior: 0!
 This is so we can determine debug vs. regular OMeta runtime errors!
 
@@ -119,10 +106,6 @@ printOn: aStream
 	aStream nextPut: $:.
 	type printOn: aStream.
 	aStream nextPut: $).! !
-
-!OMeta2DebugCompiler class methodsFor: 'private' stamp: 'pb 6/15/2015 02:22'!
-ometa2RuleTranslatorClass
-	^ OMeta2DebugRuleTranslator! !
 
 !OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 6/16/2015 03:45'!
 apply: aRule
@@ -255,11 +238,6 @@ seq
 				ifFalse: [ OMeta2DebugError new signal: 'Not a sequence: ' , xs asString
 					"we were probably passed in a character, number, etc..." ]].! !
 
-!OMeta2Debug class methodsFor: 'accessing' stamp: 'pb 6/15/2015 02:21'!
-compilerClass
-
-        ^ OMeta2DebugCompiler! !
-
 !OMeta2Debug class methodsFor: 'accessing' stamp: 'pb 6/12/2015 06:20'!
 lastMatcher
 	^ LastMatcher! !
@@ -311,6 +289,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 				show: matcher om2DebugPc asString;
 				finishEntry.
 			^ ans ].! !
+
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 2/3/2016 21:33'!
+ometa2RuleTranslatorClass
+	^ OMeta2DebugRuleTranslator.! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:45'!
 application =
@@ -679,18 +661,18 @@ recurseForRanges: ea into: result
 						into: result ]]].
 	result.! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/17/2015 05:13'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:13'!
 scratchParserNew
 	^ OMeta2ExtendedParser matchAll: ((OMeta2ExtendedParser methodDict at: #rulePart) getSource) with: #rule! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/17/2015 05:12'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:12'!
 scratchParserStock
 	"Stock OMeta rule parser"
 	^ OMeta2RuleParser
 		matchAll: (OMeta2ExtendedParser methodDict at: #rulePart) getSource
 		with: #rule.! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/17/2015 05:13'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:13'!
 scratchRecurseSHRange
 	| recurseForRanges result |
 	result := OrderedCollection new.
