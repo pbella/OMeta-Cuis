@@ -1,9 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 4:59:43.248683 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2764] on 12 May 2016 at 9:53:43.880276 pm'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 4!
-!requires: 'Cuis-Base' 42 2400 nil!
+!provides: 'OMeta2' 2 5!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -251,6 +250,12 @@ notLast :rule =
 number =
 
 	anything:x ?[x isNumber] -> [x]! !
+
+!OMeta2 methodsFor: 'private' stamp: 'pb 5/12/2016 21:52'!
+parseLog: aString
+	Transcript
+		show: aString;
+		finishEntry.! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:24'!
 range :a :b =

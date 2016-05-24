@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 3:07:39.436917 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2764] on 12 May 2016 at 10:02:56.843458 pm'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 4!
+!provides: 'OMeta2Extensions' 2 5!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
@@ -613,16 +613,16 @@ tokenSugar =
 															self newRange: tokIdx type: #stringSymbol}]
 							//-> [{#App. #token. (String withAll: xs) storeString}]! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/25/2015 05:11'!
+!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 5/4/2016 15:10'!
 rangesFor: source
 	| result |
-	(OMeta2ExtendedParser
+	(self
 		matchAll: source
 		with: #isSmalltalkCode)
 		ifTrue: [ ^ nil ]
 		ifFalse: [
 			result := OrderedCollection new.
-			(OMeta2ExtendedParser
+			(self
 				matchAll: source
 				with: #rule) do: [ :ea |
 				self
@@ -661,18 +661,18 @@ recurseForRanges: ea into: result
 						into: result ]]].
 	result.! !
 
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:13'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:10'!
 scratchParserNew
-	^ OMeta2ExtendedParser matchAll: ((OMeta2ExtendedParser methodDict at: #rulePart) getSource) with: #rule! !
+	^ self matchAll: ((self methodDict at: #rulePart) getSource) with: #rule! !
 
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:12'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:10'!
 scratchParserStock
 	"Stock OMeta rule parser"
-	^ OMeta2RuleParser
-		matchAll: (OMeta2ExtendedParser methodDict at: #rulePart) getSource
+	^ self
+		matchAll: (self methodDict at: #rulePart) getSource
 		with: #rule.! !
 
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 6/17/2015 05:13'!
+!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:11'!
 scratchRecurseSHRange
 	| recurseForRanges result |
 	result := OrderedCollection new.
@@ -683,7 +683,7 @@ scratchRecurseSHRange
 		ifPresent: [ :ranges |
 			useResult addAll: ranges ].
 	useResult ].
-	OMeta2ExtendedParser demo do: [ :ea | | p |
+	self demo do: [ :ea | | p |
 		p := ea properties.
 		p
 			at: #rangeIdxList
@@ -753,7 +753,7 @@ initialize
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:00'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 5/11/2016 18:43'!
 privateStyle
 	| ranges |
 	ranges := [
@@ -761,29 +761,11 @@ privateStyle
 	OMeta2ExtendedParser rangesFor: formattedText ]
 		on: OM2Fail
 		do: [ ].
-	"
-	ranges ifNotNil: [
-		useOMetaStyler
-			ifTrue: [
-				self
-					setAttributesIn: formattedText
-					fromRanges: ranges
-					in: nil ]
-			ifFalse: [
-				smalltalkFallbackStyler
-					setAttributesIn: formattedText
-					fromRanges: ranges
-					in: nil ]].
-			"
-	ranges ifNil: [
-		"
-		Transcript
-			show: 'falling back';
-			finishEntry.
-			"
+ 	ranges ifNil: [
 		ranges := smalltalkFallbackStyler
-			rangesIn: formattedText
-			setWorkspace: true.
+			textModel: textModel;
+			formattedAndStyledText;
+			rangesSetWorkspace: true.
 		useOMetaStyler := false ].
 	ranges ifNotNil: [
 		self

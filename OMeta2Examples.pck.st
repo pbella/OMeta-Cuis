@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2702] on 14 March 2016 at 3:07:56.83006 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2744] on 4 May 2016 at 3:12:30.724719 pm'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 3!
+!provides: 'OMeta2Examples' 2 4!
 !requires: 'OMeta2Extensions' 2 0 nil!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
@@ -470,9 +470,9 @@ sexp = sexp:s ev:e -> [e]
 	| ev:e                 -> [e]
 ! !
 
-!OMeta2LispExample class methodsFor: 'as yet unclassified' stamp: 'pb 5/29/2015 19:12'!
+!OMeta2LispExample class methodsFor: 'as yet unclassified' stamp: 'pb 5/4/2016 15:11'!
 demo
-	^ OMeta2LispExample evalDebugAll: #(
+	^ self evalDebugAll: #(
 		(cons
 			((lambda (x) (cons x x)) (quote boo))
 			(eq x (quote boo)))).! !
