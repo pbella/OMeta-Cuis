@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2744] on 4 May 2016 at 3:12:30.724719 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:45.076735 am'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 4!
+!provides: 'OMeta2Examples' 2 5!
 !requires: 'OMeta2Extensions' 2 0 nil!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
@@ -199,6 +199,14 @@ row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows 
 demo
 	^ self matchAll: 'abc,123,xyz
 	def,456,test' with: #csv.! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/20/2016 22:18'!
+debugForm =
+	{ 'testing' }! !
+
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/20/2016 22:19'!
+debugShouldTrace
+	^ true.! !
 
 !OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:44'!
 infiniteRecursion  = irRule*! !

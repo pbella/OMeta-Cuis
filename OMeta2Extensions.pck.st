@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2764] on 12 May 2016 at 10:02:56.843458 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:42.721578 am'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 5!
+!provides: 'OMeta2Extensions' 2 6!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
@@ -34,7 +34,7 @@ OMeta2ExtendedParser class
 
 !classDefinition: #OMeta2DebugRuleTranslator category: #OMeta2Extensions!
 OMeta2RuleTranslator subclass: #OMeta2DebugRuleTranslator
-	instanceVariableNames: 'transLogId transLog'
+	instanceVariableNames: 'transLogId transLog tempSequenceId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
@@ -151,17 +151,17 @@ apply: aRule withArgs: args
 		apply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/29/2015 06:09'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
 debugFinishTrans: name id: transId
 	self debugShouldTrace ifTrue: [
-		self flag: #todo.
+		self flag: 'todo'.
 		"
 		Transcript
 			show: name , ' matched';
 			finishEntry.
 			"
 		(om2Trans at: transId)
-			at: #matched
+			at: 'matched'
 			put: true ].! !
 
 !OMeta2Debug methodsFor: 'private' stamp: 'pb 6/15/2015 05:53'!
@@ -173,10 +173,10 @@ debugLogTrace
 debugShouldTrace
 	^ false! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/29/2015 06:09'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
 debugStartTrans: name
 	self debugShouldTrace ifTrue: [
-		self flag: #todo.
+		self flag: 'todo'.
 		"
 		Transcript
 			show: name , ' entered';
@@ -188,10 +188,10 @@ debugStartTrans: name
 			put:
 				(Dictionary new
 					
-						at: #rule
+						at: 'rule'
 						put: name;
 					
-						at: #matched
+						at: 'matched'
 						put: false;
 					yourself).
 		^ om2TransId ].! !
@@ -211,9 +211,9 @@ initialize
 	om2TransId := 0.
 	om2TraceLog := OrderedCollection new.! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/12/2015 07:08'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
 om2DebugPc
-	^ Dictionary new at: #applyPc put: om2ApplyPc; at: #applyWithArgsPc put: om2ApplyWithArgsPc; yourself! !
+	^ Dictionary new at: 'applyPc' put: om2ApplyPc; at: 'applyWithArgsPc' put: om2ApplyWithArgsPc; yourself! !
 
 !OMeta2Debug methodsFor: 'private' stamp: 'pb 6/12/2015 07:17'!
 om2DebugRoot: aRule
@@ -708,16 +708,34 @@ scratchRecurseSHRange
 		result ].
 	^ result sort: [:a :b| a start<b start].! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/15/2015 04:11'!
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 21:54'!
+debugNextSequenceId
+	"Some generated debugging code requires unique generated names in the event of nesting... a sequence provides uniqueness."
+	^ tempSequenceId  := tempSequenceId + 1! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/9/2016 18:38'!
 debugWrapRule: rule body: body
-	^ {'debugTmpTransId:=self debugStartTrans: '''. rule. '''.
+	^ {'debugTmpTransId:=self debugStartTrans: #'. rule . '.
 debugTmpResult :='. body. '.
-self debugFinishTrans: '''. rule. ''' id: debugTmpTransId.
+self debugFinishTrans: #'. rule. ' id: debugTmpTransId.
 ^ debugTmpResult'}.! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'initialization' stamp: 'pb 6/15/2015 03:56'!
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 23:26'!
+form =
+// FIXME - doing it here so that #form: doesn't need to know about debug transactions...
+// Form is a sort of built-in sub-rule that can be useful to trace when troubleshooting with structured data
+//	trans:x -> [{'(self form: ['. x. '])'}]
+	[self debugNextSequenceId asString]:ftId
+	trans:x -> [{'[|fresult',ftId,' ftr',ftId,'|
+			ftr',ftId,' := self debugStartTrans: #subRuleForm.
+			fresult',ftId,':=(self form: ['. x. ']).
+			self debugFinishTrans: #subRuleForm id: ftr',ftId,'.
+			fresult',ftId,'] value'}]! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'initialization' stamp: 'pb 6/20/2016 21:52'!
 initialize
 	super initialize.
+	tempSequenceId := 0.
 	transLog := OrderedCollection new.
 	transLogId := 1.! !
 

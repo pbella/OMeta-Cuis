@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2689] on 28 February 2016 at 7:05:26.708249 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:49.479014 am'!
 'Description Tests for OMeta2'!
-!provides: 'OMeta2Tests' 2 2!
+!provides: 'OMeta2Tests' 2 3!
 !requires: 'OMeta2Examples' 2 0 nil!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugTests category: #OMeta2Tests!
@@ -38,6 +38,12 @@ OMeta2StepByStepTests class
 This class is intended both to be a test of core OMeta functionality as well as a step by step tutorial of sorts demonstrating every aspect of OMeta that you can use in your grammars.  If you go through the tests in sequence, it should all make sense when you are done.
 
 Everything used in these tests should be considered part of the supported language/API.!
+
+!OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 6/20/2016 22:23'!
+testForm
+	"Verify that debug tracing logic doesn't interfere with form operation"
+	self should: (OMeta2DebugExample debugMatch: #('testing') with: #debugForm) = #('testing')
+! !
 
 !OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 6/12/2015 15:04'!
 testInfiniteRecursion
