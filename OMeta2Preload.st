@@ -1890,7 +1890,6 @@ initialize
 
 !OMeta2Base class methodsFor: 'accessing' stamp: 'aw 2/20/2009 14:52'!
 compilerClass
-
         ^ OMeta2Compiler! !
 
 !OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!

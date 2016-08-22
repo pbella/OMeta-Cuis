@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:42.721578 am'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2917] on 21 August 2016 at 9:13:48 pm'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 6!
+!provides: 'OMeta2Extensions' 2 7!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
@@ -10,6 +10,26 @@ Error subclass: #OMeta2DebugError
 	category: 'OMeta2Extensions'!
 !classDefinition: 'OMeta2DebugError class' category: #OMeta2Extensions!
 OMeta2DebugError class
+	instanceVariableNames: ''!
+
+!classDefinition: #SHTextStylerOMeta2 category: #OMeta2Extensions!
+SHTextStyler subclass: #SHTextStylerOMeta2
+	instanceVariableNames: 'smalltalkFallbackStyler useOMetaStyler'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Extensions'!
+!classDefinition: 'SHTextStylerOMeta2 class' category: #OMeta2Extensions!
+SHTextStylerOMeta2 class
+	instanceVariableNames: 'textAttributes'!
+
+!classDefinition: #OMeta2DebugRuleTranslator category: #OMeta2Extensions!
+OMeta2RuleTranslator subclass: #OMeta2DebugRuleTranslator
+	instanceVariableNames: 'transLogId transLog tempSequenceId'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Extensions'!
+!classDefinition: 'OMeta2DebugRuleTranslator class' category: #OMeta2Extensions!
+OMeta2DebugRuleTranslator class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2Debug category: #OMeta2Extensions!
@@ -32,26 +52,6 @@ OMeta2Debug subclass: #OMeta2ExtendedParser
 OMeta2ExtendedParser class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2DebugRuleTranslator category: #OMeta2Extensions!
-OMeta2RuleTranslator subclass: #OMeta2DebugRuleTranslator
-	instanceVariableNames: 'transLogId transLog tempSequenceId'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Extensions'!
-!classDefinition: 'OMeta2DebugRuleTranslator class' category: #OMeta2Extensions!
-OMeta2DebugRuleTranslator class
-	instanceVariableNames: ''!
-
-!classDefinition: #SHTextStylerOMeta2 category: #OMeta2Extensions!
-SHTextStyler subclass: #SHTextStylerOMeta2
-	instanceVariableNames: 'smalltalkFallbackStyler useOMetaStyler'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Extensions'!
-!classDefinition: 'SHTextStylerOMeta2 class' category: #OMeta2Extensions!
-SHTextStylerOMeta2 class
-	instanceVariableNames: 'textAttributes'!
-
 !classDefinition: #SyntaxTreeNode category: #OMeta2Extensions!
 Object subclass: #SyntaxTreeNode
 	instanceVariableNames: 'node properties children'
@@ -65,6 +65,12 @@ SyntaxTreeNode class
 
 !OMeta2DebugError commentStamp: '<historical>' prior: 0!
 This is so we can determine debug vs. regular OMeta runtime errors!
+
+!SHTextStylerOMeta2 commentStamp: '<historical>' prior: 0!
+WORK IN PROGRESS... not ready for normal use!!!
+
+!OMeta2DebugRuleTranslator commentStamp: '<historical>' prior: 0!
+WORK IN PROGRESS... not ready for normal use!!!
 
 !OMeta2Debug commentStamp: '<historical>' prior: 0!
 WORK IN PROGRESS... not ready for normal use!!
@@ -84,12 +90,6 @@ Open issues:
 - should I even be trying to re-use Smalltalk themes?  There is no clean mapping so even if we do it, using other themes may look unacceptably bad.
 - need to finalize approach: extend existing ast or go with a more annotated version?!
 
-!OMeta2DebugRuleTranslator commentStamp: '<historical>' prior: 0!
-WORK IN PROGRESS... not ready for normal use!!!
-
-!SHTextStylerOMeta2 commentStamp: '<historical>' prior: 0!
-WORK IN PROGRESS... not ready for normal use!!!
-
 !SyntaxTreeNode commentStamp: '<historical>' prior: 0!
 A simple, generic syntax tree node which can be used for both concrete and abstract trees.!
 
@@ -106,6 +106,327 @@ printOn: aStream
 	aStream nextPut: $:.
 	type printOn: aStream.
 	aStream nextPut: $).! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:01'!
+attributesFor: aSymbol
+	^ useOMetaStyler
+		ifTrue: [ self class attributesFor: aSymbol ]
+		ifFalse: [ smalltalkFallbackStyler class attributesFor: aSymbol ].! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:02'!
+classOrMetaClass: anObject
+	useOMetaStyler
+		ifTrue: [ self ]
+		ifFalse: [ smalltalkFallbackStyler classOrMetaClass: anObject ].! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:33'!
+disableFormatAndConvert! !
+
+!SHTextStylerOMeta2 methodsFor: 'initialization' stamp: 'pb 6/23/2015 02:59'!
+initialize
+	super initialize.
+	useOMetaStyler := true.
+	smalltalkFallbackStyler := SHTextStylerST80 new.! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
+privateFormatAndConvert! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 8/21/2016 21:13:09'!
+privateStyle
+	| ranges |
+	ranges := [
+	useOMetaStyler := true.
+	OMeta2ExtendedParser rangesFor: formattedText ]
+		on: OM2Fail
+		do: [ ].
+	ranges ifNil: [
+		ranges := smalltalkFallbackStyler
+			textModel: textModel;
+			formatAndStyle;
+			rangesSetWorkspace: true.
+		useOMetaStyler := false ].
+	ranges ifNotNil: [
+		self
+			setAttributesIn: formattedText
+			fromRanges: ranges
+			in: nil ].! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/16/2015 23:13'!
+setAttributesIn: aText fromRanges: ranges in: anInterval
+	"modified by jmv to keep existing attributes if they answer true to #isParagraphAttribute"
+	| attributes defaultAttributes paragraphAttributes attr newRuns newValues lastAttr lastCount beginning chunkRuns end |
+	anInterval
+		ifNil: [
+			beginning := 1.
+			end := aText size ]
+		ifNotNil: [
+			beginning := anInterval first.
+			end := anInterval last ].
+	defaultAttributes := self attributesFor: #default.
+	paragraphAttributes := Array new: end - beginning + 1.
+	1
+		to: paragraphAttributes size
+		do: [ :i |
+			paragraphAttributes
+				at: i
+				put:
+					((aText attributesAt: i + beginning - 1) select: [ :each |
+						each isParagraphAttribute ]) ].
+	attributes := Array new: end - beginning + 1.
+	1
+		to: attributes size
+		do: [ :i |
+			attributes
+				at: i
+				put: (paragraphAttributes at: i) , defaultAttributes ].
+	ranges do: [ :range |
+		(attr := self attributesFor: range rangeType) ifNotNil: [
+			range start
+				to: range end
+				do: [ :i |
+					attributes
+						at: i
+						put: (paragraphAttributes at: i) , attr ]]].
+	newRuns := OrderedCollection new: attributes size // 10.
+	newValues := OrderedCollection new: attributes size // 10.
+	1
+		to: attributes size
+		do: [ :i |
+			attr := attributes at: i.
+			i = 1
+				ifTrue: [
+					newRuns add: 1.
+					lastCount := 1.
+					lastAttr := newValues add: attr ]
+				ifFalse: [
+					attr == lastAttr
+						ifTrue: [
+							lastCount := lastCount + 1.
+							newRuns
+								at: newRuns size
+								put: lastCount ]
+						ifFalse: [
+							newRuns add: 1.
+							lastCount := 1.
+							lastAttr := newValues add: attr ]]].
+	chunkRuns := (RunArray
+		runs: newRuns
+		values: newValues) coalesce.
+	aText
+		basicReplaceAttributesFrom: beginning
+		to: end
+		with: chunkRuns.! !
+
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 1/5/2016 01:18'!
+workspace: inst
+	"Needed for Debugger>>shoutAboutToStyle:"
+	self flag: #fixme.
+	^ nil.! !
+
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 00:15'!
+attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
+	"Answer a new Array containing any non nil TextAttributes specified"
+	| answer emphArray |
+	answer := #().
+	aColorOrNil ifNotNil: [ answer := answer , {TextColor color: aColorOrNil} ].
+	anEmphasisSymbolOrArrayorNil ifNotNil: [
+		emphArray := anEmphasisSymbolOrArrayorNil isSymbol
+			ifTrue: [ {anEmphasisSymbolOrArrayorNil} ]
+			ifFalse: [ anEmphasisSymbolOrArrayorNil ].
+		emphArray do: [ :each |
+			each ~= #normal ifTrue: [ answer := answer , {TextEmphasis perform: each} ]]].
+	^ answer.! !
+
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 01:19'!
+attributesFor: aSymbol
+	textAttributes ifNil: [ textAttributes := self initialTextAttributes ].
+	^ textAttributes
+		at: aSymbol
+		ifAbsent: (self attributeArrayForColor: Color black emphasis: nil).! !
+
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/26/2015 02:17'!
+initialTextAttributes
+	"emphasis can be bold, italic, underlined... what about outline & strikethrough?"
+	| attrArray color dict element emphasis styleTable |
+	styleTable := Theme current generateShoutConfig.
+	dict := Dictionary new.
+	false
+		ifTrue: [
+			styleTable do: [ :each |
+				element := each first.
+				color := each
+					at: 2
+					ifAbsent: nil.
+				color := color ifNotNil: [ Color colorFrom: color ].
+				emphasis := each
+					at: 3
+					ifAbsent: nil.
+				attrArray := self
+					attributeArrayForColor: color
+					emphasis: emphasis.
+				attrArray notEmpty ifTrue: [
+					dict
+						at: element
+						put: attrArray ]].
+			^ dict ]
+		ifFalse: [ ^ Dictionary new
+					at: #nil "keywords (true/false/nil)"
+					put:
+						(self
+							attributeArrayForColor: Color red muchDarker
+							emphasis: nil);
+
+					at: #tempVar "method vars"
+					put:
+						(self
+							attributeArrayForColor: Color grey muchDarker
+							emphasis: #italic);
+
+					at: #blockStart1
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.6 g: 0.6 b: 0.6) "Color aqua"
+							emphasis: nil);
+				
+					at: #blockStart2
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.45g: 0.45 b: 0.45) "Color teal"
+							emphasis: nil);
+				
+					at: #blockStart3
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.3 g: 0.3 b: 0.3) "Color blue"
+							emphasis: nil);
+				
+					at: #blockStart4
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.15 g: 0.15 b: 0.15) "Color navyBlue"
+							emphasis: nil);
+				
+					at: #blockStart5
+					put:
+						(self
+							attributeArrayForColor: (Color r: 0.0 g: 0.0 b: 0.0) "Color purple muchDarker"
+							emphasis: nil);
+				
+					at: #default
+					put:
+						(self
+							attributeArrayForColor: Color black
+							emphasis: nil);
+				
+					at: #comment "/* */ and // comments"
+					put:
+						(self
+							attributeArrayForColor: Color green
+							emphasis: #italic);
+				
+					at: #keyword "rule & parms"
+					put:
+						(self
+							attributeArrayForColor: Color blue lighter
+							emphasis: #bold);
+				
+					at: #blockArg "arity (*+?)/lookahead (&~)"
+					put:
+						(self
+							attributeArrayForColor: Color orange lighter
+							emphasis: #bold);
+				
+					at: #blockTempVar "apply/rule name"
+					put:
+						(self
+							attributeArrayForColor: Color blue
+							emphasis: nil);
+				
+					at: #text "'string'"
+					put:
+						(self
+							attributeArrayForColor: Color blue
+							emphasis: #bold);
+				
+					at: #stringSymbol "token"
+					put:
+						(self
+							attributeArrayForColor: Color navyBlue
+							emphasis: #bold);
+				
+					at: #symbol "#symbol"
+					put:
+						(self
+							attributeArrayForColor: Color blue darker
+							emphasis: #bold);
+				
+					at: #character "$c and ``abc''"
+					put:
+						(self
+							attributeArrayForColor: Color red muchDarker
+							emphasis: nil);
+				
+					at: #patternArg "semantic action/predicate"
+					put:
+						(self
+							attributeArrayForColor: Color cyan muchDarker
+							emphasis: nil);
+				
+					at: #number "123"
+					put:
+						(self
+							attributeArrayForColor: Color purple
+							emphasis: nil);
+				
+					at: #externalFunctionCallingConvention "squeak code"
+					put:
+						(self
+							attributeArrayForColor: Color cyan veryMuchDarker
+							emphasis: nil);
+				yourself].! !
+
+!SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
+resetAttributes
+	textAttributes := nil! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 21:54'!
+debugNextSequenceId
+	"Some generated debugging code requires unique generated names in the event of nesting... a sequence provides uniqueness."
+	^ tempSequenceId  := tempSequenceId + 1! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/9/2016 18:38'!
+debugWrapRule: rule body: body
+	^ {'debugTmpTransId:=self debugStartTrans: #'. rule . '.
+debugTmpResult :='. body. '.
+self debugFinishTrans: #'. rule. ' id: debugTmpTransId.
+^ debugTmpResult'}.! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 23:26'!
+form =
+// FIXME - doing it here so that #form: doesn't need to know about debug transactions...
+// Form is a sort of built-in sub-rule that can be useful to trace when troubleshooting with structured data
+//	trans:x -> [{'(self form: ['. x. '])'}]
+	[self debugNextSequenceId asString]:ftId
+	trans:x -> [{'[|fresult',ftId,' ftr',ftId,'|
+			ftr',ftId,' := self debugStartTrans: #subRuleForm.
+			fresult',ftId,':=(self form: ['. x. ']).
+			self debugFinishTrans: #subRuleForm id: ftr',ftId,'.
+			fresult',ftId,'] value'}]! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'initialization' stamp: 'pb 6/20/2016 21:52'!
+initialize
+	super initialize.
+	tempSequenceId := 0.
+	transLog := OrderedCollection new.
+	transLogId := 1.! !
+
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/15/2015 04:00'!
+rule =
+
+	symbol:name
+	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
+	trans:body
+	-> [{name. ' | debugTmpResult debugTmpTransId '. self delim: temps asSortedCollection with: ' '. ' | '. self debugWrapRule: name body: body}]! !
 
 !OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 6/16/2015 03:45'!
 apply: aRule
@@ -377,7 +698,7 @@ expr =
 	listOf(#expr4. '|'):xs -> [(self newNode: #Or) addChildren: xs]
 					//-> [(OrderedCollection with: #Or) addAll: xs; yourself]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:31'!
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 8/19/2016 20:43:04'!
 expr1 =
 	// Handle any syntactic sugar and parse the final expression
 	@<(keyword('true') | keyword('false') | keyword('nil')):lit>:litIdx
@@ -407,7 +728,7 @@ expr1 =
 											self newRange: blkStart and: blkEnd type: self blockLevelAndLeave}]
 											/*self newRange: blkStart and: blkEnd type: #blockStart2}]*/
 						//-> [{#IdxConsBy. e}]
-|	@<"(">:blkStart  expr:e @<")">:blkEnd -> [e] // fixme - syntax highlighting! !
+|	@<"(">:blkStart expr:e @<")">:blkEnd -> [e] // fixme - syntax highlighting! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 06:29'!
 expr2 =
@@ -707,327 +1028,6 @@ scratchRecurseSHRange
 						value: result ]].
 		result ].
 	^ result sort: [:a :b| a start<b start].! !
-
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 21:54'!
-debugNextSequenceId
-	"Some generated debugging code requires unique generated names in the event of nesting... a sequence provides uniqueness."
-	^ tempSequenceId  := tempSequenceId + 1! !
-
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/9/2016 18:38'!
-debugWrapRule: rule body: body
-	^ {'debugTmpTransId:=self debugStartTrans: #'. rule . '.
-debugTmpResult :='. body. '.
-self debugFinishTrans: #'. rule. ' id: debugTmpTransId.
-^ debugTmpResult'}.! !
-
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 23:26'!
-form =
-// FIXME - doing it here so that #form: doesn't need to know about debug transactions...
-// Form is a sort of built-in sub-rule that can be useful to trace when troubleshooting with structured data
-//	trans:x -> [{'(self form: ['. x. '])'}]
-	[self debugNextSequenceId asString]:ftId
-	trans:x -> [{'[|fresult',ftId,' ftr',ftId,'|
-			ftr',ftId,' := self debugStartTrans: #subRuleForm.
-			fresult',ftId,':=(self form: ['. x. ']).
-			self debugFinishTrans: #subRuleForm id: ftr',ftId,'.
-			fresult',ftId,'] value'}]! !
-
-!OMeta2DebugRuleTranslator methodsFor: 'initialization' stamp: 'pb 6/20/2016 21:52'!
-initialize
-	super initialize.
-	tempSequenceId := 0.
-	transLog := OrderedCollection new.
-	transLogId := 1.! !
-
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/15/2015 04:00'!
-rule =
-
-	symbol:name
-	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
-	trans:body
-	-> [{name. ' | debugTmpResult debugTmpTransId '. self delim: temps asSortedCollection with: ' '. ' | '. self debugWrapRule: name body: body}]! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:01'!
-attributesFor: aSymbol
-	^ useOMetaStyler
-		ifTrue: [ self class attributesFor: aSymbol ]
-		ifFalse: [ smalltalkFallbackStyler class attributesFor: aSymbol ].! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:02'!
-classOrMetaClass: anObject
-	useOMetaStyler
-		ifTrue: [ self ]
-		ifFalse: [ smalltalkFallbackStyler classOrMetaClass: anObject ].! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:33'!
-disableFormatAndConvert! !
-
-!SHTextStylerOMeta2 methodsFor: 'initialization' stamp: 'pb 6/23/2015 02:59'!
-initialize
-	super initialize.
-	useOMetaStyler := true.
-	smalltalkFallbackStyler := SHTextStylerST80 new.! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
-privateFormatAndConvert! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 5/11/2016 18:43'!
-privateStyle
-	| ranges |
-	ranges := [
-	useOMetaStyler := true.
-	OMeta2ExtendedParser rangesFor: formattedText ]
-		on: OM2Fail
-		do: [ ].
- 	ranges ifNil: [
-		ranges := smalltalkFallbackStyler
-			textModel: textModel;
-			formattedAndStyledText;
-			rangesSetWorkspace: true.
-		useOMetaStyler := false ].
-	ranges ifNotNil: [
-		self
-			setAttributesIn: formattedText
-			fromRanges: ranges
-			in: nil ].! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/16/2015 23:13'!
-setAttributesIn: aText fromRanges: ranges in: anInterval
-	"modified by jmv to keep existing attributes if they answer true to #isParagraphAttribute"
-	| attributes defaultAttributes paragraphAttributes attr newRuns newValues lastAttr lastCount beginning chunkRuns end |
-	anInterval
-		ifNil: [
-			beginning := 1.
-			end := aText size ]
-		ifNotNil: [
-			beginning := anInterval first.
-			end := anInterval last ].
-	defaultAttributes := self attributesFor: #default.
-	paragraphAttributes := Array new: end - beginning + 1.
-	1
-		to: paragraphAttributes size
-		do: [ :i |
-			paragraphAttributes
-				at: i
-				put:
-					((aText attributesAt: i + beginning - 1) select: [ :each |
-						each isParagraphAttribute ]) ].
-	attributes := Array new: end - beginning + 1.
-	1
-		to: attributes size
-		do: [ :i |
-			attributes
-				at: i
-				put: (paragraphAttributes at: i) , defaultAttributes ].
-	ranges do: [ :range |
-		(attr := self attributesFor: range rangeType) ifNotNil: [
-			range start
-				to: range end
-				do: [ :i |
-					attributes
-						at: i
-						put: (paragraphAttributes at: i) , attr ]]].
-	newRuns := OrderedCollection new: attributes size // 10.
-	newValues := OrderedCollection new: attributes size // 10.
-	1
-		to: attributes size
-		do: [ :i |
-			attr := attributes at: i.
-			i = 1
-				ifTrue: [
-					newRuns add: 1.
-					lastCount := 1.
-					lastAttr := newValues add: attr ]
-				ifFalse: [
-					attr == lastAttr
-						ifTrue: [
-							lastCount := lastCount + 1.
-							newRuns
-								at: newRuns size
-								put: lastCount ]
-						ifFalse: [
-							newRuns add: 1.
-							lastCount := 1.
-							lastAttr := newValues add: attr ]]].
-	chunkRuns := (RunArray
-		runs: newRuns
-		values: newValues) coalesce.
-	aText
-		basicReplaceAttributesFrom: beginning
-		to: end
-		with: chunkRuns.! !
-
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 1/5/2016 01:18'!
-workspace: inst
-	"Needed for Debugger>>shoutAboutToStyle:"
-	self flag: #fixme.
-	^ nil.! !
-
-!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 00:15'!
-attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
-	"Answer a new Array containing any non nil TextAttributes specified"
-	| answer emphArray |
-	answer := #().
-	aColorOrNil ifNotNil: [ answer := answer , {TextColor color: aColorOrNil} ].
-	anEmphasisSymbolOrArrayorNil ifNotNil: [
-		emphArray := anEmphasisSymbolOrArrayorNil isSymbol
-			ifTrue: [ {anEmphasisSymbolOrArrayorNil} ]
-			ifFalse: [ anEmphasisSymbolOrArrayorNil ].
-		emphArray do: [ :each |
-			each ~= #normal ifTrue: [ answer := answer , {TextEmphasis perform: each} ]]].
-	^ answer.! !
-
-!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 01:19'!
-attributesFor: aSymbol
-	textAttributes ifNil: [ textAttributes := self initialTextAttributes ].
-	^ textAttributes
-		at: aSymbol
-		ifAbsent: (self attributeArrayForColor: Color black emphasis: nil).! !
-
-!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/26/2015 02:17'!
-initialTextAttributes
-	"emphasis can be bold, italic, underlined... what about outline & strikethrough?"
-	| attrArray color dict element emphasis styleTable |
-	styleTable := Theme current generateShoutConfig.
-	dict := Dictionary new.
-	false
-		ifTrue: [
-			styleTable do: [ :each |
-				element := each first.
-				color := each
-					at: 2
-					ifAbsent: nil.
-				color := color ifNotNil: [ Color colorFrom: color ].
-				emphasis := each
-					at: 3
-					ifAbsent: nil.
-				attrArray := self
-					attributeArrayForColor: color
-					emphasis: emphasis.
-				attrArray notEmpty ifTrue: [
-					dict
-						at: element
-						put: attrArray ]].
-			^ dict ]
-		ifFalse: [ ^ Dictionary new
-					at: #nil "keywords (true/false/nil)"
-					put:
-						(self
-							attributeArrayForColor: Color red muchDarker
-							emphasis: nil);
-
-					at: #tempVar "method vars"
-					put:
-						(self
-							attributeArrayForColor: Color grey muchDarker
-							emphasis: #italic);
-
-					at: #blockStart1
-					put:
-						(self
-							attributeArrayForColor: (Color r: 0.6 g: 0.6 b: 0.6) "Color aqua"
-							emphasis: nil);
-				
-					at: #blockStart2
-					put:
-						(self
-							attributeArrayForColor: (Color r: 0.45g: 0.45 b: 0.45) "Color teal"
-							emphasis: nil);
-				
-					at: #blockStart3
-					put:
-						(self
-							attributeArrayForColor: (Color r: 0.3 g: 0.3 b: 0.3) "Color blue"
-							emphasis: nil);
-				
-					at: #blockStart4
-					put:
-						(self
-							attributeArrayForColor: (Color r: 0.15 g: 0.15 b: 0.15) "Color navyBlue"
-							emphasis: nil);
-				
-					at: #blockStart5
-					put:
-						(self
-							attributeArrayForColor: (Color r: 0.0 g: 0.0 b: 0.0) "Color purple muchDarker"
-							emphasis: nil);
-				
-					at: #default
-					put:
-						(self
-							attributeArrayForColor: Color black
-							emphasis: nil);
-				
-					at: #comment "/* */ and // comments"
-					put:
-						(self
-							attributeArrayForColor: Color green
-							emphasis: #italic);
-				
-					at: #keyword "rule & parms"
-					put:
-						(self
-							attributeArrayForColor: Color blue lighter
-							emphasis: #bold);
-				
-					at: #blockArg "arity (*+?)/lookahead (&~)"
-					put:
-						(self
-							attributeArrayForColor: Color orange lighter
-							emphasis: #bold);
-				
-					at: #blockTempVar "apply/rule name"
-					put:
-						(self
-							attributeArrayForColor: Color blue
-							emphasis: nil);
-				
-					at: #text "'string'"
-					put:
-						(self
-							attributeArrayForColor: Color blue
-							emphasis: #bold);
-				
-					at: #stringSymbol "token"
-					put:
-						(self
-							attributeArrayForColor: Color navyBlue
-							emphasis: #bold);
-				
-					at: #symbol "#symbol"
-					put:
-						(self
-							attributeArrayForColor: Color blue darker
-							emphasis: #bold);
-				
-					at: #character "$c and ``abc''"
-					put:
-						(self
-							attributeArrayForColor: Color red muchDarker
-							emphasis: nil);
-				
-					at: #patternArg "semantic action/predicate"
-					put:
-						(self
-							attributeArrayForColor: Color cyan muchDarker
-							emphasis: nil);
-				
-					at: #number "123"
-					put:
-						(self
-							attributeArrayForColor: Color purple
-							emphasis: nil);
-				
-					at: #externalFunctionCallingConvention "squeak code"
-					put:
-						(self
-							attributeArrayForColor: Color cyan veryMuchDarker
-							emphasis: nil);
-				yourself].! !
-
-!SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
-resetAttributes
-	textAttributes := nil! !
 
 !SyntaxTreeNode methodsFor: 'adding' stamp: 'pb 6/12/2015 21:15'!
 addChild: aNode
