@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2917] on 21 August 2016 at 9:13:48 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2968] on 4 November 2016 at 3:35:51 am'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 7!
+!provides: 'OMeta2Extensions' 2 8!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
@@ -35,12 +35,12 @@ OMeta2DebugRuleTranslator class
 !classDefinition: #OMeta2Debug category: #OMeta2Extensions!
 OMeta2 subclass: #OMeta2Debug
 	instanceVariableNames: 'om2ApplyPc om2ApplyWithArgsPc om2DebugRoot om2Eos om2TraceLog om2Trans om2TransId'
-	classVariableNames: 'LastMatcher'
+	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
 !classDefinition: 'OMeta2Debug class' category: #OMeta2Extensions!
 OMeta2Debug class
-	instanceVariableNames: ''!
+	instanceVariableNames: 'LastMatcher'!
 
 !classDefinition: #OMeta2ExtendedParser category: #OMeta2Extensions!
 OMeta2Debug subclass: #OMeta2ExtendedParser
@@ -131,7 +131,7 @@ initialize
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 8/21/2016 21:13:09'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 11/4/2016 03:31:48'!
 privateStyle
 	| ranges |
 	ranges := [
@@ -142,7 +142,7 @@ privateStyle
 	ranges ifNil: [
 		ranges := smalltalkFallbackStyler
 			textModel: textModel;
-			formatAndStyle;
+			formatAndStyle: textModel actualContents allowBackgroundStyleProcess: false;
 			rangesSetWorkspace: true.
 		useOMetaStyler := false ].
 	ranges ifNotNil: [
