@@ -1,8 +1,8 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2764] on 12 May 2016 at 9:53:43.880276 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3186] on 2017-10-1 at 3:36:19 pm'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 5!
+!provides: 'OMeta2' 2 6!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -194,14 +194,6 @@ fromTo :x :y =
 
 !OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
 fromToEnd :from =
-	// fixme - broken
-	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
-	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
-	//[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]
-	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
-fromToEndNew :from =
 	// fixme - broken
 	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
 	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */

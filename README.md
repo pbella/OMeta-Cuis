@@ -7,7 +7,7 @@ OMeta/Cuis started as a port of OMeta/Squeak to Cuis but is quickly turning into
 
 # Installation
 
-A. Download Cuis4.2-2400 or later
+A. Download Cuis5.0-3192 or later
 
 B. Pull down the OMeta*.st files from https://github.com/pbella/OMeta-Cuis
 

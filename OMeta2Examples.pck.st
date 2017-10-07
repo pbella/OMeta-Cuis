@@ -1,18 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:45.076735 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3122] on 2017-7-10 at 6:49:26 am'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 5!
+!provides: 'OMeta2Examples' 2 6!
 !requires: 'OMeta2Extensions' 2 0 nil!
-!requires: 'OMeta2' 2 0 nil!
-!classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
-OMeta2 subclass: #OMeta2CsvExample
-	instanceVariableNames: 'delimRow delimCol curRow rows'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Examples'!
-!classDefinition: 'OMeta2CsvExample class' category: #OMeta2Examples!
-OMeta2CsvExample class
-	instanceVariableNames: ''!
-
 !classDefinition: #OMeta2DebugExample category: #OMeta2Examples!
 OMeta2Debug subclass: #OMeta2DebugExample
 	instanceVariableNames: 'delimCol delimRow'
@@ -21,6 +10,16 @@ OMeta2Debug subclass: #OMeta2DebugExample
 	category: 'OMeta2Examples'!
 !classDefinition: 'OMeta2DebugExample class' category: #OMeta2Examples!
 OMeta2DebugExample class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2CsvExample category: #OMeta2Examples!
+OMeta2 subclass: #OMeta2CsvExample
+	instanceVariableNames: 'delimRow delimCol curRow rows'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2CsvExample class' category: #OMeta2Examples!
+OMeta2CsvExample class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2Examples category: #OMeta2Examples!
@@ -114,15 +113,15 @@ OMeta2TreeNodeExample class
 	instanceVariableNames: ''!
 
 
+!OMeta2DebugExample commentStamp: '<historical>' prior: 0!
+Examples of the kinds of issues OMeta2Debug should catch!
+
 !OMeta2CsvExample commentStamp: '<historical>' prior: 0!
 This is a trivial CSV importer.  Just to make it a bit more interesting, the column and row delimiters are variables so this could easily be adapted to other delimiters either by subclassing or by parameterizing the csv rule.
 
 To run this example:
 
 OMeta2CsvExample demo!
-
-!OMeta2DebugExample commentStamp: '<historical>' prior: 0!
-Examples of the kinds of issues OMeta2Debug should catch!
 
 !OMeta2Examples commentStamp: '<historical>' prior: 0!
 Here's how to run these examples:
@@ -178,28 +177,6 @@ See OMeta2TreeExample!
 !OMeta2TreeNodeExample commentStamp: '<historical>' prior: 0!
 See OMeta2TreeExample!
 
-!OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 6/12/2015 04:29'!
-csv = row* -> [rows]! !
-
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
-field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]! !
-
-!OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
-initialize
-	super initialize.
-	curRow := OrderedCollection new.
-	rows := OrderedCollection new.
-	delimRow := Character lf.
-	delimCol := $,.! !
-
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
-row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]! !
-
-!OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
-demo
-	^ self matchAll: 'abc,123,xyz
-	def,456,test' with: #csv.! !
-
 !OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/20/2016 22:18'!
 debugForm =
 	{ 'testing' }! !
@@ -226,6 +203,28 @@ irRule = irField (exactly(delimCol) irField)* exactly(delimRow)?! !
 !OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:31'!
 notASequence =
 	seq($a)! !
+
+!OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 6/12/2015 04:29'!
+csv = row* -> [rows]! !
+
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
+field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]! !
+
+!OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
+initialize
+	super initialize.
+	curRow := OrderedCollection new.
+	rows := OrderedCollection new.
+	delimRow := Character lf.
+	delimCol := $,.! !
+
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
+row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]! !
+
+!OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
+demo
+	^ self matchAll: 'abc,123,xyz
+	def,456,test' with: #csv.! !
 
 !OMeta2Examples methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 02:35'!
 aSqueakMethod

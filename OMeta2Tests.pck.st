@@ -1,8 +1,7 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2811] on 21 June 2016 at 1:03:49.479014 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3122] on 2017-7-10 at 6:49:21 am'!
 'Description Tests for OMeta2'!
-!provides: 'OMeta2Tests' 2 3!
+!provides: 'OMeta2Tests' 2 4!
 !requires: 'OMeta2Examples' 2 0 nil!
-!requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugTests category: #OMeta2Tests!
 TestCase subclass: #OMeta2DebugTests
 	instanceVariableNames: ''

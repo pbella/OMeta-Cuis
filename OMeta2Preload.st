@@ -1,6 +1,6 @@
 'From Moshi of 3 March 2007 [latest update: #908] on 21 May 2009 at 1:17:33 pm'!
 Exception subclass: #OM2Fail
-	instanceVariableNames: ''
+	instanceVariableNames: 'parserFailedAt'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Preload'!
@@ -126,11 +126,24 @@ methodNode
 			sourceText: source;
 			yourself! !
 
+!OM2Fail class methodsFor: 'exceptionInstantiator' stamp: 'pb 9/5/2017 13:01'!
+parserFailedAt: positionInStream
+	^ self new
+		privateParserFailedAt: positionInStream;
+		signal.! !
+
 !OM2Fail methodsFor: 'exceptionDescription' stamp: 'aw 2/26/2009 11:03'!
 defaultAction
 
 	self error: 'match failed'! !
 
+!OM2Fail methodsFor: 'accessing' stamp: 'pb 9/5/2017 13:01'!
+parserFailedAt
+	^ parserFailedAt.! !
+
+!OM2Fail methodsFor: 'private' stamp: 'pb 9/5/2017 13:01'!
+privateParserFailedAt: pos
+	parserFailedAt := pos.! !
 
 !OM2Failer methodsFor: 'initialization' stamp: 'aw 2/16/2009 14:23'!
 initialize
@@ -147,8 +160,6 @@ value
 
 	used := true.
 	OM2Fail signal! !
-
-
 
 !OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:04'!
 basicTail
@@ -451,7 +462,7 @@ apply
 	aRule := self apply: #anything.
 	^ self apply: aRule! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/27/2009 14:09'!
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
 apply: aRule
 
 	" A memoRec is an association whose key is the answer,
@@ -478,7 +489,7 @@ apply: aRule
 				[
 					input := origInput.
 					ans := self perform: aRule.
-					input == sentinel ifTrue: [OM2Fail signal].
+					input == sentinel ifTrue: [OM2Fail parserFailedAt: input pos].
 					memoRec key: ans value: input.
 				] on: OM2Fail do: [keepGoing := false]
 			]
@@ -610,7 +621,7 @@ many: aBlock
 
 	^ self genericMany: aBlock into: OrderedCollection new! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/25/2009 11:28'!
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
 not: aBlock
 
 	| origInput |
@@ -619,9 +630,9 @@ not: aBlock
 		input := origInput.
 		^ true
 	].
-	OM2Fail signal! !
+	OM2Fail parserFailedAt: input pos! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/25/2009 11:28'!
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
 ometaOr: choices
 
 	| origInput |
@@ -630,7 +641,7 @@ ometaOr: choices
 		input := origInput.
 		[^ choice value] on: OM2Fail do: []
 	].
-	OM2Fail signal! !
+	OM2Fail parserFailedAt: input pos! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/20/2009 14:33'!
 opt: aBlock
@@ -645,12 +656,12 @@ pos
 	"fixme - called by examples.  Replace call with @<>?"
 	^ input pos! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/25/2009 11:28'!
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
 pred: aBooleanValue
 
 	" may want to have the compiler inline this automatically, for performance "
 	aBooleanValue ifTrue: [^ true].
-	OM2Fail signal! !
+	OM2Fail parserFailedAt: input pos! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 16:16'!
 seq

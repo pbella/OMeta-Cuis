@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2968] on 4 November 2016 at 3:35:51 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3186] on 2017-10-1 at 3:36:14 pm'!
 'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 8!
+!provides: 'OMeta2Extensions' 2 9!
 !requires: 'OMeta2' 2 0 nil!
 !classDefinition: #OMeta2DebugError category: #OMeta2Extensions!
 Error subclass: #OMeta2DebugError
@@ -14,13 +14,23 @@ OMeta2DebugError class
 
 !classDefinition: #SHTextStylerOMeta2 category: #OMeta2Extensions!
 SHTextStyler subclass: #SHTextStylerOMeta2
-	instanceVariableNames: 'smalltalkFallbackStyler useOMetaStyler'
+	instanceVariableNames: 'smalltalkFallbackStyler useSmalltalkStyler'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
 !classDefinition: 'SHTextStylerOMeta2 class' category: #OMeta2Extensions!
 SHTextStylerOMeta2 class
 	instanceVariableNames: 'textAttributes'!
+
+!classDefinition: #SHTextStylerOtherOMeta2 category: #OMeta2Extensions!
+SHTextStylerOMeta2 subclass: #SHTextStylerOtherOMeta2
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Extensions'!
+!classDefinition: 'SHTextStylerOtherOMeta2 class' category: #OMeta2Extensions!
+SHTextStylerOtherOMeta2 class
+	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2DebugRuleTranslator category: #OMeta2Extensions!
 OMeta2RuleTranslator subclass: #OMeta2DebugRuleTranslator
@@ -67,7 +77,12 @@ SyntaxTreeNode class
 This is so we can determine debug vs. regular OMeta runtime errors!
 
 !SHTextStylerOMeta2 commentStamp: '<historical>' prior: 0!
-WORK IN PROGRESS... not ready for normal use!!!
+Styler for OMeta2-based code (which can include Smalltalk)!
+
+!SHTextStylerOtherOMeta2 commentStamp: '<historical>' prior: 0!
+Styler for 'other' OMeta2-based code (which doesn't necessarily use OMeta or Smalltalk syntax).  Since this can be arbitrary code, it doesn't attempt to parse it: it bolds the first line and displays the rest as normal text.
+
+FIXME - when in prettyPrint mode should use a fallback smalltalk styler (so actually we want to use the fallback parser as the primary (can't it doesn't error... so we use the OMeta parser which also handles Smalltalk... FIXME: hack) and if it fails, do it another way)!
 
 !OMeta2DebugRuleTranslator commentStamp: '<historical>' prior: 0!
 WORK IN PROGRESS... not ready for normal use!!!
@@ -107,44 +122,46 @@ printOn: aStream
 	type printOn: aStream.
 	aStream nextPut: $).! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:01'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 9/3/2017 19:21:52'!
 attributesFor: aSymbol
-	^ useOMetaStyler
-		ifTrue: [ self class attributesFor: aSymbol ]
-		ifFalse: [ smalltalkFallbackStyler class attributesFor: aSymbol ].! !
+	^ useSmalltalkStyler
+		ifTrue: [ smalltalkFallbackStyler class attributesFor: aSymbol ]
+		ifFalse: [ self class attributesFor: aSymbol ].! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/23/2015 03:02'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 9/3/2017 19:34:53'!
 classOrMetaClass: anObject
-	useOMetaStyler
-		ifTrue: [ self ]
-		ifFalse: [ smalltalkFallbackStyler classOrMetaClass: anObject ].! !
+	^ useSmalltalkStyler
+		ifTrue: [ smalltalkFallbackStyler classOrMetaClass: anObject ]
+		ifFalse: [ self ].! !
 
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:33'!
 disableFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'initialization' stamp: 'pb 6/23/2015 02:59'!
+!SHTextStylerOMeta2 methodsFor: 'initialization' stamp: 'pb 9/3/2017 19:21:19'!
 initialize
 	super initialize.
-	useOMetaStyler := true.
+	useSmalltalkStyler := false.
 	smalltalkFallbackStyler := SHTextStylerST80 new.! !
 
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 11/4/2016 03:31:48'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 9/29/2017 00:04:55'!
 privateStyle
 	| ranges |
 	ranges := [
-	useOMetaStyler := true.
-	OMeta2ExtendedParser rangesFor: formattedText ]
+	useSmalltalkStyler := false.
+	self class rangeParser rangesFor: formattedText ]
 		on: OM2Fail
 		do: [ ].
 	ranges ifNil: [
 		ranges := smalltalkFallbackStyler
 			textModel: textModel;
-			formatAndStyle: textModel actualContents allowBackgroundStyleProcess: false;
-			rangesSetWorkspace: true.
-		useOMetaStyler := false ].
+			
+				formatAndStyle: textModel actualContents
+				allowBackgroundStyleProcess: false;
+			parseSetWorkspace: true.
+		useSmalltalkStyler := true ].
 	ranges ifNotNil: [
 		self
 			setAttributesIn: formattedText
@@ -385,9 +402,78 @@ initialTextAttributes
 							emphasis: nil);
 				yourself].! !
 
+!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/9/2017 18:16:15'!
+rangeParser
+	^ OMeta2ExtendedParser! !
+
 !SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
 resetAttributes
 	textAttributes := nil! !
+
+!SHTextStylerOtherOMeta2 methodsFor: 'private' stamp: 'pb 10/1/2017 15:22:36'!
+privateStyle
+
+	| ranges |
+	ranges := [
+	useSmalltalkStyler := true.
+	self class rangeParser rangesFor: formattedText ]
+		on: OM2Fail
+		do: [ ].
+	ranges ifNil: [ | idx |
+		useSmalltalkStyler := false.
+		idx := formattedText indexOf: Character lf.
+		idx > 0
+			ifTrue: [
+				ranges := {
+					SHRange
+						start: 1
+						end: idx - 1
+						type: #bold. 
+					SHRange
+						start: idx
+						end: formattedText size
+						type: #normal
+				} ]
+			ifFalse: [
+				ranges := {
+					SHRange
+						start: 1
+						end: formattedText size
+						type: #error
+				} ]].
+	ranges ifNotNil: [
+		self
+			setAttributesIn: formattedText
+			fromRanges: ranges
+			in: nil ].! !
+
+!SHTextStylerOtherOMeta2 class methodsFor: 'private' stamp: 'pb 9/3/2017 18:32:05'!
+initialTextAttributes
+	"emphasis can be bold, italic, underlined... what about outline & strikethrough?"
+	^ Dictionary new
+		
+			at: #bold
+			put:
+				(self
+					attributeArrayForColor: Color black
+					emphasis: #bold);
+		
+			at: #default
+			put:
+				(self
+					attributeArrayForColor: Color black
+					emphasis: nil);
+		
+			at: #error
+			put:
+				(self
+					attributeArrayForColor: Color red
+					emphasis: nil);
+		yourself.! !
+
+!SHTextStylerOtherOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 9/3/2017 18:02:16'!
+rangeParser
+	^ OMeta2ExtendedParser! !
 
 !OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 21:54'!
 debugNextSequenceId
@@ -428,22 +514,13 @@ rule =
 	trans:body
 	-> [{name. ' | debugTmpResult debugTmpTransId '. self delim: temps asSortedCollection with: ' '. ' | '. self debugWrapRule: name body: body}]! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 6/16/2015 03:45'!
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 10/1/2017 15:25:03'!
 apply: aRule
 	input class = OM2EndOfStream ifTrue: [
 		om2Eos > 100000
 			ifTrue: [ OMeta2DebugError new signal: 'Infinite recursion detected'
 				"There's a good possibility that there is a rule with optional arity (i.e. using * and/or ?) that is being matched even though we are at the end of the input stream." ]
 			ifFalse: [ om2Eos := om2Eos + 1 ]].
-	"]"
-	"
-	nextVal := (om2ApplyPc
-		at: aRule
-		ifAbsentPut: [ 0 ]) + 1.
-	om2ApplyPc
-		at: aRule
-		put: nextVal.
-		"
 	om2ApplyPc
 		at: aRule
 		put:
@@ -452,16 +529,8 @@ apply: aRule
 				ifAbsentPut: [ 0 ]) + 1.
 	^ super apply: aRule.! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 6/13/2015 15:29'!
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 10/1/2017 15:25:24'!
 apply: aRule withArgs: args
-	"
-	nextVal := (om2ApplyWithArgsPc
-		at: aRule
-		ifAbsentPut: [ 0 ]) + 1.
-	om2ApplyWithArgsPc
-		at: aRule
-		put: nextVal.
-		"
 	om2ApplyWithArgsPc
 		at: aRule
 		put:
@@ -472,18 +541,16 @@ apply: aRule withArgs: args
 		apply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 10/1/2017 15:25:43'!
 debugFinishTrans: name id: transId
 	self debugShouldTrace ifTrue: [
-		self flag: 'todo'.
-		"
-		Transcript
-			show: name , ' matched';
-			finishEntry.
-			"
 		(om2Trans at: transId)
-			at: 'matched'
-			put: true ].! !
+			
+				at: 'matched'
+				put: true;
+			
+				at: 'pos'
+				put: self pos ].! !
 
 !OMeta2Debug methodsFor: 'private' stamp: 'pb 6/15/2015 05:53'!
 debugLogTrace
@@ -494,15 +561,9 @@ debugLogTrace
 debugShouldTrace
 	^ false! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 10/1/2017 15:26:03'!
 debugStartTrans: name
 	self debugShouldTrace ifTrue: [
-		self flag: 'todo'.
-		"
-		Transcript
-			show: name , ' entered';
-			finishEntry.
-		"
 		om2TransId := om2TransId + 1.
 		om2Trans
 			at: om2TransId
@@ -517,14 +578,9 @@ debugStartTrans: name
 					yourself).
 		^ om2TransId ].! !
 
-!OMeta2Debug methodsFor: 'initialization' stamp: 'pb 6/15/2015 05:54'!
+!OMeta2Debug methodsFor: 'initialization' stamp: 'pb 10/1/2017 15:26:31'!
 initialize
 	super initialize.
-	"
-	om2FirstRun := true.
-	om2ErrorIR := false.
-	om2LastStartingPos := 1.
-	"
 	om2Eos := 0.
 	om2ApplyPc := Dictionary new.
 	om2ApplyWithArgsPc := Dictionary new.
@@ -532,9 +588,16 @@ initialize
 	om2TransId := 0.
 	om2TraceLog := OrderedCollection new.! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 6/9/2016 18:33'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 10/1/2017 15:26:50'!
 om2DebugPc
-	^ Dictionary new at: 'applyPc' put: om2ApplyPc; at: 'applyWithArgsPc' put: om2ApplyWithArgsPc; yourself! !
+	^ Dictionary new
+		
+			at: 'applyPc'
+			put: om2ApplyPc;
+		
+			at: 'applyWithArgsPc'
+			put: om2ApplyWithArgsPc;
+		yourself.! !
 
 !OMeta2Debug methodsFor: 'private' stamp: 'pb 6/12/2015 07:17'!
 om2DebugRoot: aRule
@@ -647,18 +710,6 @@ args =
 blockEnter
 	blockLevel := blockLevel+1.
 	"Transcript show: 'bl: ', blockLevel asString; finishEntry"! !
-
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 7/18/2015 17:45'!
-blockLeave
-	self halt.
-	self flag: #deprecated.
-	blockLevel := blockLevel-1! !
-
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 7/18/2015 17:45'!
-blockLevel
-	self halt.
-	self flag: #deprecated.
-	^ blockLevel! !
 
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 01:18'!
 blockLevelAndLeave
@@ -1111,7 +1162,7 @@ node
 node: aNode
 	node := aNode! !
 
-!SyntaxTreeNode methodsFor: 'printing' stamp: 'pb 6/13/2015 18:30'!
+!SyntaxTreeNode methodsFor: 'printing' stamp: 'pb 10/1/2017 15:23:45'!
 printOn: aStream
 	| title |
 	title := self class name.
@@ -1121,9 +1172,9 @@ printOn: aStream
 				ifTrue: [ 'an ' ]
 				ifFalse: [ 'a ' ]);
 		nextPutAll: title;
-		nextPutAll: '(';
+		nextPut: $(;
 		nextPutAll: node asString;
-		nextPutAll: ')'.! !
+		nextPut: $).! !
 
 !SyntaxTreeNode methodsFor: 'private' stamp: 'pb 6/16/2015 17:23'!
 properties
