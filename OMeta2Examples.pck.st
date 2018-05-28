@@ -1,7 +1,10 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3122] on 2017-7-10 at 6:49:26 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3329] on 2018-05-23 at 4:59:15 am'!
 'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 6!
+!provides: 'OMeta2Examples' 2 7!
 !requires: 'OMeta2Extensions' 2 0 nil!
+SystemOrganization addCategory: #OMeta2Examples!
+
+
 !classDefinition: #OMeta2DebugExample category: #OMeta2Examples!
 OMeta2Debug subclass: #OMeta2DebugExample
 	instanceVariableNames: 'delimCol delimRow'
@@ -151,7 +154,7 @@ To run this example:
 OMeta2LispExample demo!
 
 !OMeta2StepByStepExample commentStamp: '<historical>' prior: 0!
-This grammar will be the kitchen sink: exercise every aspect of OMeta syntax.  In addition, it should also be a good starting point to learn all about OMeta syntax.  After you've played around with some of the other examples, look at QOMeta2StepByStepTests tests for usage examples.
+This grammar will be the kitchen sink: exercise every aspect of OMeta syntax.  In addition, it should also be a good starting point to learn all about OMeta syntax.  After you've played around with some of the other examples, look at OMeta2StepByStepTests tests for usage examples.
 
 WIP / todo core syntax including: lookahead, grouping, form, foreign rules.  Also many remaining predefined rules (i.e. listOf, range, etc.)!
 
@@ -204,11 +207,21 @@ irRule = irField (exactly(delimCol) irField)* exactly(delimRow)?! !
 notASequence =
 	seq($a)! !
 
-!OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 6/12/2015 04:29'!
-csv = row* -> [rows]! !
+!OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 5/23/2018 04:11:48'!
+csv =
+	row* -> [rows]! !
 
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
-field = <(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field -> [[curRow add: field. Transcript show: 'field'; finishEntry] value]! !
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:12:59'!
+field =
+	<(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field
+		-> [[curRow add: field.
+			Transcript show: 'field'; finishEntry] value]! !
+
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:13:08'!
+row =
+	~end field (exactly(delimCol) field)* (exactly(delimRow) | end)
+		-> [[rows add: curRow.
+			curRow := OrderedCollection new] value]! !
 
 !OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
 initialize
@@ -217,9 +230,6 @@ initialize
 	rows := OrderedCollection new.
 	delimRow := Character lf.
 	delimCol := $,.! !
-
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 6/22/2015 20:43'!
-row = ~end field (exactly(delimCol) field)* (exactly(delimRow) | end) -> [[rows add: curRow. curRow := OrderedCollection new.] value]! !
 
 !OMeta2CsvExample class methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 04:07'!
 demo
@@ -373,8 +383,8 @@ bind   = {}                {}
 !OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2015 04:07'!
 condF  = ~condT anything! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:32'!
-condT  = {ev:x ?[x] ev:ans}                                 -> [ans]! !
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:16:49'!
+condT  = {ev:x ?[x] ev:ans} -> [ans]! !
 
 !OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:08'!
 enter = -> [self push]
@@ -411,11 +421,9 @@ ev    = string:a                                                    -> [self env
          | {#cond    evCond:ans}                             -> [ans]
          | {ev:f        ev*:xs}     app(f. xs):ans            -> [ans]! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:35'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:17:44'!
 evCond = 
-//	condF* condT:ans anything*                       -> [x]
-//	| condF* anything*	-> [nil]
-	condF* condT:ans anything*                       -> [ans]
+	condF* condT:ans anything* -> [ans]
 	| condF* anything*	-> [nil]
 ! !
 

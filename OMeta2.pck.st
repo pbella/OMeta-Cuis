@@ -1,8 +1,11 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3186] on 2017-10-1 at 3:36:19 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3329] on 2018-05-23 at 4:59:20 am'!
 'Description OMeta2Preload.st needs to be filed in before loading this package
 
 Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 6!
+!provides: 'OMeta2' 2 7!
+SystemOrganization addCategory: #OMeta2!
+
+
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -164,6 +167,54 @@ digit =
 
 	char:x ?[x isDigit] -> [x]! !
 
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
+fromToEnd :from =
+	// fixme - broken
+	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
+	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
+	//[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]
+	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
+letter =
+
+	char:x ?[x isLetter] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
+letterOrDigit =
+
+	char:x ?[x isAlphaNumeric] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:30'!
+lower =
+
+	char:x ?[x isLowercase] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:32'!
+space =
+
+	char:x ?[x asciiValue <= 32] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:33'!
+spaces =
+
+	space*! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
+string =
+
+	anything:x ?[x isString] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
+token :t =
+
+	spaces seq(t)! !
+
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:35'!
+upper =
+
+	char:x ?[x isUppercase] -> [x]! !
+
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:53'!
 empty
 	"fixme - inline?"
@@ -192,46 +243,17 @@ fromTo :x :y =
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
 	seq(x) (~seq(y) anything)*:t seq(y) -> [t]! !
 
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:12'!
-fromToEnd :from =
-	// fixme - broken
-	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
-	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
-	//[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]
-	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 6/11/2015 02:11'!
-fromToEndOld :from =
-	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
-	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
-	[Character newLineCharacter asString]:eol seq(from) (~seq(eol) anything)*:t (seq(eol) | end) -> [t]! !
-
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/11/2015 01:48'!
 fromToOrEnd :x :y =
 	// fixme - not working
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
 	seq(x) (~seq(y) anything)*:t (seq(y) | end) -> [t]! !
 
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
-letter =
-
-	char:x ?[x isLetter] -> [x]! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
-letterOrDigit =
-
-	char:x ?[x isAlphaNumeric] -> [x]! !
-
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:29'!
 listOf :rule :delim =
 
 		apply(rule):x (token(delim) apply(rule))*:xs -> [xs addFirst: x; yourself]
 	|	empty -> [#()]! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:30'!
-lower =
-
-	char:x ?[x isLowercase] -> [x]! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:31'!
 notLast :rule =
@@ -243,46 +265,21 @@ number =
 
 	anything:x ?[x isNumber] -> [x]! !
 
-!OMeta2 methodsFor: 'private' stamp: 'pb 5/12/2016 21:52'!
-parseLog: aString
-	Transcript
-		show: aString;
-		finishEntry.! !
-
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:24'!
 range :a :b =
 	// Is the next object within the range of a .. b?  Example usage: checking if an input character falls within the given range.
 	anything:x ?[a <= x & (x <= b)] -> [x]! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:32'!
-space =
-
-	char:x ?[x asciiValue <= 32] -> [x]! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:33'!
-spaces =
-
-	space*! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
-string =
-
-	anything:x ?[x isString] -> [x]! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:34'!
 symbol =
 
 	anything:x ?[x isSymbol] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
-token :t =
-
-	spaces seq(t)! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:35'!
-upper =
-
-	char:x ?[x isUppercase] -> [x]! !
+!OMeta2 methodsFor: 'private' stamp: 'pb 5/12/2016 21:52'!
+parseLog: aString
+	Transcript
+		show: aString;
+		finishEntry.! !
 
 !O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:43'!
 arrayConstr =
@@ -388,11 +385,6 @@ msgExpr =
 
 	(keywordExpr | binaryExpr) (";" cascade)*! !
 
-!O2SqueakRecognizer methodsFor: 'grammar root' stamp: 'aw 2/20/2009 01:30'!
-squeakExpr =
-
-	<expr>! !
-
 !O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:23'!
 symbol =
 
@@ -468,6 +460,11 @@ unit =
 |	"(" expr ")"
 ! !
 
+!O2SqueakRecognizer methodsFor: 'grammar root' stamp: 'aw 2/20/2009 01:30'!
+squeakExpr =
+
+	<expr>! !
+
 !O2SqueakRecognizer class methodsFor: 'class initialization' stamp: 'aw 2/20/2009 02:04'!
 initialize
 
@@ -505,12 +502,6 @@ helped = ?[didSomething]! !
 !OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 idxconsby = trans:x -> [{#IdxConsBy. x}]! !
 
-!OMeta2NullOpt methodsFor: 'initialization' stamp: 'aw 5/20/2009 12:30'!
-initialize
-
-	super initialize.
-	didSomething := false! !
-
 !OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 lookahead = trans:x -> [{#Lookahead. x}]! !
 
@@ -525,9 +516,6 @@ not = trans:x -> [{#Not. x}]! !
 
 !OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 opt = trans:x -> [{#Opt. x}]! !
-
-!OMeta2NullOpt methodsFor: 'grammar root' stamp: 'aw 5/20/2009 12:02'!
-optimize = trans:x helped -> [x]! !
 
 !OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 or = trans*:xs -> [xs addFirst: #Or; yourself]! !
@@ -546,6 +534,15 @@ trans =
 
 	{:t [t asLowercase asSymbol]:t ?[self class canUnderstand: t] apply(t):ans} -> [ans]
 |	_! !
+
+!OMeta2NullOpt methodsFor: 'initialization' stamp: 'aw 5/20/2009 12:30'!
+initialize
+
+	super initialize.
+	didSomething := false! !
+
+!OMeta2NullOpt methodsFor: 'grammar root' stamp: 'aw 5/20/2009 12:02'!
+optimize = trans:x helped -> [x]! !
 
 !OMeta2AndOrOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:46'!
 and =
@@ -636,12 +633,6 @@ expr4 =
 	// Wrap related rule sub-expressions with an 'and'.  If it's not needed, we'll optimize it away later
 	expr3*:xs -> [(OrderedCollection with: #And) addAll: xs; yourself]! !
 
-!OMeta2RuleParser methodsFor: 'initialization' stamp: 'aw 2/18/2009 15:04'!
-initialize
-
-	super initialize.
-	temps := IdentitySet new! !
-
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
 keyword :xs =
 
@@ -682,12 +673,6 @@ optIter :x =
 |	"+"		-> [{#Many1. x}]
 |	"?" ~$[	-> [{#Opt. x}]
 |	empty		-> [x]! !
-
-!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 6/11/2015 19:04'!
-rule =
-	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}] // This isn't OMeta code so we'll handoff to Squeak when the time comes
-|	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
-		-> [{#Rule. n. temps asSortedCollection. (OrderedCollection with: #Or with: x) addAll: xs; yourself}]! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:05'!
 rulePart :ruleName =
@@ -730,6 +715,18 @@ symbolLiteral =
 tokenSugar =
 
 	token('"') (~$" char)*:xs $" -> [{#App. #token. (String withAll: xs) storeString}]! !
+
+!OMeta2RuleParser methodsFor: 'initialization' stamp: 'aw 2/18/2009 15:04'!
+initialize
+
+	super initialize.
+	temps := IdentitySet new! !
+
+!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 6/11/2015 19:04'!
+rule =
+	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}] // This isn't OMeta code so we'll handoff to Squeak when the time comes
+|	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
+		-> [{#Rule. n. temps asSortedCollection. (OrderedCollection with: #Or with: x) addAll: xs; yourself}]! !
 
 !OMeta2RuleParser class methodsFor: 'testing' stamp: 'aw 2/23/2009 10:07'!
 isOMeta2Rule: aString
@@ -813,13 +810,13 @@ pred =
 
 	string:x -> [{'(self pred: ('. x. '))'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 6/24/2015 23:44'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/23/2018 03:00:30'!
 rule =
 
 	symbol:name
 	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
 	trans:body
-	-> [{name. '"Generated by OMeta... edit the rule, not this Smalltalk code"'. ' |'. self delim: temps asSortedCollection with: ' '. ' | ^ '. body}]! !
+	-> [{name. self class constOMetaGeneratorString. ' |'. self delim: temps asSortedCollection with: ' '. ' | ^ '. body}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:12'!
 set =
@@ -841,4 +838,8 @@ trans = {symbol:type apply(type asLowercase asSymbol):ans} -> [ans]! !
 
 !OMeta2RuleTranslator methodsFor: 'grammar root' stamp: 'pb 5/22/2015 19:13'!
 translate :grammarClass = trans! !
+
+!OMeta2RuleTranslator class methodsFor: 'constants' stamp: 'pb 5/23/2018 03:01:33'!
+constOMetaGeneratorString
+	^ '"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"'.! !
 O2SqueakRecognizer initialize!
