@@ -1,7 +1,12 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3122] on 2017-7-10 at 6:49:21 am'!
-'Description Tests for OMeta2'!
-!provides: 'OMeta2Tests' 2 4!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:40 am'!
+'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
+
+Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
+!provides: 'OMeta2Tests' 2 5!
 !requires: 'OMeta2Examples' 2 0 nil!
+SystemOrganization addCategory: #OMeta2Tests!
+
+
 !classDefinition: #OMeta2DebugTests category: #OMeta2Tests!
 TestCase subclass: #OMeta2DebugTests
 	instanceVariableNames: ''

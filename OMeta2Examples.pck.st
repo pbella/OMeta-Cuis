@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3329] on 2018-05-23 at 4:59:15 am'!
-'Description Example parsers for OMeta2'!
-!provides: 'OMeta2Examples' 2 7!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:51 am'!
+'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
+!provides: 'OMeta2Examples' 2 8!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 

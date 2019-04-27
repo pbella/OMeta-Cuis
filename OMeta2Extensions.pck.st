@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3329] on a 2018-05-23 at 4:59:10 am'!
-'Description Optional extensions to OMeta'!
-!provides: 'OMeta2Extensions' 2 10!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:45 am'!
+'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
+!provides: 'OMeta2Extensions' 2 11!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -103,6 +103,24 @@ Open issues:
 
 !SyntaxTreeNode commentStamp: '<historical>' prior: 0!
 A simple, generic syntax tree node which can be used for both concrete and abstract trees.!
+
+!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:29'!
+name =
+	spaces nsName! !
+
+!SyntaxTreeNode methodsFor: 'printing' stamp: 'pb 10/15/2017 19:36:10'!
+printOn: aStream
+	| title |
+	title := self class name.
+	aStream
+		nextPutAll:
+			(title first isVowel
+				ifTrue: [ 'an ' ]
+				ifFalse: [ 'a ' ]);
+		nextPutAll: title;
+		nextPut: $(;
+		print: node;
+		nextPut: $).! !
 
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 9/3/2017 19:21:52'!
 attributesFor: aSymbol
@@ -792,10 +810,6 @@ initialize
 keyword :xs =
 	token(xs) ~letterOrDigit -> [xs]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:29'!
-name =
-	spaces nsName! !
-
 !OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:33'!
 nameFirst =
 	letter! !
@@ -1121,20 +1135,6 @@ initialize
 	super initialize.
 	properties := Dictionary new.
 	children := OrderedCollection new.! !
-
-!SyntaxTreeNode methodsFor: 'printing' stamp: 'pb 10/15/2017 19:36:10'!
-printOn: aStream
-	| title |
-	title := self class name.
-	aStream
-		nextPutAll:
-			(title first isVowel
-				ifTrue: [ 'an ' ]
-				ifFalse: [ 'a ' ]);
-		nextPutAll: title;
-		nextPut: $(;
-		print: node;
-		nextPut: $).! !
 
 !SyntaxTreeNode class methodsFor: 'instance creation' stamp: 'pb 6/13/2015 02:14'!
 node: aNode

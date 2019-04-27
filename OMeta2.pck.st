@@ -1,8 +1,15 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3345] on a QDate(2018-06-21T00:00:00+00:00D1:00:00:00) at 2:03:20 pm'!
-'Description OMeta2Preload.st needs to be filed in before loading this package
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:57 am'!
+'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
-Based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified as needed to run in Cuis 4.2 2337 or later.'!
-!provides: 'OMeta2' 2 8!
+1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
+2) It is written in itself.  There is a preload file (see below) which provides a minimal Smalltalk implementation of OMeta, and then this package is overlaid on it effectively reimplementing OMeta in OMeta.
+3) As you can see from 2, it is a dynamic parser which is very compatible with the Smalltalk ethos.  In many cases, you can modify the definition of an existing parser while it is running.
+4) While it was originally written to help prototype new programming languages, it can just as easily parse just about anything you can think of from data files to network packets.
+
+Note: OMeta2Preload.st needs to be filed in before loading this package (handled by OMeta2Package class>>prePackageInstall)
+
+This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.'!
+!provides: 'OMeta2' 2 9!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -21,16 +28,6 @@ OMeta2Package class
 prePackageInstall
 	(Smalltalk classNamed: 'OMeta2Base') ifNil: [ ChangeSet fileIn: (self package fullFileName asFileEntry parent concatPathComponentsAsFile: 'OMeta2Preload.st' asPathComponents) ].! !
 OMeta2Package prePackageInstall!
-!classDefinition: #OMeta2Package category: #OMeta2!
-CodePackage subclass: #OMeta2Package
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-!classDefinition: 'OMeta2Package class' category: #OMeta2!
-OMeta2Package class
-	instanceVariableNames: ''!
-
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
@@ -182,9 +179,10 @@ OMeta2RuleTranslator is phase 3 of OMeta code compilation.  I take the parse tre
 
 OMeta implementation!
 
-!OMeta2Package class methodsFor: 'installing' stamp: 'pb 6/21/2018 14:03:17'!
-prePackageInstall
-	(Smalltalk classNamed: 'OMeta2Base') ifNil: [ ChangeSet fileIn: (self package fullFileName asFileEntry parent concatPathComponentsAsFile: 'OMeta2Preload.st' asPathComponents) ].! !
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
+name =
+
+	spaces nsName! !
 
 !OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:23'!
 char =
@@ -666,11 +664,6 @@ expr4 =
 keyword :xs =
 
 	token(xs) ~letterOrDigit -> [xs]! !
-
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
-name =
-
-	spaces nsName! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:03'!
 nameFirst =
