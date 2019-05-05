@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:40 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on QDate(2019-05-03T00:00:00+00:00D1:00:00:00) at 4:14:23 am'!
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 5!
+!provides: 'OMeta2Tests' 2 6!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -80,105 +80,122 @@ testLambdaCalculus
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y' with: #root) =   #(#('and' #('name' #x) #('name' #y))).
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y;x*y' with: #root) =   #(#('and' #('name' #x) #('name' #y)) #('mul' #('name' #x) #('name' #y)))! !
 
-!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/29/2015 21:16'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/3/2019 03:53:58'!
 testLisp
 	| lispClass |
 	lispClass := OMeta2LispExample.
-
 	"*** ev rule tests..."
-
 	"string"
 	self should: (lispClass eval: #t) = true.
 	self should: (lispClass eval: #z) = nil.
-
 	"lambda... under app rule tests"
-
 	"quote"
-	self should: (lispClass eval: #(quote 1)) = 1.
-	self should: (lispClass eval: #(quote (1 2 3))) = #(1 2 3).
-
+	self should: (lispClass eval: #(#quote 1 )) = 1.
+	self should: (lispClass eval: #(
+				#quote
+				#(1 2 3 )
+			)) = #(1 2 3 ).
 	"cond"
-	self should: (lispClass eval: #(cond nil)) = nil.
-	self should: (lispClass eval:
-		#(cond
-			((eq (quote a) (quote b)) (quote optiona))
-			((eq (quote b) (quote b)) (quote optionb))
-			(t (quote invalid)))) = #optionb.
-	self should: (lispClass eval:
-		#(cond
-			((eq (quote a) (quote b)) (quote optiona))
-			((eq (quote b) (quote 3)) (quote optionb))
-			(t (quote invalid)))) = #invalid.
-
+	self should: (lispClass eval: #(#cond nil )) = nil.
+	self should: (lispClass eval: #(
+				#cond
+				#(#(#eq #(#quote #a) #(#quote #b)) #(#quote #optiona) )
+				#(#(#eq #(#quote #b) #(#quote #b)) #(#quote #optionb) )
+				#(#t #(#quote #invalid) )
+			)) = #optionb.
+	self should: (lispClass eval: #(
+				#cond
+				#(#(#eq #(#quote #a) #(#quote #b)) #(#quote #optiona) )
+				#(#(#eq #(#quote #b) #(#quote 3)) #(#quote #optionb) )
+				#(#t #(#quote #invalid) )
+			)) = #invalid.
 	"*** app rule tests..."
-
 	"car"
-	self should: (lispClass eval: #(car (quote (1 2 3)))) = 1.
-
+	self should: (lispClass eval: #(
+				#car
+				#(#quote #(1 2 3) )
+			)) = 1.
 	"cdr"
-	self flag: #fixme.
+	QDevel fixTest.
 	"Should this be an OC?"
 	"self should: (lispClass eval: #(cdr (quote (1 2 3)))) = #(2 3)."
-	self should: (lispClass eval: #(cdr (quote (1 2 3)))) = (OrderedCollection new add: 2; add: 3; yourself).
-
+	self should:
+		(lispClass eval: #(
+				#cdr
+				#(#quote #(1 2 3) )
+			)) =
+			(OrderedCollection new
+				add: 2;
+				add: 3;
+				yourself).
 	"cons"
-	self should: (lispClass eval: #(cons (quote a) (quote b))) = #(a b).
-
+	self should: (lispClass eval: #(
+				#cons
+				#(#quote #a )
+				#(#quote #b )
+			)) = #(#a #b ).
 	"atom"
-	self should: (lispClass eval: #(atom (quote a))) = true.
-	self should: (lispClass eval: #(atom (cons (quote a) (quote b)))) = false.
-
+	self should: (lispClass eval: #(
+				#atom
+				#(#quote #a )
+			)) = true.
+	self should: (lispClass eval: #(
+				#atom
+				#(#cons #(#quote #a) #(#quote #b) )
+			)) = false.
 	"eq"
 	"a and b are both nil so eq should always return true (in a real Lisp environment, this would result in an error)"
-	self should: (lispClass eval: #(eq a a)) = true.
-	self should: (lispClass eval: #(eq a b)) = true.
+	self should: (lispClass eval: #(#eq #a #a )) = true.
+	self should: (lispClass eval: #(#eq #a #b )) = true.
 	"when quoted, you get the results you were probably expecting"
-	self should: (lispClass eval: #(eq (quote a) (quote a))) = true.
-	self should: (lispClass eval: #(eq (quote a) (quote b))) = false.
-
+	self should: (lispClass eval: #(
+				#eq
+				#(#quote #a )
+				#(#quote #a )
+			)) = true.
+	self should: (lispClass eval: #(
+				#eq
+				#(#quote #a )
+				#(#quote #b )
+			)) = false.
 	"lambda"
-	self should: (lispClass eval: #((lambda (x) (cons x x)) (quote boo))) = #(boo boo).
-
+	self should: (lispClass eval: #(
+				#(#lambda #(#x) #(#cons #x #x) )
+				#(#quote #boo )
+			)) = #(#boo #boo ).
 	"*** more complex and multiple expressions"
-	self should: (lispClass evalAll:
-		#((eq (quote a) (quote b))
-		(cons (quote x) (quote y)))) = #(x y).
-	self should: (lispClass evalAll:
-		#((cons
-			(eq (quote a) (quote b))
-			(cons (quote x) (quote y))
-			))) = #(false (x y)).
-	self should: (lispClass evalAll:
-		#(((lambda (x)
-			(cons x x)) (quote boo))
-			(eq a b))) = true.
-	self should: (lispClass evalAll:
-		#((cons
-			((lambda (x)
-				(cons x x))
-				(quote boo))
-			(eq x (quote boo))))) = #((boo boo) false).
-	self should: (lispClass eval:
-		#((lambda (x)
-			(cond
-				((eq (quote a) x) (quote optiona))
-				((eq (quote b) x) (quote optionb))
-				(t (quote invalid))))
-			(quote a))) = #optiona.
-	self should: (lispClass eval:
-		#((lambda (x)
-			(cond
-				((eq (quote a) x) (quote optiona))
-				((eq (quote b) x) (quote optionb))
-				(t (quote invalid))))
-			(quote b))) = #optionb.
-	self should: (lispClass eval:
-		#((lambda (x)
-			(cond
-				((eq (quote a) x) (quote optiona))
-				((eq (quote b) x) (quote optionb))
-				(t (quote invalid))))
-			(quote c))) = #invalid.! !
+	self should: (lispClass evalAll: #(
+				#(#eq #(#quote #a) #(#quote #b) )
+				#(#cons #(#quote #x) #(#quote #y) )
+			)) = #(#x #y ).
+	self should: (lispClass evalAll: #(
+				#(#cons #(#eq #(#quote #a) #(#quote #b)) #(#cons #(#quote #x) #(#quote #y)) )
+			)) = #(
+				false
+				#(#x #y )
+			).
+	self should: (lispClass evalAll: #(
+				#(#(#lambda #(#x) #(#cons #x #x)) #(#quote #boo) )
+				#(#eq #a #b )
+			)) = true.
+	self should: (lispClass evalAll: #(
+				#(#cons #(#(#lambda #(#x) #(#cons #x #x)) #(#quote #boo)) #(#eq #x #(#quote #boo)) )
+			)) = #(
+				#(#boo #boo )
+				false
+			).
+	self should: (lispClass eval: #(
+				#(#lambda #(#x) #(#cond #(#(#eq #(#quote #a) #x) #(#quote #optiona)) #(#(#eq #(#quote #b) #x) #(#quote #optionb)) #(#t #(#quote #invalid))) )
+				#(#quote #a )
+			)) = #optiona.
+	self should: (lispClass eval: #(
+				#(#lambda #(#x) #(#cond #(#(#eq #(#quote #a) #x) #(#quote #optiona)) #(#(#eq #(#quote #b) #x) #(#quote #optionb)) #(#t #(#quote #invalid))) )
+				#(#quote #b )
+			)) = #optionb.
+	self should: (lispClass eval: #(
+				#(#lambda #(#x) #(#cond #(#(#eq #(#quote #a) #x) #(#quote #optiona)) #(#(#eq #(#quote #b) #x) #(#quote #optionb)) #(#t #(#quote #invalid))) )
+				#(#quote #c )
+			)) = #invalid.! !
 
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/26/2015 03:34'!
 testNumber

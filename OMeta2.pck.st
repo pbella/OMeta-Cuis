@@ -1,4 +1,4 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:57 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-28T00:00:00+00:00D1:00:00:00) at 2:57:32 am'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -9,7 +9,7 @@
 Note: OMeta2Preload.st needs to be filed in before loading this package (handled by OMeta2Package class>>prePackageInstall)
 
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.'!
-!provides: 'OMeta2' 2 9!
+!provides: 'OMeta2' 2 10!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -27,6 +27,10 @@ OMeta2Package class
 !OMeta2Package class methodsFor: 'installing' stamp: 'pb 6/21/2018 14:03:17'!
 prePackageInstall
 	(Smalltalk classNamed: 'OMeta2Base') ifNil: [ ChangeSet fileIn: (self package fullFileName asFileEntry parent concatPathComponentsAsFile: 'OMeta2Preload.st' asPathComponents) ].! !
+
+!OMeta2Package class methodsFor: 'private-meta-development' stamp: 'pb 4/27/2019 23:48:34'!
+isAbstract
+	^ thisContext methodClass == self class.! !
 OMeta2Package prePackageInstall!
 !classDefinition: #OMeta2 category: #OMeta2!
 OMeta2Base subclass: #OMeta2
