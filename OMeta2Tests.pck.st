@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on QDate(2019-05-03T00:00:00+00:00D1:00:00:00) at 4:14:23 am'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3760] on QDate(2019-05-24T00:00:00+00:00D1:00:00:00) at 7:13:00 pm'!
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 6!
+!provides: 'OMeta2Tests' 2 7!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -80,13 +80,13 @@ testLambdaCalculus
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y' with: #root) =   #(#('and' #('name' #x) #('name' #y))).
 	self should: (OMeta2LambdaCalculusParserExample matchAll: 'x and y;x*y' with: #root) =   #(#('and' #('name' #x) #('name' #y)) #('mul' #('name' #x) #('name' #y)))! !
 
-!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/3/2019 03:53:58'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/24/2019 19:12:10'!
 testLisp
 	| lispClass |
 	lispClass := OMeta2LispExample.
 	"*** ev rule tests..."
 	"string"
-	self should: (lispClass eval: #t) = true.
+	self should: (lispClass eval: #t).
 	self should: (lispClass eval: #z) = nil.
 	"lambda... under app rule tests"
 	"quote"
@@ -116,7 +116,7 @@ testLisp
 				#(#quote #(1 2 3) )
 			)) = 1.
 	"cdr"
-	QDevel fixTest.
+	self flag: #fixTest.
 	"Should this be an OC?"
 	"self should: (lispClass eval: #(cdr (quote (1 2 3)))) = #(2 3)."
 	self should:
@@ -138,26 +138,26 @@ testLisp
 	self should: (lispClass eval: #(
 				#atom
 				#(#quote #a )
-			)) = true.
+			)).
 	self should: (lispClass eval: #(
 				#atom
 				#(#cons #(#quote #a) #(#quote #b) )
-			)) = false.
+			)) not.
 	"eq"
 	"a and b are both nil so eq should always return true (in a real Lisp environment, this would result in an error)"
-	self should: (lispClass eval: #(#eq #a #a )) = true.
-	self should: (lispClass eval: #(#eq #a #b )) = true.
+	self should: (lispClass eval: #(#eq #a #a )).
+	self should: (lispClass eval: #(#eq #a #b )).
 	"when quoted, you get the results you were probably expecting"
 	self should: (lispClass eval: #(
 				#eq
 				#(#quote #a )
 				#(#quote #a )
-			)) = true.
+			)).
 	self should: (lispClass eval: #(
 				#eq
 				#(#quote #a )
 				#(#quote #b )
-			)) = false.
+			)) not.
 	"lambda"
 	self should: (lispClass eval: #(
 				#(#lambda #(#x) #(#cons #x #x) )
@@ -177,7 +177,7 @@ testLisp
 	self should: (lispClass evalAll: #(
 				#(#(#lambda #(#x) #(#cons #x #x)) #(#quote #boo) )
 				#(#eq #a #b )
-			)) = true.
+			)).
 	self should: (lispClass evalAll: #(
 				#(#cons #(#(#lambda #(#x) #(#cons #x #x)) #(#quote #boo)) #(#eq #x #(#quote #boo)) )
 			)) = #(
@@ -288,10 +288,17 @@ test04ConsumedBy
 	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedByIndex) =
 (Association key: 1 value: 8) "this returns the positional index range of the beginning and end of the match"! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:59'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/9/2019 23:22:07'!
 test05PredicateAction
-	self should: (OMeta2StepByStepExample matchAll: 'testing' with: #testSemanticPredicate) = true. "notice that the predicate, being the last expression in the rule, again overrides the default return value.  This rule also introduces the assignment operator."
-	self should: (OMeta2StepByStepExample matchAll: 'testing' with: #testSemanticAction) = 'got it!!'. "we can use a semantic action to return the value we actually want.  But the match will fail if anything other than 'testing' is passed in..."! !
+	self should:
+		(OMeta2StepByStepExample
+			matchAll: 'testing'
+			with: #testSemanticPredicate).
+	"notice that the predicate, being the last expression in the rule, again overrides the default return value.  This rule also introduces the assignment operator."
+	self should:
+		(OMeta2StepByStepExample
+			matchAll: 'testing'
+			with: #testSemanticAction) = 'got it!!'.! !
 
 !OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:58'!
 test06PrioritizedChoice
