@@ -523,16 +523,16 @@ forgetEverything
 	input transitiveForgetEverything.
 	self om2streams valuesDo: [:s | s transitiveForgetEverything]! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 3/14/2016 02:39'!
-isForm: obj
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
+pvtOMetaIsForm: obj
 	^ (obj isCollection and: [obj isSequenceable and: [obj isSymbol not]])! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 5/26/2018 01:32'!
-form: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
+pvtOMetaForm: aBlock
 
 	| v origInput |
 	v := self apply: #anything.
-	self pred: (self isForm: v).
+	self pred: (self pvtOMetaIsForm: v).
 	origInput := input.
 	input := self om2streams at: v ifAbsentPut: [OM2LazyStream for: v readStream withPos: 1].
 	aBlock value.
@@ -613,8 +613,8 @@ not: aBlock
 	].
 	OM2Fail parserFailedAt: input pos! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
-ometaOr: choices
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
+pvtOMetaOr: choices
 
 	| origInput |
 	origInput := input.
@@ -627,7 +627,7 @@ ometaOr: choices
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/20/2009 14:33'!
 opt: aBlock
 
-	^ self ometaOr: {
+	^ self pvtOMetaOr: {
 		[aBlock value].
 		[nil]
 	}! !
@@ -891,7 +891,7 @@ fromToEnd
 						apply: #seq
 						withArgs: {temp1} ].
 				self apply: #char ]].
-		self ometaOr: {[
+		self pvtOMetaOr: {[
 			self
 				apply: #seq
 				withArgs: {temp1} ]. [ self apply: #end ]}.
@@ -916,7 +916,7 @@ listOf
 	| t1 t2 t3 |
 	t1 := self apply: #anything.
 	t2 := self apply: #anything.
-	^ self ometaOr: {[t3 := self apply: t1.
+	^ self pvtOMetaOr: {[t3 := self apply: t1.
 		self
 			genericMany: [self apply: #token withArgs: {t2}.
 				self apply: t1]
@@ -997,7 +997,7 @@ upper
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 application
 	| temp1 temp3 temp4 |
-	^ self ometaOr: {[
+	^ self pvtOMetaOr: {[
 		true ifTrue: [
 			self
 				apply: #token
@@ -1021,7 +1021,7 @@ application
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 args
 	| t1 |
-	^ self ometaOr: {[self apply: #exactly withArgs: {$(}.
+	^ self pvtOMetaOr: {[self apply: #exactly withArgs: {$(}.
 		t1 := self apply: #listOf withArgs: {#squeakExpression. '.'}.
 		self apply: #token withArgs: {')'}.
 		t1]. [self
@@ -1059,7 +1059,7 @@ expr
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr1
 	| t1 t2 |
-	^ self ometaOr: {[t1 := self ometaOr: {[self apply: #keyword withArgs: {'true'}]. [self apply: #keyword withArgs: {'false'}]. [self apply: #keyword withArgs: {'nil'}]}.
+	^ self pvtOMetaOr: {[t1 := self pvtOMetaOr: {[self apply: #keyword withArgs: {'true'}]. [self apply: #keyword withArgs: {'false'}]. [self apply: #keyword withArgs: {'nil'}]}.
 		{#App. #exactly. t1}]. [self apply: #application]. [self apply: #semanticAction]. [self apply: #semanticPredicate]. [self apply: #characters]. [self apply: #tokenSugar]. [self apply: #stringLiteral]. [self apply: #symbolLiteral]. [self apply: #numberLiteral]. [self apply: #characterLiteral]. [self apply: #token withArgs: {'{'}.
 		t2 := self apply: #expr.
 		self apply: #token withArgs: {'}'}.
@@ -1077,7 +1077,7 @@ expr1
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr2
 	| t1 |
-	^ self ometaOr: {[self apply: #token withArgs: {'~'}.
+	^ self pvtOMetaOr: {[self apply: #token withArgs: {'~'}.
 		t1 := self apply: #expr2.
 		{#Not. t1}]. [self apply: #token withArgs: {'&'}.
 		t1 := self apply: #expr2.
@@ -1086,9 +1086,9 @@ expr2
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr3
 	| t1 t2 |
-	^ self ometaOr: {[t1 := self apply: #expr2.
+	^ self pvtOMetaOr: {[t1 := self apply: #expr2.
 		t1 := self apply: #optIter withArgs: {t1}.
-		self ometaOr: {[self apply: #exactly withArgs: {$:}.
+		self pvtOMetaOr: {[self apply: #exactly withArgs: {$:}.
 			t2 := self apply: #nsName.
 			temps add: t2.
 			{#Set. t2. t1}]. [t1]}]. [self apply: #token withArgs: {':'}.
@@ -1129,12 +1129,12 @@ nameFirst
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nameRest
-	^ self ometaOr: {[self apply: #nameFirst]. [self apply: #digit]}! !
+	^ self pvtOMetaOr: {[self apply: #nameFirst]. [self apply: #digit]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nsName
 	| t1 |
-	^ self ometaOr: {[t1 := self apply: #firstAndRest withArgs: {#nameFirst. #nameRest}.
+	^ self pvtOMetaOr: {[t1 := self apply: #firstAndRest withArgs: {#nameFirst. #nameRest}.
 		(String withAll: t1) asSymbol]. [self apply: #exactly withArgs: {$_}.
 		^ #anything]}! !
 
@@ -1142,7 +1142,7 @@ nsName
 numberLiteral
 	| t1 t2 |
 	self apply: #spaces.
-	t1 := self ometaOr: {[self apply: #exactly withArgs: {$-}.
+	t1 := self pvtOMetaOr: {[self apply: #exactly withArgs: {$-}.
 				self apply: #spaces.
 				-1]. [1]}.
 	t2 := self
@@ -1153,7 +1153,7 @@ numberLiteral
 optIter
 	| t1 |
 	t1 := self apply: #anything.
-	^ self ometaOr: {[self apply: #token withArgs: {'*'}.
+	^ self pvtOMetaOr: {[self apply: #token withArgs: {'*'}.
 		{#Many. t1}]. [self apply: #token withArgs: {'+'}.
 		{#Many1. t1}]. [self apply: #token withArgs: {'?'}.
 		self
@@ -1163,7 +1163,7 @@ optIter
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rule
 	| t1 t2 t3 t4 |
-	^ self ometaOr: {[self
+	^ self pvtOMetaOr: {[self
 			not: [self
 					many: [self
 							super: OMeta2
@@ -1198,14 +1198,14 @@ rulePart
 	self pred: (self apply: #name)
 			= t1.
 	t2 := self apply: #expr4.
-	^ self ometaOr: {[self apply: #token withArgs: {'='}.
+	^ self pvtOMetaOr: {[self apply: #token withArgs: {'='}.
 		t3 := self apply: #expr.
 		{#And. t2. t3}]. [t2]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 semanticAction
 	| t1 |
-	self ometaOr: {[self apply: #token withArgs: {'->'}]. []}.
+	self pvtOMetaOr: {[self apply: #token withArgs: {'->'}]. []}.
 	self apply: #token withArgs: {'['}.
 	t1 := self apply: #squeakExpression.
 	self apply: #exactly withArgs: {$]}.
@@ -1221,7 +1221,7 @@ semanticPredicate
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 space
-	^ self ometaOr: {[self
+	^ self pvtOMetaOr: {[self
 			super: OMeta2
 			apply: #space
 			withArgs: #()]. [self apply: #fromTo withArgs: {'/*'. '*/'}]. [self apply: #fromTo withArgs: {'//'. Character lf asString}]. [self apply: #seq withArgs: {'//'}.
@@ -1244,7 +1244,7 @@ stringLiteral
 	| t1 |
 	self apply: #token withArgs: {''''}.
 	t1 := self
-				many: [self ometaOr: {[self apply: #exactly withArgs: {$'}.
+				many: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$'}.
 						self apply: #exactly withArgs: {$'}.
 						$']. [self
 							not: [self apply: #exactly withArgs: {$'}].
@@ -1297,14 +1297,14 @@ optimizeRule
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 arrayConstr
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self apply: #token withArgs: {'{'}.
 				self apply: #expr.
 				self
 					many: [true
 							ifTrue: [self apply: #token withArgs: {'.'}.
 								self apply: #expr]].
-				self ometaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
+				self pvtOMetaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
 				self apply: #token withArgs: {'}'}]]. [true
 			ifTrue: [self apply: #token withArgs: {'{'}.
 				self apply: #token withArgs: {'}'}]]}! !
@@ -1315,7 +1315,7 @@ arrayLit
 		ifTrue: [self apply: #token withArgs: {'#'}.
 			self apply: #token withArgs: {'('}.
 			self
-				many: [self ometaOr: {[self apply: #literal]. [self apply: #arrayLit]. [true
+				many: [self pvtOMetaOr: {[self apply: #literal]. [self apply: #arrayLit]. [true
 							ifTrue: [self apply: #spaces.
 								self apply: #tsArraySymbol]]}].
 			self apply: #token withArgs: {')'}]! !
@@ -1328,7 +1328,7 @@ binary
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 binaryExpr
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self apply: #binaryExpr.
 				self apply: #binaryMsg]]. [self apply: #unaryExpr]}! !
 
@@ -1342,41 +1342,41 @@ binaryMsg
 block
 	^ true
 		ifTrue: [self apply: #token withArgs: {'['}.
-			self ometaOr: {[true
+			self pvtOMetaOr: {[true
 					ifTrue: [self
 							many1: [true
 									ifTrue: [self apply: #token withArgs: {':'}.
 										self apply: #identifier]].
 						self apply: #token withArgs: {'|'}]]. [self apply: #empty]}.
-			self ometaOr: {[true
+			self pvtOMetaOr: {[true
 					ifTrue: [self apply: #token withArgs: {'|'}.
 						self
 							many: [self apply: #identifier].
 						self apply: #token withArgs: {'|'}]]. [self apply: #empty]}.
-			self ometaOr: {[true
+			self pvtOMetaOr: {[true
 					ifTrue: [self apply: #expr.
 						self
 							many: [true
 									ifTrue: [self apply: #token withArgs: {'.'}.
 										self apply: #expr]].
-						self ometaOr: {[true
+						self pvtOMetaOr: {[true
 								ifTrue: [self apply: #token withArgs: {'.'}.
 									self apply: #token withArgs: {'^'}.
 									self apply: #expr]]. [self apply: #empty]}]]. [true
 					ifTrue: [self apply: #token withArgs: {'^'}.
 						self apply: #expr]]. [self apply: #empty]}.
-			self ometaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
+			self pvtOMetaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
 			self apply: #token withArgs: {']'}]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 cascade
-	^ self ometaOr: {[self apply: #identifier]. [self apply: #binaryMsg]. [self apply: #keywordMsg]}! !
+	^ self pvtOMetaOr: {[self apply: #identifier]. [self apply: #binaryMsg]. [self apply: #keywordMsg]}! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 expr
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self apply: #identifier.
-				self ometaOr: {[self apply: #token withArgs: {':='}]. [self apply: #token withArgs: {'_'}]}.
+				self pvtOMetaOr: {[self apply: #token withArgs: {':='}]. [self apply: #token withArgs: {'_'}]}.
 				self apply: #expr]]. [self apply: #msgExpr]}! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
@@ -1401,7 +1401,7 @@ keywordExpr
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keywordMsg
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self apply: #keywordMsg.
 				self apply: #keywordMsgPart]]. [self apply: #keywordMsgPart]}! !
 
@@ -1415,12 +1415,12 @@ keywordMsgPart
 literal
 	^ true
 		ifTrue: [self apply: #spaces.
-			self ometaOr: {[self apply: #tsNumber]. [self apply: #tsCharacter]. [self apply: #tsString]. [self apply: #tsSymbol]}]! !
+			self pvtOMetaOr: {[self apply: #tsNumber]. [self apply: #tsCharacter]. [self apply: #tsString]. [self apply: #tsSymbol]}]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 msgExpr
 	^ true
-		ifTrue: [self ometaOr: {[self apply: #keywordExpr]. [self apply: #binaryExpr]}.
+		ifTrue: [self pvtOMetaOr: {[self apply: #keywordExpr]. [self apply: #binaryExpr]}.
 			self
 				many: [true
 						ifTrue: [self apply: #token withArgs: {';'}.
@@ -1436,9 +1436,9 @@ symbol
 	^ true
 		ifTrue: [self apply: #token withArgs: {'#'}.
 			self apply: #spaces.
-			self ometaOr: {[self apply: #tsString]. [true
+			self pvtOMetaOr: {[self apply: #tsString]. [true
 					ifTrue: [self apply: #tsKeyword.
-						self ometaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]}]! !
+						self pvtOMetaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]}]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tcBinaryChar
@@ -1450,15 +1450,15 @@ tcBinaryChar
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsArraySymbol
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self
 					many1: [self apply: #tsKeyword].
-				self ometaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]. [self apply: #tsIdentifier]}! !
+				self pvtOMetaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]. [self apply: #tsIdentifier]}! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsBinary
 	^ true
-		ifTrue: [self ometaOr: {[self apply: #exactly withArgs: {$|}]. [self apply: #tcBinaryChar]}.
+		ifTrue: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$|}]. [self apply: #tcBinaryChar]}.
 			self
 				many: [self apply: #tcBinaryChar]]! !
 
@@ -1473,7 +1473,7 @@ tsIdentifier
 	^ true
 		ifTrue: [self apply: #letter.
 			self
-				many: [self ometaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
+				many: [self pvtOMetaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsKeyword
@@ -1489,7 +1489,7 @@ tsNatural
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsNumber
 	^ true
-		ifTrue: [self ometaOr: {[self apply: #exactly withArgs: {$+}]. [self apply: #exactly withArgs: {$-}]. [self apply: #empty]}.
+		ifTrue: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$+}]. [self apply: #exactly withArgs: {$-}]. [self apply: #empty]}.
 			self apply: #tsNatural]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
@@ -1497,7 +1497,7 @@ tsString
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$'}.
 			self
-				many: [self ometaOr: {[true
+				many: [self pvtOMetaOr: {[true
 							ifTrue: [self apply: #exactly withArgs: {$'}.
 								self apply: #exactly withArgs: {$'}]]. [true
 							ifTrue: [self
@@ -1510,7 +1510,7 @@ tsSymbol
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$#}.
 			self apply: #spaces.
-			self ometaOr: {[self apply: #tsString]. [self apply: #tsArraySymbol]}]! !
+			self pvtOMetaOr: {[self apply: #tsString]. [self apply: #tsArraySymbol]}]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 unaryExpr
@@ -1521,7 +1521,7 @@ unaryExpr
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 unit
-	^ self ometaOr: {[self apply: #literal]. [self apply: #identifier]. [self apply: #arrayLit]. [self apply: #arrayConstr]. [self apply: #block]. [true
+	^ self pvtOMetaOr: {[self apply: #literal]. [self apply: #identifier]. [self apply: #arrayLit]. [self apply: #arrayConstr]. [self apply: #block]. [true
 			ifTrue: [self apply: #token withArgs: {'('}.
 				self apply: #expr.
 				self apply: #token withArgs: {')'}]]}! !
@@ -1654,9 +1654,9 @@ setHelped
 !OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 trans
 	| t1 t2 |
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [self
-					form: [true
+					pvtOMetaForm: [true
 							ifTrue: [t1 := self apply: #anything.
 								t1 := t1 asLowercase asSymbol.
 								self
@@ -1668,7 +1668,7 @@ trans
 !OMeta2AndOrOpt methodsFor: 'private-ometa2preload'!
 and
 	| t1 t2 |
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [t2 := self apply: #trans.
 				self apply: #end.
 				self apply: #setHelped.
@@ -1680,7 +1680,7 @@ and
 !OMeta2AndOrOpt methodsFor: 'private-ometa2preload'!
 or
 	| t1 t2 |
-	^ self ometaOr: {[true
+	^ self pvtOMetaOr: {[true
 			ifTrue: [t2 := self apply: #trans.
 				self apply: #end.
 				self apply: #setHelped.
@@ -1694,9 +1694,9 @@ transInside
 	| t1 t2 t3 t4 |
 	^ true
 		ifTrue: [t2 := self apply: #anything.
-			self ometaOr: {[true
+			self pvtOMetaOr: {[true
 					ifTrue: [self
-							form: [true
+							pvtOMetaForm: [true
 									ifTrue: [self apply: #exactly withArgs: {t2}.
 										t3 := self apply: #transInside withArgs: {t2}]].
 						t1 := self apply: #transInside withArgs: {t2}.
@@ -1727,7 +1727,7 @@ and
 app
 	| t1 t2 |
 	t1 := self apply: #symbol.
-	^ self ometaOr: {[t2 := self
+	^ self pvtOMetaOr: {[t2 := self
 					many1: [self apply: #anything].
 		t2 := self delim: t2 with: '. '.
 		{'(self apply: '. t1 storeString. ' withArgs: {'. t2. '})'}]. [{'(self apply: '. t1 storeString. ')'}]}! !
@@ -1755,7 +1755,7 @@ delim: t1 with: t2
 form
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self form: ['. t1. '])'}! !
+	^ {'(self pvtOMetaForm: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 idxconsby
@@ -1799,7 +1799,7 @@ or
 	t1 := self
 				many: [t2 := self apply: #trans.
 					{'['. t2. ']'}].
-	^ {'(self ometaOr: {'. self delim: t1 with: '. '. '})'}! !
+	^ {'(self pvtOMetaOr: {'. self delim: t1 with: '. '. '})'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 pred
@@ -1844,7 +1844,7 @@ superapp
 trans
 	| t1 t2 |
 	self
-		form: [t1 := self apply: #symbol.
+		pvtOMetaForm: [t1 := self apply: #symbol.
 			t2 := self apply: t1 asLowercase asSymbol].
 	^ t2! !
 
@@ -1868,9 +1868,9 @@ flatten
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!
 iFlatten
 	| t1 |
-	^ self ometaOr: {[t1 := self apply: #string.
+	^ self pvtOMetaOr: {[t1 := self apply: #string.
 		ws nextPutAll: t1]. [self
-			form: [self
+			pvtOMetaForm: [self
 					many: [self apply: #iFlatten]]]}! !
 
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!

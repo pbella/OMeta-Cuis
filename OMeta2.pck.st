@@ -9,7 +9,7 @@
 Note: OMeta2Preload.st needs to be filed in before loading this package (handled by OMeta2Package class>>prePackageInstall)
 
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.'!
-!provides: 'OMeta2' 2 10!
+!provides: 'OMeta2' 2 11!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -794,7 +794,7 @@ delim: aSequenceableCollection  with: anObject
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:09'!
 form =
 
-	trans:x -> [{'(self form: ['. x. '])'}]! !
+	trans:x -> [{'(self pvtOMetaForm: ['. x. '])'}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:09'!
 idxconsby =
@@ -829,7 +829,7 @@ opt =
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:11'!
 or =
 
-	(trans:x -> [{'['. x. ']'}])*:xs -> [{'(self ometaOr: {'. self delim: xs with: '. '. '})'}]! !
+	(trans:x -> [{'['. x. ']'}])*:xs -> [{'(self pvtOMetaOr: {'. self delim: xs with: '. '. '})'}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:11'!
 pred =
