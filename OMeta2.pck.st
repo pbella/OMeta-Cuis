@@ -24,9 +24,16 @@ OMeta2Package class
 	instanceVariableNames: ''!
 
 
-!OMeta2Package class methodsFor: 'installing' stamp: 'pb 6/21/2018 14:03:17'!
+!OMeta2Package class methodsFor: 'installing' stamp: 'pb 10/15/2019 06:00'!
 prePackageInstall
-	(Smalltalk classNamed: 'OMeta2Base') ifNil: [ ChangeSet fileIn: (self package fullFileName asFileEntry parent concatPathComponentsAsFile: 'OMeta2Preload.st' asPathComponents) ].! !
+	(Smalltalk classNamed: 'OMeta2Base') ifNil: [
+		"If warnings are enabled they will currently likely overwhelm the transcript"
+		Preferences
+			setPreference: #warnAboutNonLocalReturnsInExceptionHandlers
+			toValue: false.
+		Transcript show: 'Loading OMeta2Preload.st'; finishEntry.
+		ChangeSet fileIn: (self package fullFileName asFileEntry parent concatPathComponentsAsFile: 'OMeta2Preload.st' asPathComponents).
+		Transcript show: 'Finished loading OMeta2Preload.st'; finishEntry ].! !
 
 !OMeta2Package class methodsFor: 'private-meta-development' stamp: 'pb 4/27/2019 23:48:34'!
 isAbstract

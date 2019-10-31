@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3784] on QDate(2019-06-08T00:00:00+00:00D1:00:00:00) at 6:26:01 pm'!
+'From Cuis 5.0 [latest update: #3916] on QDate(2019-10-18) at 5:14:40 am'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 13!
+!provides: 'OMeta2Extensions' 2 14!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -540,7 +540,7 @@ apply: aRule withArgs: args
 		apply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 6/12/2015 14:58'!
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'jmv 10/16/2019 15:46:47'!
 seq
 	| xs |
 	xs := self apply: #anything.
@@ -554,7 +554,7 @@ seq
 	^ xs ] on: Exception
 		do: [ :e |
 			(xs isKindOf: Collection)
-				ifTrue: [ e signal
+				ifTrue: [ e pass
 					"no idea what the problem is" ]
 				ifFalse: [ OMeta2DebugError new signal: 'Not a sequence: ' , xs asString
 					"we were probably passed in a character, number, etc..." ]].! !
@@ -628,7 +628,7 @@ initialize
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'private' stamp: 'pb 6/12/2015 07:18'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'jmv 10/16/2019 15:47:21'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
@@ -643,10 +643,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		withArgs: args.
 	ans := matcher apply: aRule.
 	matcher apply: #end.
-	^ ans ]
+	]
 		on: OM2Fail
 		do: [ :e | | curr prev prevPrev |
-			debugging ifFalse: [ e signal ].
+			debugging ifFalse: [ e pass ].
 			curr := input.
 			prev := nil.
 			prevPrev := nil.
@@ -674,7 +674,8 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 			Transcript
 				show: matcher om2DebugPc asString;
 				finishEntry.
-			^ ans ].! !
+			].
+	^ ans! !
 
 !OMeta2Debug class methodsFor: 'private' stamp: 'pb 2/3/2016 21:33'!
 ometa2RuleTranslatorClass

@@ -711,7 +711,7 @@ matcherOn: aReadStream
 	matcher := self new initInput: input.
 	^ matcher! !
 
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 14:14'!
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'jmv 10/16/2019 15:47:15'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 
 	| input matcher ans|
@@ -721,10 +721,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		matcher apply: #empty withArgs: args.
 		ans := matcher apply: aRule.
 		matcher apply: #end.
-		^ ans
 	] on: OM2Fail do: [:e |
 		| curr prev prevPrev |
-		debugging ifFalse: [e signal].
+		debugging ifFalse: [e pass].
 		curr := input.
 		prev := nil.
 		prevPrev := nil.
@@ -746,8 +745,8 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		matcher apply: #empty withArgs: args.
 		ans := matcher apply: aRule.
 		matcher apply: #end.
-		^ ans
-	]! !
+	].
+	^ ans! !
 
 !OMeta2Base class methodsFor: 'matching' stamp: 'pb 3/14/2016 02:39'!
 match: anObject with: aRule
