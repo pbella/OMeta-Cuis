@@ -415,12 +415,13 @@ parserClass
 
 	^ self class! !
 
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:11'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/14/2020 01:29'!
 parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
 
 	^ [
 		| parseTree structuredCode code node |
 		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
+		parseTree := aClass ometa2OptimizerClass match: parseTree with: #optimizeRule.
 		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
 		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
 		node := Parser new parse: code readStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
