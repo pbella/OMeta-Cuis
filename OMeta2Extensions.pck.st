@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #3916] on QDate(2019-10-18) at 5:14:40 am'!
+'From Cuis 5.0 [latest update: #4119] on QDate(2020-04-25) at 5:28:53 am'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 14!
+!provides: 'OMeta2Extensions' 2 15!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -55,14 +55,14 @@ OMeta2 subclass: #OMeta2Debug
 OMeta2Debug class
 	instanceVariableNames: 'LastMatcher'!
 
-!classDefinition: #OMeta2ExtendedParser category: #OMeta2Extensions!
-OMeta2Debug subclass: #OMeta2ExtendedParser
+!classDefinition: #OMeta2ExtendedSmalltalkParser category: #OMeta2Extensions!
+OMeta2Debug subclass: #OMeta2ExtendedSmalltalkParser
 	instanceVariableNames: 'ast curNode temps blockLevel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Extensions'!
-!classDefinition: 'OMeta2ExtendedParser class' category: #OMeta2Extensions!
-OMeta2ExtendedParser class
+!classDefinition: 'OMeta2ExtendedSmalltalkParser class' category: #OMeta2Extensions!
+OMeta2ExtendedSmalltalkParser class
 	instanceVariableNames: ''!
 
 !classDefinition: #SyntaxTreeNode category: #OMeta2Extensions!
@@ -94,7 +94,7 @@ To use, simply set this class as your parser's parent class.  Once you're happy 
 
 todo: infinite recursion detection!
 
-!OMeta2ExtendedParser commentStamp: '<historical>' prior: 0!
+!OMeta2ExtendedSmalltalkParser commentStamp: '<historical>' prior: 0!
 This is a more full-featured OMeta parser that renders to a labelled syntax tree.  While significantly larger than the default parser, it will allow for much more flexibility.
 
 Open issues:
@@ -104,7 +104,7 @@ Open issues:
 !SyntaxTreeNode commentStamp: '<historical>' prior: 0!
 A simple, generic syntax tree node which can be used for both concrete and abstract trees.!
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:29'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:29'!
 name =
 	spaces nsName! !
 
@@ -140,12 +140,11 @@ disableFormatAndConvert! !
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 9/29/2017 00:04:55'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 4/25/2020 04:01:29'!
 privateStyle
 	| ranges |
-	ranges := [
 	useSmalltalkStyler := false.
-	self class rangeParser rangesFor: formattedText ]
+	ranges := [ self class rangeParserClass extractRangesFromSmalltalkSourceCode: formattedText ]
 		on: OM2Fail
 		do: [ ].
 	ranges ifNil: [
@@ -254,12 +253,14 @@ attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
 			each ~= #normal ifTrue: [ answer := answer , {TextEmphasis perform: each} ]]].
 	^ answer.! !
 
-!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 01:19'!
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 4/22/2020 02:50:53'!
 attributesFor: aSymbol
-	textAttributes ifNil: [ textAttributes := self initialTextAttributes ].
-	^ textAttributes
+	^ (textAttributes ifNil: [ textAttributes := self initialTextAttributes ])
 		at: aSymbol
-		ifAbsent: (self attributeArrayForColor: Color black emphasis: nil).! !
+		ifAbsent:
+			(self
+				attributeArrayForColor: Color black
+				emphasis: nil).! !
 
 !SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 5/23/2018 01:53:53'!
 initialTextAttributes
@@ -401,29 +402,25 @@ initialTextAttributes
 					};
 				yourself ].! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 6/9/2017 18:16:15'!
-rangeParser
-	^ OMeta2ExtendedParser! !
+!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 4/25/2020 03:48:35'!
+rangeParserClass
+	^ OMeta2ExtendedSmalltalkParser! !
 
 !SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
 resetAttributes
 	textAttributes := nil! !
 
-!SHTextStylerOtherOMeta2 methodsFor: 'private' stamp: 'pb 10/1/2017 15:22:36'!
+!SHTextStylerOtherOMeta2 methodsFor: 'private' stamp: 'pb 4/25/2020 04:01:29'!
 privateStyle
-
 	| ranges |
-	ranges := [
 	useSmalltalkStyler := true.
-	self class rangeParser rangesFor: formattedText ]
-		on: OM2Fail
-		do: [ ].
+	ranges := self class rangeParserClass extractRangesFromSmalltalkSourceCode: formattedText.
 	ranges ifNil: [ | idx |
 		useSmalltalkStyler := false.
 		idx := formattedText indexOf: Character lf.
-		idx > 0
+		ranges := idx > 0
 			ifTrue: [
-				ranges := {
+				{
 					SHRange
 						start: 1
 						end: idx - 1
@@ -434,7 +431,7 @@ privateStyle
 						type: #normal
 				} ]
 			ifFalse: [
-				ranges := {
+				{
 					SHRange
 						start: 1
 						end: formattedText size
@@ -470,9 +467,9 @@ initialTextAttributes
 					emphasis: nil);
 		yourself.! !
 
-!SHTextStylerOtherOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 9/3/2017 18:02:16'!
-rangeParser
-	^ OMeta2ExtendedParser! !
+!SHTextStylerOtherOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 4/25/2020 03:48:35'!
+rangeParserClass
+	^ OMeta2ExtendedSmalltalkParser! !
 
 !OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 6/20/2016 21:54'!
 debugNextSequenceId
@@ -513,7 +510,7 @@ initialize
 	transLog := OrderedCollection new.
 	transLogId := 1.! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 10/1/2017 15:25:03'!
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 05:08:14'!
 apply: aRule
 	input class = OM2EndOfStream ifTrue: [
 		om2Eos > 100000
@@ -559,7 +556,7 @@ seq
 				ifFalse: [ OMeta2DebugError new signal: 'Not a sequence: ' , xs asString
 					"we were probably passed in a character, number, etc..." ]].! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 10/1/2017 15:25:43'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 debugFinishTrans: name id: transId
 	self debugShouldTrace ifTrue: [
 		(om2Trans at: transId)
@@ -568,7 +565,7 @@ debugFinishTrans: name id: transId
 				put: true;
 			
 				at: 'pos'
-				put: self pos ].! !
+				put: self ometaPositionInStream ].! !
 
 !OMeta2Debug methodsFor: 'private' stamp: 'pb 6/15/2015 05:53'!
 debugLogTrace
@@ -579,7 +576,7 @@ debugLogTrace
 debugShouldTrace
 	^ false! !
 
-!OMeta2Debug methodsFor: 'private' stamp: 'pb 1/8/2018 14:48:56'!
+!OMeta2Debug methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 debugStartTrans: name
 	self debugShouldTrace ifTrue: [
 		om2TransId := om2TransId + 1.
@@ -595,7 +592,7 @@ debugStartTrans: name
 						put: false;
 					
 						at: 'pos'
-						put: self pos;
+						put: self ometaPositionInStream;
 					yourself).
 		^ om2TransId ].! !
 
@@ -628,13 +625,13 @@ initialize
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'private' stamp: 'jmv 10/16/2019 15:47:21'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
 		for: aReadStream
 		withPos: 1.
-	matcher := self new initInput: input.
+	matcher := self new initOMetaInputStream: input.
 	matcher om2DebugRoot: aRule.
 	LastMatcher := matcher.
 	[
@@ -642,8 +639,7 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		apply: #empty
 		withArgs: args.
 	ans := matcher apply: aRule.
-	matcher apply: #end.
-	]
+	matcher apply: #end ]
 		on: OM2Fail
 		do: [ :e | | curr prev prevPrev |
 			debugging ifFalse: [ e pass ].
@@ -654,34 +650,27 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 				prevPrev := prev.
 				prev := curr.
 				curr := curr basicTail ].
-			curr := prevPrev
-				ifNil: [ prev ]
-				ifNotNil: [ prevPrev ].
-			"fixme - does this add any value?
-		self inform: 'will halt each time matcher reaches ', curr printString.
-		"
+			curr := prevPrev ifNil: [ prev ].
 			matcher
-				initInput: input;
-				forgetEverything.
-			curr ifNil: [ self error: 'you''ve found a bug -- please tell Alex' ].
+				initOMetaInputStream: input;
+				ometaForgetEverything.
+			curr ifNil: [ self error: 'you''ve found a bug -- please tell Phil' ].
 			curr become: (OM2StreamDebugger for: curr copy).
-			matcher haltingPoint: curr.
-			matcher
+			matcher ometaHaltingPoint: curr;
 				apply: #empty
 				withArgs: args.
 			ans := matcher apply: aRule.
 			matcher apply: #end.
 			Transcript
 				show: matcher om2DebugPc asString;
-				finishEntry.
-			].
-	^ ans! !
+				finishEntry ].
+	^ ans.! !
 
 !OMeta2Debug class methodsFor: 'private' stamp: 'pb 2/3/2016 21:33'!
 ometa2RuleTranslatorClass
 	^ OMeta2DebugRuleTranslator.! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:16:13'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 application =
 	@<"^" name:rule>:superIdx args:as	-> [(self newNode: #SuperApp)
 				properties: {#op -> rule.
@@ -689,7 +678,7 @@ application =
 							self newRange: superIdx type: #blockTempVar};
 				yourself]
 |	@<name:grm $. nsName:rule>:app1Idx	 @<args:as>:app2Idx -> [(self newNode: #App)
-				properties: {#op -> #foreign.
+				properties: {#op -> #pvtOMetaForeignParser.
 					#parm -> grm.
 					#huh1 -> ('#', rule) asSymbol.
 					#huh2 -> as.
@@ -699,30 +688,19 @@ application =
 					#parm -> as.
 					self newRange: app1Idx type: #blockTempVar with: app2Idx type: #externalFunctionCallingConvention}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:43'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:43'!
 args =
 	// fixme - best way to style?
 	$( listOf(#squeakExpression. '.'):ans ")" -> [ans]
 |	~$( -> [#()]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/26/2015 01:45'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 4/22/2020 02:52:50'!
 blockEnter
-	blockLevel := blockLevel+1.
-	"Transcript show: 'bl: ', blockLevel asString; finishEntry"! !
+	blockLevel := blockLevel+1.! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:11:01'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 4/22/2020 02:52:26'!
 blockLevelAndLeave
 	| retVal |
-	"
-	retVal := #blockStart1.
-	blockLevel > 1 ifTrue: [
-		blockLevel > 2
-			ifTrue: [
-				blockLevel > 3
-					ifTrue: [ retVal := #blockStart4 ]
-					ifFalse: [ retVal := #blockStart3 ]]
-			ifFalse: [ retVal := #blockStart2 ]].
-		"
 	retVal := blockLevel caseOf: {
 		[ 1 ] -> [ #blockStart1 ].
 		[ 2 ] -> [ #blockStart2 ].
@@ -732,26 +710,26 @@ blockLevelAndLeave
 	blockLevel := blockLevel - 1.
 	^ retVal.! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:16:45'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:16:45'!
 characterLiteral =
 	@<spaces $$ char:c>:cIdx -> [(self newNode: #App) properties: { #op -> #exactly.
 																#parm -> c storeString.
 																self newRange: cIdx type: #character}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:16:54'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:16:54'!
 characters =
 	@<"``" (~($' $') char)*:xs $' $'>:charIdx -> [(self newNode: #App) properties:
 							{ #op -> #seq.
 							#parm -> (String withAll: xs) storeString.
 							self newRange:  charIdx type: #character}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:17:11'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:17:11'!
 expr =
 	// Wrap the sub-expressions with an 'or'.  If it's not needed, we'll optimize it away later.
 	// fixme - how to best highlight OR...
 	listOf(#expr4. '|'):xs -> [(self newNode: #Or) addChildren: xs]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:22'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:22'!
 expr1 =
 	// Handle any syntactic sugar and parse the final expression
 	@<(keyword('true') | keyword('false') | keyword('nil')):lit>:litIdx
@@ -776,14 +754,14 @@ expr1 =
 											self newRange: blkStart and: blkEnd type: self blockLevelAndLeave}]
 |	@<"(">:blkStart expr:e @<")">:blkEnd -> [e] // fixme - syntax highlighting! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:17:54'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:17:54'!
 expr2 =
 	// Handle lookahead
 	@<"~">:xIdx expr2:x -> [(self newNode: #Not) properties: {#op -> x. self newRange: xIdx type: #blockArg}] 
 |	@<"&">:xIdx expr2:x -> [(self newNode: #Lookahead) properties: {#op -> x. self newRange: xIdx type: #blockArg}] 
 |	expr1! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:10'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:10'!
 expr3 =
 	// Handle arity and variable assignment
 	expr2:x optIter(x):x
@@ -793,12 +771,12 @@ expr3 =
 |	":" nsName:n [temps add: n] -> [(self newNode: #Set) properties: {#op -> n};
 										addChild: ((self newNode: #App) properties: {#op -> #anything})]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:17'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:17'!
 expr4 =
 	// Wrap related rule sub-expressions with an 'and'.  If it's not needed, we'll optimize it away later
 	expr3*:xs -> [(self newNode: #And) addChildren: xs]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/25/2015 00:43'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 6/25/2015 00:43'!
 initialize
 	super initialize.
 	ast := self newNode: #rule.
@@ -807,23 +785,23 @@ initialize
 	curNode properties at: #comments put: OrderedCollection new.
 	temps := IdentitySet new.! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:25'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:25'!
 keyword :xs =
 	token(xs) ~letterOrDigit -> [xs]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:33'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:33'!
 nameFirst =
 	letter! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:39'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:39'!
 nameRest =
 	nameFirst | digit! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/14/2015 17:29'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 6/14/2015 17:29'!
 newNode: nodeType
 	^ SyntaxTreeNode node: nodeType.! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:58'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 6/17/2015 19:58'!
 newRange: assoc and: otherAssoc type: type
 	"create assoc to be use as a range property.  this currently covers every use case except comments in the space rule.  fixme... not currently used"
 	| passoc |
@@ -832,7 +810,7 @@ newRange: assoc and: otherAssoc type: type
 	^ passoc
 ! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:51'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:51'!
 newRange: assoc type: type
 	"create assoc to be use as a range property.  this currently covers every use case except comments in the space rule"
 	^ #rangeIdxList ->
@@ -844,7 +822,7 @@ newRange: assoc type: type
 					type: type);
 			yourself).! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:58'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:22:58'!
 newRange: assoc type: type with: assoc2 type: type2
 	"create assoc to be use as a range property.  this currently covers every use case except comments in the space rule"
 	^ #rangeIdxList ->
@@ -861,20 +839,20 @@ newRange: assoc type: type with: assoc2 type: type2
 					type: type2);
 			yourself).! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:59'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:18:59'!
 nsName =
 	firstAndRest(#nameFirst. #nameRest):xs -> [(String withAll: xs) asSymbol]
 |	$_ -> [#anything]
 ! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:06'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:06'!
 numberLiteral =
 	@<spaces ($- spaces -> [-1] | empty -> [1]):sign digit+:ds>:numIdx
 		-> [(self newNode: #App) properties: {#op -> #exactly.
 				#parm -> (sign * (String withAll: ds) asNumber) storeString.
 				self newRange: numIdx type: #number}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:19'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:19'!
 optIter :x =
 	@<"*">:arManyIdx		-> [(self newNode: #Many) properties: {#parm -> x.
 																	self newRange: arManyIdx type: #blockArg}]
@@ -884,7 +862,7 @@ optIter :x =
 																	self newRange: arOptIdx type: #blockArg}]
 |	empty	-> [x]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:30'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:30'!
 rulePart :ruleName =
 	// testing
 	[nil]:retVal
@@ -893,32 +871,32 @@ rulePart :ruleName =
 		|	empty			-> [retVal := curNode addChild: b1]
 		)! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:38'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:38'!
 semanticAction =
 	@<"->"? "[">:saIdx1 squeakExpression:e @<$]>:saIdx2 -> [(self newNode: #Act) properties: {#op -> e. self newRange: saIdx1 and: saIdx2 type: #patternArg}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:59'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:19:59'!
 semanticPredicate =
 	@<"?[">:spIdx1 squeakExpression:e @<$]>:spIdx2 -> [(self newNode: #Pred) properties: {#op -> e. self newRange: spIdx1 and: spIdx2 type: #patternArg}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:05'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:05'!
 space =
 	^space
 	| @<fromTo('/*'. '*/')>:longCommentIdx -> [(curNode properties at: #comments) add: (SHRange start: longCommentIdx key end: longCommentIdx value - 1 type: #comment)]
 	| @<fromToEnd('//')>:commentIdx -> [(curNode properties at: #comments) add: (SHRange start: commentIdx key end: commentIdx value - 1 type: #comment)]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:15'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:15'!
 squeakExpression = @<O2SqueakRecognizer.squeakExpr:ans>:sqIdx spaces
 							-> [(self newNode: #Smalltalk) properties: {#parm -> ans.
 									self newRange: sqIdx type: #externalFunctionCallingConvention}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:23'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:23'!
 stringLiteral =
 	@<"'" ($' $' -> [$'] | ~$' char)*:xs $'>:strIdx -> [(self newNode: #App) properties: 											{#op -> #exactly.
 											 #parm ->  (String withAll: xs) storeString.
 											self newRange: strIdx type: #text}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:14:20'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:14:20'!
 symbolLiteral =
 	// TODO: make this accept, e.g., #foo:bar:
 	@<"#" nsName:s>:symIdx -> [(self newNode: #App) properties: {
@@ -927,7 +905,7 @@ symbolLiteral =
 											self newRange: symIdx type: #symbol
 											}]! !
 
-!OMeta2ExtendedParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:31'!
+!OMeta2ExtendedSmalltalkParser methodsFor: 'private' stamp: 'pb 5/23/2018 03:20:31'!
 tokenSugar =
 	@<token('"') (~$" char)*:xs $">:tokIdx -> [(self newNode: #App) properties: {
 															#op -> #token.
@@ -935,127 +913,68 @@ tokenSugar =
 															self newRange: tokIdx type: #stringSymbol
 															}]! !
 
-!OMeta2ExtendedParser methodsFor: 'grammar' stamp: 'pb 6/16/2015 23:10'!
-isSmalltalkCode = ~(^space* nsName expr4 "=") <char*>:squeakCode -> [true]
-		|	anything* -> [false]
-		// fixme - inefficient way to test! !
+!OMeta2ExtendedSmalltalkParser methodsFor: 'grammar' stamp: 'pb 4/25/2020 03:47:08'!
+isSmalltalkCode =
+	~(^space* nsName expr4 "=") <char*>:squeakCode -> [true]! !
 
-!OMeta2ExtendedParser methodsFor: 'grammar' stamp: 'pb 5/23/2018 03:15:45'!
-rule = ~(^space* nsName expr4 "=") <char*>:squeakCode -> [self newNode: #Squeak]
-											//-> [{#Squeak. squeakCode}]
-											// This isn't OMeta code so we'll handoff to Squeak when the time comes
-|	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
+!OMeta2ExtendedSmalltalkParser methodsFor: 'grammar' stamp: 'pb 4/22/2020 02:40:20'!
+rule =
+	~(^space* nsName expr4 "=") <char*>:squeakCode -> [self newNode: #Squeak]
+	//-> [{#Squeak. squeakCode}]
+	// This isn't OMeta code so we'll handoff to Squeak when the time comes
+	|	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
 		-> [ curNode := (curNode node: #Rule) properties: {#temps -> temps asSortedCollection.
 					#n -> n};
 					addChild: ((self newNode: #Or) addChild: x; addChildren: xs)]! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 5/4/2016 15:10'!
-rangesFor: source
-	| result |
-	(self
-		matchAll: source
-		with: #isSmalltalkCode)
-		ifTrue: [ ^ nil ]
-		ifFalse: [
-			result := OrderedCollection new.
-			(self
-				matchAll: source
-				with: #rule) do: [ :ea |
-				self
-					recurseForRanges: ea
-					into: result ].
-			^ result sort: [ :a :b |
-				a start < b start ]].! !
+!OMeta2ExtendedSmalltalkParser class methodsFor: 'extract' stamp: 'pb 4/25/2020 04:01:29'!
+extractRangesFromSmalltalkSourceCode: source
+	^ (self isSmalltalkSourceCode: source) ifFalse: [ | result |
+		result := OrderedCollection new.
+		(self
+			matchAll: source
+			with: #rule) do: [ :ea |
+			self
+				pvtRecurseForRanges: ea
+				into: result ].
+		result sort: [ :a :b |
+			a start < b start ]].! !
 
-!OMeta2ExtendedParser class methodsFor: 'private' stamp: 'pb 6/25/2015 05:10'!
-recurseForRanges: ea into: result
-	| p |
-	p := ea properties.
-	p
-		at: #rangeIdxList
-		ifPresent: [ :ranges |
-			result addAll: ranges ].
-	p
-		at: #comments
-		ifPresent: [ :ranges |
-			result addAll: ranges ].
-	p
-		at: #op
-		ifPresent: [ :op |
-			(op isKindOf: SyntaxTreeNode) ifTrue: [
-				op do: [ :opNode |
-					self
-						recurseForRanges: opNode
-						into: result ]]].
-	p
-		at: #parm
-		ifPresent: [ :parm |
-			(parm isKindOf: SyntaxTreeNode) ifTrue: [
-				parm do: [ :parmNode |
-					self
-						recurseForRanges: parmNode
-						into: result ]]].
-	result.! !
-
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:10'!
-scratchParserNew
-	^ self matchAll: ((self methodDict at: #rulePart) getSource) with: #rule! !
-
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:10'!
-scratchParserStock
-	"Stock OMeta rule parser"
+!OMeta2ExtendedSmalltalkParser class methodsFor: 'testing' stamp: 'pb 4/25/2020 03:45:25'!
+isSmalltalkSourceCode: aString
 	^ self
-		matchAll: (self methodDict at: #rulePart) getSource
-		with: #rule.! !
+		matchAll: aString
+		with: #isSmalltalkCode
+		ifFail: [ false ].! !
 
-!OMeta2ExtendedParser class methodsFor: 'private-wip' stamp: 'pb 5/4/2016 15:11'!
-scratchRecurseSHRange
-	| recurseForRanges result |
-	result := OrderedCollection new.
-	recurseForRanges := [ :ea :useResult | | p |
-	p := ea properties.
-	p
-		at: #rangeIdxList
-		ifPresent: [ :ranges |
-			useResult addAll: ranges ].
-	useResult ].
-	self demo do: [ :ea | | p |
-		p := ea properties.
-		p
+!OMeta2ExtendedSmalltalkParser class methodsFor: 'private' stamp: 'pb 4/25/2020 03:58:59'!
+pvtRecurseForRanges: ea into: result
+	ea properties
+		
 			at: #rangeIdxList
 			ifPresent: [ :ranges |
-				result addAll: ranges ].
-		p at: #comments ifPresent: [:ranges|
-			result addAll: ranges].
-		p
+				result addAll: ranges ];
+		
+			at: #comments
+			ifPresent: [ :ranges |
+				result addAll: ranges ];
+		
 			at: #op
 			ifPresent: [ :op |
 				(op isKindOf: SyntaxTreeNode) ifTrue: [
-					recurseForRanges
-						value: op
-						value: result ]].
-		p
+					op do: [ :opNode |
+						self
+							pvtRecurseForRanges: opNode
+							into: result ]]];
+		
 			at: #parm
 			ifPresent: [ :parm |
 				(parm isKindOf: SyntaxTreeNode) ifTrue: [
-					recurseForRanges
-						value: parm
-						value: result ]].
-		result ].
-	^ result sort: [:a :b| a start<b start].! !
-
-!SyntaxTreeNode methodsFor: 'adding' stamp: 'pb 6/12/2015 21:15'!
-addChild: aNode
-	children add: aNode! !
-
-!SyntaxTreeNode methodsFor: 'adding' stamp: 'pb 6/13/2015 02:21'!
-addChildren: nodes
-	nodes do: [ :curNode |
-		children add: curNode ].! !
-
-!SyntaxTreeNode methodsFor: 'converting' stamp: 'pb 6/14/2015 02:42'!
-asArray
-	^ self collect: [:ea| ea]! !
+					parm do: [ :parmNode |
+						self
+							pvtRecurseForRanges: parmNode
+							into: result ]]].
+	^ result.! !
 
 !SyntaxTreeNode methodsFor: 'accessing' stamp: 'pb 6/13/2015 19:10'!
 at: key
@@ -1081,6 +1000,44 @@ properties: propColl
 		self
 			at: prop key
 			put: prop value ].! !
+
+!SyntaxTreeNode methodsFor: 'adding' stamp: 'pb 6/12/2015 21:15'!
+addChild: aNode
+	children add: aNode! !
+
+!SyntaxTreeNode methodsFor: 'adding' stamp: 'pb 6/13/2015 02:21'!
+addChildren: nodes
+	nodes do: [ :curNode |
+		children add: curNode ].! !
+
+!SyntaxTreeNode methodsFor: 'converting' stamp: 'pb 6/14/2015 02:42'!
+asArray
+	^ self collect: [:ea| ea]! !
+
+!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/14/2015 02:54'!
+childrenDo: aBlock
+	"Call aBlock for each direct child"
+	children do: aBlock.! !
+
+!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/8/2019 18:21:51'!
+collect: aBlock
+	"Recurse the tree depth-first collecting the result of calling aBlock for each element"
+	^ self
+		depthFirstCollect: aBlock
+		with: self.! !
+
+!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/8/2019 18:22:33'!
+do: aBlock
+	"Recurse the tree depth-first calling aBlock for each element"
+	^ self
+		depthFirstDo: aBlock
+		with: self.! !
+
+!SyntaxTreeNode methodsFor: 'initialization' stamp: 'pb 6/13/2015 01:52'!
+initialize
+	super initialize.
+	properties := Dictionary new.
+	children := OrderedCollection new.! !
 
 !SyntaxTreeNode methodsFor: 'private' stamp: 'pb 6/14/2015 01:51'!
 children
@@ -1111,31 +1068,6 @@ depthFirstDo: aBlock with: aNode
 !SyntaxTreeNode methodsFor: 'private' stamp: 'pb 6/16/2015 17:23'!
 properties
 	^ properties! !
-
-!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/14/2015 02:54'!
-childrenDo: aBlock
-	"Call aBlock for each direct child"
-	children do: aBlock.! !
-
-!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/8/2019 18:21:51'!
-collect: aBlock
-	"Recurse the tree depth-first collecting the result of calling aBlock for each element"
-	^ self
-		depthFirstCollect: aBlock
-		with: self.! !
-
-!SyntaxTreeNode methodsFor: 'enumerating' stamp: 'pb 6/8/2019 18:22:33'!
-do: aBlock
-	"Recurse the tree depth-first calling aBlock for each element"
-	^ self
-		depthFirstDo: aBlock
-		with: self.! !
-
-!SyntaxTreeNode methodsFor: 'initialization' stamp: 'pb 6/13/2015 01:52'!
-initialize
-	super initialize.
-	properties := Dictionary new.
-	children := OrderedCollection new.! !
 
 !SyntaxTreeNode class methodsFor: 'instance creation' stamp: 'pb 6/13/2015 02:14'!
 node: aNode

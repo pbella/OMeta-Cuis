@@ -70,6 +70,15 @@ OMeta2 subclass: #OMeta2Flattener
 	poolDictionaries: ''
 	category: 'OMeta2'!
 
+!OM2Fail commentStamp: '<historical>' prior: 0!
+I represent a match failure.  Try using #matchAll:with:ifFail: rather than handling me directly.!
+
+!OM2Failer commentStamp: '<historical>' prior: 0!
+I am used to capture left recursion failures.  Do not use me directly, I am an implementation detail.!
+
+!OM2Stream commentStamp: '<historical>' prior: 0!
+I, and my subclasses, are specialized pseudo-streams used by OMeta parsers.  We are implementation details... do not instantiate us.!
+
 !OMeta2Compiler commentStamp: '<historical>' prior: 0!
 I provide the interface that the Smalltalk environment expects.  In turn, I call out to various OMeta parsers that actually perform the compilation.
 
@@ -98,6 +107,9 @@ MethodNode subclass: #OMeta2MethodNode
         classVariableNames: ''
         poolDictionaries: ''
         category: 'OMeta2Preload'!
+
+!OMeta2MethodNode commentStamp: '<historical>' prior: 0!
+I exist so that OMeta methods can be viewed in the code browsers.!
 
 !OMeta2MethodNode methodsFor: 'debugger support' stamp: 'hmm 8/25/2012 14:28'!
 schematicTempNamesString
@@ -151,8 +163,8 @@ basicTail
 
 	^ tail! !
 
-!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:38'!
-forgetEverything
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
 
 	memo := IdentityDictionary new! !
 
@@ -182,8 +194,8 @@ memo
 
 	^ memo! !
 
-!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:51'!
-pos
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
 
 	^ -1! !
 
@@ -223,7 +235,7 @@ transitiveForgetEverything
 	| curr |
 	curr := self.
 	[curr notNil] whileTrue: [
-		curr forgetEverything.
+		curr ometaForgetEverything.
 		curr := curr basicTail
 	]! !
 
@@ -248,10 +260,10 @@ inputSpecies
 
 	^ target inputSpecies! !
 
-!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:51'!
-pos
+!OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
 
-	^ target pos! !
+	^ target ometaPositionInStream! !
 
 !OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'pb 2/21/2018 2:29'!
 tail
@@ -275,10 +287,10 @@ for: anOM2Stream
 	^ self new initTarget: anOM2Stream! !
 
 
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:28'!
-forgetEverything
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
 
-	om2stream forgetEverything! !
+	om2stream ometaForgetEverything! !
 
 !OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
 head
@@ -334,8 +346,8 @@ inputSpecies
 
 	^ stream originalContents species! !
 
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:43'!
-pos
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
 
 	^ pos! !
 
@@ -373,8 +385,8 @@ inputSpecies
 
 	^ stream originalContents species! !
 
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:49'!
-pos
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
 
 	^ pos! !
 
@@ -442,17 +454,19 @@ anything
 	^ ans! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:01'!
-apply
+pvtOMetaApply
 	| aRule |
 	aRule := self apply: #anything.
 	^ self apply: aRule! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
-apply: aRule
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+privateIsOMetaLeftRecursionEnabled
+	"Left recursion (i.e. aRule = aRule...) is powerful but has a performance cost.  You can override with false if you don't need it for a given parser."
+	^ true! !
 
-	" A memoRec is an association whose key is the answer,
-	  and whose value is the next input. Failers pretend to
-     be memoRecs, but throw a fail in response to #value "
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaApplyWithLeftRecursion: aRule
+	"A memoRec is an association whose key is the answer, and whose value is the next input. Failers pretend to be memoRecs, but throw a fail in response to #value"
 	| memo memoRec |
 	input == haltingPoint ifTrue: [self halt].
 	memo := input memo.
@@ -474,7 +488,7 @@ apply: aRule
 				[
 					input := origInput.
 					ans := self perform: aRule.
-					input == sentinel ifTrue: [OM2Fail parserFailedAt: input pos].
+					input == sentinel ifTrue: [OM2Fail parserFailedAt: input ometaPositionInStream].
 					memoRec key: ans value: input.
 				] on: OM2Fail do: [keepGoing := false]
 			]
@@ -483,14 +497,20 @@ apply: aRule
 	input := memoRec value.
 	^ memoRec key! !
 
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 01:00'!
+apply: aRule
+	^ self privateIsOMetaLeftRecursionEnabled
+		ifTrue: [ self pvtOMetaApplyWithLeftRecursion: aRule ]
+		ifFalse: [ self perform: aRule ]! !
+ 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 13:39'!
 apply: aRule withArgs: args
 
 	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
 	^ self perform: aRule! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/19/2009 23:17'!
-consumedBy: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaConsumedBy: aBlock
 
 	| origInput i ws |
 	origInput := input.
@@ -503,23 +523,23 @@ consumedBy: aBlock
 	].
 	^ ws contents! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 14:11'!
-foreign
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaForeignParser
 
 	| aGrammar aRule g ans |
 	aGrammar := self apply: #anything.
 	aRule := self apply: #anything.
-	g := aGrammar new initInput: (OM2StreamProxy for: input).
+	g := aGrammar new initOMetaInputStream: (OM2StreamProxy for: input).
 	ans := g apply: aRule.
-	input := g input target.
+	input := g ometaInputStream target.
 	^ ans! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/26/2015 14:53'!
 om2streams
 	^ om2streams ifNil: [om2streams := IdentityDictionary new].! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/26/2009 13:17'!
-forgetEverything
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
 
 	input transitiveForgetEverything.
 	self om2streams valuesDo: [:s | s transitiveForgetEverything]! !
@@ -533,7 +553,7 @@ pvtOMetaForm: aBlock
 
 	| v origInput |
 	v := self apply: #anything.
-	self pred: (self pvtOMetaIsForm: v).
+	self pvtOMetaPred: (self pvtOMetaIsForm: v).
 	origInput := input.
 	input := self om2streams at: v ifAbsentPut: [OM2LazyStream for: v readStream withPos: 1].
 	aBlock value.
@@ -541,8 +561,8 @@ pvtOMetaForm: aBlock
 	input := origInput.
 	^ v! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 15:19'!
-genericMany: aBlock into: anOrderedCollection
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaGenericMany: aBlock into: anOrderedCollection
 
 	[
 		| origInput |
@@ -554,22 +574,22 @@ genericMany: aBlock into: anOrderedCollection
 		true
 	] whileTrue! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/27/2009 11:25'!
-haltingPoint: anOM2Stream
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaHaltingPoint: anOM2Stream
 
 	haltingPoint := anOM2Stream! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/20/2009 14:57'!
-indexConsumedBy: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaIndexConsumedBy: aBlock
 
 	| from to |
-	from := self pos.
+	from := self ometaPositionInStream.
 	aBlock value.
-	to := self pos.
+	to := self ometaPositionInStream.
 	^ from -> to! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:06'!
-initInput: i
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+initOMetaInputStream: i
 
 	input := i! !
 
@@ -580,12 +600,12 @@ initialize
 	om2streams := IdentityDictionary new! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:10'!
-input
+ometaInputStream
 
 	^ input! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 13:48'!
-lookahead: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaLookahead: aBlock
 
 	| origInput ans |
 	origInput := input.
@@ -593,18 +613,18 @@ lookahead: aBlock
 	input := origInput.
 	^ ans! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 13:56'!
-many1: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaMany1: aBlock
+	"1 or more matches (i.e. +)"
+	^ self pvtOMetaGenericMany: aBlock into: (OrderedCollection with: aBlock value)! !
 
-	^ self genericMany: aBlock into: (OrderedCollection with: aBlock value)! !
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaMany: aBlock
+	"0 or more matches (i.e. *)"
+	^ self pvtOMetaGenericMany: aBlock into: OrderedCollection new! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 13:56'!
-many: aBlock
-
-	^ self genericMany: aBlock into: OrderedCollection new! !
-
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
-not: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaNot: aBlock
 
 	| origInput |
 	origInput := input.
@@ -612,7 +632,7 @@ not: aBlock
 		input := origInput.
 		^ true
 	].
-	OM2Fail parserFailedAt: input pos! !
+	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
 pvtOMetaOr: choices
@@ -623,27 +643,27 @@ pvtOMetaOr: choices
 		input := origInput.
 		[^ choice value] on: OM2Fail do: []
 	].
-	OM2Fail parserFailedAt: input pos! !
+	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/20/2009 14:33'!
-opt: aBlock
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaOpt: aBlock
 
 	^ self pvtOMetaOr: {
 		[aBlock value].
 		[nil]
 	}! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/20/2009 14:48'!
-pos
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
 	"fixme - called by examples.  Replace call with @<>?"
-	^ input pos! !
+	^ input ometaPositionInStream! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 9/5/2017 13:02'!
-pred: aBooleanValue
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaPred: aBooleanValue
 
 	" may want to have the compiler inline this automatically, for performance "
 	aBooleanValue ifTrue: [^ true].
-	OM2Fail parserFailedAt: input pos! !
+	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 16:16'!
 seq
@@ -667,7 +687,7 @@ super: superclass apply: aRule withArgs: args
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/18/2009 16:05'!
 ? aBoolean
 
-	^ self pred: aBoolean! !
+	^ self pvtOMetaPred: aBoolean! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -704,20 +724,20 @@ matchAll: aSequenceableCollection with: aRule withArgs: args
 	"Recommended for use with unstructured data (i.e. strings and simple arrays)"
 	^ self matchStream: aSequenceableCollection readStream with: aRule withArgs: args withPlaybackDebugging: false! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'tak 4/7/2009 14:58'!
+!OMeta2Base class methodsFor: 'matching' stamp: 'pb 4/25/2020 01:00'!
 matcherOn: aReadStream
 
 	| input matcher |
 	input := OM2LazyStream for: aReadStream withPos: 1.
-	matcher := self new initInput: input.
+	matcher := self new initOMetaInputStream: input.
 	^ matcher! !
 
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'jmv 10/16/2019 15:47:15'!
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 
 	| input matcher ans|
 	input := OM2LazyStream for: aReadStream withPos: 1.
-	matcher := self new initInput: input.
+	matcher := self new initOMetaInputStream: input.
 	[
 		matcher apply: #empty withArgs: args.
 		ans := matcher apply: aRule.
@@ -738,11 +758,11 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		self inform: 'will halt each time matcher reaches ', curr printString.
 		"
 		matcher
-			initInput: input;
-			forgetEverything.
+			initOMetaInputStream: input;
+			ometaForgetEverything.
 		curr ifNil: [self error: 'you''ve found a bug -- please report it'].
 		curr become: (OM2StreamDebugger for: curr copy).
-		matcher haltingPoint: curr.
+		matcher ometaHaltingPoint: curr.
 		matcher apply: #empty withArgs: args.
 		ans := matcher apply: aRule.
 		matcher apply: #end.
@@ -817,14 +837,14 @@ Smalltalk implementation!
 char
 	| t1 |
 	t1 := self apply: #anything.
-	self pred: (t1 isKindOf: Character).
+	self pvtOMetaPred: (t1 isKindOf: Character).
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 digit
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 isDigit.
+	self pvtOMetaPred: t1 isDigit.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -834,14 +854,14 @@ empty
 !OMeta2 methodsFor: 'private-ometa2preload'!
 end
 	^ self
-		not: [self apply: #anything]! !
+		pvtOMetaNot: [self apply: #anything]! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 exactly
 	| t1 t2 |
 	t1 := self apply: #anything.
 	t2 := self apply: #anything.
-	self pred: t1 = t2.
+	self pvtOMetaPred: t1 = t2.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -850,7 +870,7 @@ firstAndRest
 	t1 := self apply: #anything.
 	t2 := self apply: #anything.
 	^ self
-		genericMany: [self apply: t2]
+		pvtOMetaGenericMany: [self apply: t2]
 		into: (OrderedCollection
 				with: (self apply: t1))! !
 
@@ -863,9 +883,9 @@ fromTo
 		self
 			apply: #seq
 			withArgs: {temp2}.
-		temp1 := self many: [
+		temp1 := self pvtOMetaMany: [
 			true ifTrue: [
-				self not: [
+				self pvtOMetaNot: [
 					self
 						apply: #seq
 						withArgs: {temp3} ].
@@ -884,9 +904,9 @@ fromToEnd
 		self
 			apply: #seq
 			withArgs: {temp2}.
-		temp3 := self many: [
+		temp3 := self pvtOMetaMany: [
 			true ifTrue: [
-				self not: [
+				self pvtOMetaNot: [
 					self
 						apply: #seq
 						withArgs: {temp1} ].
@@ -901,14 +921,14 @@ fromToEnd
 letter
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 isLetter.
+	self pvtOMetaPred: t1 isLetter.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 letterOrDigit
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 isAlphaNumeric.
+	self pvtOMetaPred: t1 isAlphaNumeric.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -918,7 +938,7 @@ listOf
 	t2 := self apply: #anything.
 	^ self pvtOMetaOr: {[t3 := self apply: t1.
 		self
-			genericMany: [self apply: #token withArgs: {t2}.
+			pvtOMetaGenericMany: [self apply: #token withArgs: {t2}.
 				self apply: t1]
 			into: (OrderedCollection with: t3)]. [#()]}! !
 
@@ -926,7 +946,7 @@ listOf
 lower
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 isLowercase.
+	self pvtOMetaPred: t1 isLowercase.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -935,14 +955,14 @@ notLast
 	t1 := self apply: #anything.
 	t2 := self apply: t1.
 	self
-		lookahead: [self apply: t1].
+		pvtOMetaLookahead: [self apply: t1].
 	^ t2! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 number
 	| t1 |
 	t1 := self apply: #anything.
-	self pred: t1 isNumber.
+	self pvtOMetaPred: t1 isNumber.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -951,33 +971,33 @@ range
 	t1 := self apply: #anything.
 	t2 := self apply: #anything.
 	t3 := self apply: #anything.
-	self pred: t1 <= t3 & (t3 <= t2).
+	self pvtOMetaPred: t1 <= t3 & (t3 <= t2).
 	^ t3! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 space
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 asciiValue <= 32.
+	self pvtOMetaPred: t1 asciiValue <= 32.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 spaces
 	^ self
-		many: [self apply: #space]! !
+		pvtOMetaMany: [self apply: #space]! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 string
 	| t1 |
 	t1 := self apply: #anything.
-	self pred: t1 isString.
+	self pvtOMetaPred: t1 isString.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 symbol
 	| t1 |
 	t1 := self apply: #anything.
-	self pred: t1 isSymbol.
+	self pvtOMetaPred: t1 isSymbol.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -991,7 +1011,7 @@ token
 upper
 	| t1 |
 	t1 := self apply: #char.
-	self pred: t1 isUppercase.
+	self pvtOMetaPred: t1 isUppercase.
 	^ t1! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1012,7 +1032,7 @@ application
 				withArgs: {$.}.
 			temp3 := self apply: #nsName.
 			temp4 := self apply: #args.
-			{#App. #foreign. temp1. ('#' , temp3) asSymbol} , temp4 ]]. [
+			{#App. #pvtOMetaForeignParser. temp1. ('#' , temp3) asSymbol} , temp4 ]]. [
 		true ifTrue: [
 			temp3 := self apply: #name.
 			temp4 := self apply: #args.
@@ -1025,7 +1045,7 @@ args
 		t1 := self apply: #listOf withArgs: {#squeakExpression. '.'}.
 		self apply: #token withArgs: {')'}.
 		t1]. [self
-			not: [self apply: #exactly withArgs: {$(}].
+			pvtOMetaNot: [self apply: #exactly withArgs: {$(}].
 		#()]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1041,8 +1061,8 @@ characters
 	| t1 |
 	self apply: #token withArgs: {'``'}.
 	t1 := self
-				many: [self
-						not: [self apply: #exactly withArgs: {$'}.
+				pvtOMetaMany: [self
+						pvtOMetaNot: [self apply: #exactly withArgs: {$'}.
 							self apply: #exactly withArgs: {$'}].
 					self apply: #char].
 	self apply: #exactly withArgs: {$'}.
@@ -1100,7 +1120,7 @@ expr3
 expr4
 	| t1 |
 	t1 := self
-				many: [self apply: #expr3].
+				pvtOMetaMany: [self apply: #expr3].
 	^ (OrderedCollection with: #And) addAll: t1;
 		 yourself! !
 
@@ -1115,7 +1135,7 @@ keyword
 	t1 := self apply: #anything.
 	self apply: #token withArgs: {t1}.
 	self
-		not: [self apply: #letterOrDigit].
+		pvtOMetaNot: [self apply: #letterOrDigit].
 	^ t1! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1146,7 +1166,7 @@ numberLiteral
 				self apply: #spaces.
 				-1]. [1]}.
 	t2 := self
-				many1: [self apply: #digit].
+				pvtOMetaMany1: [self apply: #digit].
 	^ {#App. #exactly. (t1 * (String withAll: t2) asNumber) storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1157,15 +1177,15 @@ optIter
 		{#Many. t1}]. [self apply: #token withArgs: {'+'}.
 		{#Many1. t1}]. [self apply: #token withArgs: {'?'}.
 		self
-			not: [self apply: #exactly withArgs: {$[}].
+			pvtOMetaNot: [self apply: #exactly withArgs: {$[}].
 		{#Opt. t1}]. [t1]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rule
 	| t1 t2 t3 t4 |
 	^ self pvtOMetaOr: {[self
-			not: [self
-					many: [self
+			pvtOMetaNot: [self
+					pvtOMetaMany: [self
 							super: OMeta2
 							apply: #space
 							withArgs: #()].
@@ -1173,18 +1193,18 @@ rule
 				self apply: #expr4.
 				self apply: #token withArgs: {'='}].
 		t4 := self
-					consumedBy: [self
-							many: [self apply: #char]].
+					pvtOMetaConsumedBy: [self
+							pvtOMetaMany: [self apply: #char]].
 		{#Squeak. t4}]. [t1 := self
-					lookahead: [self
-							many: [self
+					pvtOMetaLookahead: [self
+							pvtOMetaMany: [self
 									super: OMeta2
 									apply: #space
 									withArgs: #()].
 						self apply: #nsName].
 		t2 := self apply: #rulePart withArgs: {t1}.
 		t3 := self
-					many: [self apply: #token withArgs: {','}.
+					pvtOMetaMany: [self apply: #token withArgs: {','}.
 						self apply: #rulePart withArgs: {t1}].
 		self apply: #spaces.
 		self apply: #end.
@@ -1195,7 +1215,7 @@ rule
 rulePart
 	| t1 t2 t3 |
 	t1 := self apply: #anything.
-	self pred: (self apply: #name)
+	self pvtOMetaPred: (self apply: #name)
 			= t1.
 	t2 := self apply: #expr4.
 	^ self pvtOMetaOr: {[self apply: #token withArgs: {'='}.
@@ -1226,7 +1246,7 @@ space
 			apply: #space
 			withArgs: #()]. [self apply: #fromTo withArgs: {'/*'. '*/'}]. [self apply: #fromTo withArgs: {'//'. Character lf asString}]. [self apply: #seq withArgs: {'//'}.
 		self
-			many: [self
+			pvtOMetaMany: [self
 					super: OMeta2
 					apply: #space
 					withArgs: #()]]}! !
@@ -1235,7 +1255,7 @@ space
 squeakExpression
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #foreign withArgs: {O2SqueakRecognizer. #squeakExpr}.
+		ifTrue: [t1 := self apply: #pvtOMetaForeignParser withArgs: {O2SqueakRecognizer. #squeakExpr}.
 			self apply: #spaces.
 			t1]! !
 
@@ -1244,10 +1264,10 @@ stringLiteral
 	| t1 |
 	self apply: #token withArgs: {''''}.
 	t1 := self
-				many: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$'}.
+				pvtOMetaMany: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$'}.
 						self apply: #exactly withArgs: {$'}.
 						$']. [self
-							not: [self apply: #exactly withArgs: {$'}].
+							pvtOMetaNot: [self apply: #exactly withArgs: {$'}].
 						self apply: #char]}].
 	self apply: #exactly withArgs: {$'}.
 	^ {#App. #exactly. (String withAll: t1) storeString}! !
@@ -1264,8 +1284,8 @@ tokenSugar
 	| t1 |
 	self apply: #token withArgs: {'"'}.
 	t1 := self
-				many: [self
-						not: [self apply: #exactly withArgs: {$"}].
+				pvtOMetaMany: [self
+						pvtOMetaNot: [self apply: #exactly withArgs: {$"}].
 					self apply: #char].
 	self apply: #exactly withArgs: {$"}.
 	^ {#App. #token. (String withAll: t1) storeString}! !
@@ -1291,7 +1311,7 @@ optimizeRule
 	^ true
 		ifTrue: [t1 := self apply: #anything.
 			self
-				many: [t1 := self apply: #foreign withArgs: {OMeta2AndOrOpt. #optimize. t1}].
+				pvtOMetaMany: [t1 := self apply: #pvtOMetaForeignParser withArgs: {OMeta2AndOrOpt. #optimize. t1}].
 			t1]! !
 
 
@@ -1301,7 +1321,7 @@ arrayConstr
 			ifTrue: [self apply: #token withArgs: {'{'}.
 				self apply: #expr.
 				self
-					many: [true
+					pvtOMetaMany: [true
 							ifTrue: [self apply: #token withArgs: {'.'}.
 								self apply: #expr]].
 				self pvtOMetaOr: {[self apply: #token withArgs: {'.'}]. [self apply: #empty]}.
@@ -1315,7 +1335,7 @@ arrayLit
 		ifTrue: [self apply: #token withArgs: {'#'}.
 			self apply: #token withArgs: {'('}.
 			self
-				many: [self pvtOMetaOr: {[self apply: #literal]. [self apply: #arrayLit]. [true
+				pvtOMetaMany: [self pvtOMetaOr: {[self apply: #literal]. [self apply: #arrayLit]. [true
 							ifTrue: [self apply: #spaces.
 								self apply: #tsArraySymbol]]}].
 			self apply: #token withArgs: {')'}]! !
@@ -1344,19 +1364,19 @@ block
 		ifTrue: [self apply: #token withArgs: {'['}.
 			self pvtOMetaOr: {[true
 					ifTrue: [self
-							many1: [true
+							pvtOMetaMany1: [true
 									ifTrue: [self apply: #token withArgs: {':'}.
 										self apply: #identifier]].
 						self apply: #token withArgs: {'|'}]]. [self apply: #empty]}.
 			self pvtOMetaOr: {[true
 					ifTrue: [self apply: #token withArgs: {'|'}.
 						self
-							many: [self apply: #identifier].
+							pvtOMetaMany: [self apply: #identifier].
 						self apply: #token withArgs: {'|'}]]. [self apply: #empty]}.
 			self pvtOMetaOr: {[true
 					ifTrue: [self apply: #expr.
 						self
-							many: [true
+							pvtOMetaMany: [true
 									ifTrue: [self apply: #token withArgs: {'.'}.
 										self apply: #expr]].
 						self pvtOMetaOr: {[true
@@ -1385,7 +1405,7 @@ identifier
 		ifTrue: [self apply: #spaces.
 			self apply: #tsIdentifier.
 			self
-				not: [self apply: #exactly withArgs: {$:}]]! !
+				pvtOMetaNot: [self apply: #exactly withArgs: {$:}]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 keyword
@@ -1422,14 +1442,14 @@ msgExpr
 	^ true
 		ifTrue: [self pvtOMetaOr: {[self apply: #keywordExpr]. [self apply: #binaryExpr]}.
 			self
-				many: [true
+				pvtOMetaMany: [true
 						ifTrue: [self apply: #token withArgs: {';'}.
 							self apply: #cascade]]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 squeakExpr
 	^ self
-		consumedBy: [self apply: #expr]! !
+		pvtOMetaConsumedBy: [self apply: #expr]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 symbol
@@ -1445,14 +1465,14 @@ tcBinaryChar
 	| t1 |
 	^ true
 		ifTrue: [t1 := self apply: #char.
-			self pred: (TypeTable at: t1 asciiValue)
+			self pvtOMetaPred: (TypeTable at: t1 asciiValue)
 					== #xBinary]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsArraySymbol
 	^ self pvtOMetaOr: {[true
 			ifTrue: [self
-					many1: [self apply: #tsKeyword].
+					pvtOMetaMany1: [self apply: #tsKeyword].
 				self pvtOMetaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]. [self apply: #tsIdentifier]}! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
@@ -1460,7 +1480,7 @@ tsBinary
 	^ true
 		ifTrue: [self pvtOMetaOr: {[self apply: #exactly withArgs: {$|}]. [self apply: #tcBinaryChar]}.
 			self
-				many: [self apply: #tcBinaryChar]]! !
+				pvtOMetaMany: [self apply: #tcBinaryChar]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsCharacter
@@ -1473,7 +1493,7 @@ tsIdentifier
 	^ true
 		ifTrue: [self apply: #letter.
 			self
-				many: [self pvtOMetaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
+				pvtOMetaMany: [self pvtOMetaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsKeyword
@@ -1484,7 +1504,7 @@ tsKeyword
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsNatural
 	^ self
-		many1: [self apply: #digit]! !
+		pvtOMetaMany1: [self apply: #digit]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 tsNumber
@@ -1497,11 +1517,11 @@ tsString
 	^ true
 		ifTrue: [self apply: #exactly withArgs: {$'}.
 			self
-				many: [self pvtOMetaOr: {[true
+				pvtOMetaMany: [self pvtOMetaOr: {[true
 							ifTrue: [self apply: #exactly withArgs: {$'}.
 								self apply: #exactly withArgs: {$'}]]. [true
 							ifTrue: [self
-									not: [self apply: #exactly withArgs: {$'}].
+									pvtOMetaNot: [self apply: #exactly withArgs: {$'}].
 								self apply: #char]]}].
 			self apply: #exactly withArgs: {$'}]! !
 
@@ -1517,7 +1537,7 @@ unaryExpr
 	^ true
 		ifTrue: [self apply: #unit.
 			self
-				many: [self apply: #identifier]]! !
+				pvtOMetaMany: [self apply: #identifier]]! !
 
 !O2SqueakRecognizer methodsFor: 'private-ometa2preload'!
 unit
@@ -1544,7 +1564,7 @@ and
 	| t1 |
 	^ true
 		ifTrue: [t1 := self
-						many: [self apply: #trans].
+						pvtOMetaMany: [self apply: #trans].
 			t1 addFirst: #And;
 				 yourself]! !
 
@@ -1564,7 +1584,7 @@ form
 
 !OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 helped
-	^ self pred: didSomething! !
+	^ self pvtOMetaPred: didSomething! !
 
 !OMeta2NullOpt methodsFor: 'private-ometa2preload'!
 idxconsby
@@ -1626,7 +1646,7 @@ or
 	| t1 |
 	^ true
 		ifTrue: [t1 := self
-						many: [self apply: #trans].
+						pvtOMetaMany: [self apply: #trans].
 			t1 addFirst: #Or;
 				 yourself]! !
 
@@ -1660,8 +1680,8 @@ trans
 							ifTrue: [t1 := self apply: #anything.
 								t1 := t1 asLowercase asSymbol.
 								self
-									pred: (self class canUnderstand: t1).
-								t2 := self apply: #apply withArgs: {t1}]].
+									pvtOMetaPred: (self class canUnderstand: t1).
+								t2 := self apply: #pvtOMetaApply withArgs: {t1}]].
 				t2]]. [self apply: #anything]}! !
 
 
@@ -1720,7 +1740,7 @@ act
 and
 	| t1 |
 	t1 := self
-				many: [self apply: #trans].
+				pvtOMetaMany: [self apply: #trans].
 	^ {'(true ifTrue: ['. self delim: t1 with: '. '. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -1728,7 +1748,7 @@ app
 	| t1 t2 |
 	t1 := self apply: #symbol.
 	^ self pvtOMetaOr: {[t2 := self
-					many1: [self apply: #anything].
+					pvtOMetaMany1: [self apply: #anything].
 		t2 := self delim: t2 with: '. '.
 		{'(self apply: '. t1 storeString. ' withArgs: {'. t2. '})'}]. [{'(self apply: '. t1 storeString. ')'}]}! !
 
@@ -1736,7 +1756,7 @@ app
 consby
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self consumedBy: ['. t1. '])'}! !
+	^ {'(self pvtOMetaConsumedBy: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 delim: t1 with: t2 
@@ -1761,43 +1781,43 @@ form
 idxconsby
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self indexConsumedBy: ['. t1. '])'}! !
+	^ {'(self pvtOMetaIndexConsumedBy: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 lookahead
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self lookahead: ['. t1. '])'}! !
+	^ {'(self pvtOMetaLookahead: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self many: ['. t1. '])'}! !
+	^ {'(self pvtOMetaMany: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many1
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self many1: ['. t1. '])'}! !
+	^ {'(self pvtOMetaMany1: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 not
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self not: ['. t1. '])'}! !
+	^ {'(self pvtOMetaNot: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 opt
 	| t1 |
 	t1 := self apply: #trans.
-	^ {'(self opt: ['. t1. '])'}! !
+	^ {'(self pvtOMetaOpt: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 or
 	| t1 t2 |
 	t1 := self
-				many: [t2 := self apply: #trans.
+				pvtOMetaMany: [t2 := self apply: #trans.
 					{'['. t2. ']'}].
 	^ {'(self pvtOMetaOr: {'. self delim: t1 with: '. '. '})'}! !
 
@@ -1805,7 +1825,7 @@ or
 pred
 	| t1 |
 	t1 := self apply: #string.
-	^ {'(self pred: ('. t1. '))'}! !
+	^ {'(self pvtOMetaPred: ('. t1. '))'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 rule
@@ -1836,7 +1856,7 @@ superapp
 	| t1 t2 |
 	t1 := self apply: #symbol.
 	t2 := self
-				many: [self apply: #anything].
+		pvtOMetaMany: [self apply: #anything].
 	t2 := self delim: t2 with: '. '.
 	^ {'(self super: '. grammarClass superclass name. ' apply: '. t1 storeString. ' withArgs: {'. t2. '})'}! !
 
@@ -1871,7 +1891,7 @@ iFlatten
 	^ self pvtOMetaOr: {[t1 := self apply: #string.
 		ws nextPutAll: t1]. [self
 			pvtOMetaForm: [self
-					many: [self apply: #iFlatten]]]}! !
+				pvtOMetaMany: [self apply: #iFlatten]]]}! !
 
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!
 initialize

@@ -2,7 +2,7 @@
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 7!
+!provides: 'OMeta2Tests' 2 8!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -281,9 +281,9 @@ test03Sequence
 	self should: (OMeta2StepByStepExample matchAll: #($i $t $e $m $i $t $e $m) with: #testSeqString) = 'item'. "sequences of characters are strings as far as seq is concerned"
 	self should: (OMeta2StepByStepExample matchAll: #(1 2 3) with: #testSeqObject) = #(1 2 3). "not just for strings though"! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 22:58'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 4/25/2020 01:00'!
 test04ConsumedBy
-	"consumedBy <> and consumedByIndex @<>"
+	"pvtOMetaConsumedBy <> and pvtOMetaIndexConsumedBy @<>"
 	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedBy) = 'feed me'. "Returns the input 'consumed' by the rule.  Now we don't have to deal with a collection of characters"
 	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedByIndex) =
 (Association key: 1 value: 8) "this returns the positional index range of the beginning and end of the match"! !

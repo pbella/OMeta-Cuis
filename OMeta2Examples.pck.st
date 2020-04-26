@@ -1,6 +1,6 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3716] on a QDate(2019-04-27T00:00:00+00:00D1:00:00:00) at 1:05:51 am'!
+'From Cuis 5.0 [latest update: #4119] on QDate(2020-04-25) at 3:26:28 am'!
 'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
-!provides: 'OMeta2Examples' 2 8!
+!provides: 'OMeta2Examples' 2 9!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 
@@ -284,10 +284,10 @@ identifierIdx =
 
 	spaces @<letter (letter | digit)*>! !
 
-!OMeta2Examples methodsFor: 'as yet unclassified' stamp: 'aw 2/20/2009 14:54'!
+!OMeta2Examples methodsFor: 'as yet unclassified' stamp: 'pb 4/25/2020 01:00'!
 identifiers =
 
-	([self inform: self pos printString] identifier)*! !
+	([self inform: self ometaPositionInStream printString] identifier)*! !
 
 !OMeta2Examples methodsFor: 'as yet unclassified' stamp: 'aw 2/27/2009 15:46'!
 number =
@@ -693,14 +693,6 @@ sum =
 depth
 	^ OMeta2TreeWalkerExample match: self with: #depth! !
 
-!OMeta2TreeExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 14:55'!
-isCollection
-	^ true! !
-
-!OMeta2TreeExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 14:55'!
-isSequenceable
-	^ true! !
-
 !OMeta2TreeExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 16:18'!
 readStream
 	^ self unapply readStream! !
@@ -708,6 +700,14 @@ readStream
 !OMeta2TreeExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 16:18'!
 sum
 	^ OMeta2TreeWalkerExample match: self with: #sum! !
+
+!OMeta2TreeExample methodsFor: 'testing' stamp: 'pb 5/23/2015 14:55'!
+isCollection
+	^ true! !
+
+!OMeta2TreeExample methodsFor: 'testing' stamp: 'pb 5/23/2015 14:55'!
+isSequenceable
+	^ true! !
 
 !OMeta2TreeExample class methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 17:01'!
 demo
@@ -755,10 +755,6 @@ demoTree
 unapply
 	^ #(#Empty ).! !
 
-!OMeta2TreeLeafExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 15:44'!
-initialize
-	value := 1! !
-
 !OMeta2TreeLeafExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 16:24'!
 unapply
 	^ {#Leaf. value.}! !
@@ -766,6 +762,10 @@ unapply
 !OMeta2TreeLeafExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 15:31'!
 value: aNumber
 	value := aNumber! !
+
+!OMeta2TreeLeafExample methodsFor: 'initialization' stamp: 'pb 5/23/2015 15:44'!
+initialize
+	value := 1! !
 
 !OMeta2TreeNodeExample methodsFor: 'as yet unclassified' stamp: 'pb 5/23/2015 15:25'!
 left: anObject
