@@ -1,4 +1,4 @@
-'From Cuis 5.0 [latest update: #4119] on QDate(2020-04-25) at 7:53:35 pm'!
+'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-02) at 8:04:41 pm'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -8,8 +8,10 @@
 
 Note: OMeta2Preload.st needs to be filed in before loading this package (handled by OMeta2Package class>>prePackageInstall)
 
-This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.'!
-!provides: 'OMeta2' 2 12!
+This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
+
+Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
+!provides: 'OMeta2' 2 13!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -56,16 +58,6 @@ OMeta2Base subclass: #OMeta2
 OMeta2 class
 	instanceVariableNames: ''!
 
-!classDefinition: #O2SqueakRecognizer category: #OMeta2!
-OMeta2 subclass: #O2SqueakRecognizer
-	instanceVariableNames: ''
-	classVariableNames: 'TypeTable'
-	poolDictionaries: ''
-	category: 'OMeta2'!
-!classDefinition: 'O2SqueakRecognizer class' category: #OMeta2!
-O2SqueakRecognizer class
-	instanceVariableNames: ''!
-
 !classDefinition: #OMeta2Flattener category: #OMeta2!
 OMeta2 subclass: #OMeta2Flattener
 	instanceVariableNames: 'ws'
@@ -76,24 +68,34 @@ OMeta2 subclass: #OMeta2Flattener
 OMeta2Flattener class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2NullOpt category: #OMeta2!
-OMeta2 subclass: #OMeta2NullOpt
+!classDefinition: #OMeta2NullOptimizer category: #OMeta2!
+OMeta2 subclass: #OMeta2NullOptimizer
 	instanceVariableNames: 'didSomething'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2NullOpt class' category: #OMeta2!
-OMeta2NullOpt class
+!classDefinition: 'OMeta2NullOptimizer class' category: #OMeta2!
+OMeta2NullOptimizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2AndOrOpt category: #OMeta2!
-OMeta2NullOpt subclass: #OMeta2AndOrOpt
+!classDefinition: #OMeta2AndOrOptimizer category: #OMeta2!
+OMeta2NullOptimizer subclass: #OMeta2AndOrOptimizer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2AndOrOpt class' category: #OMeta2!
-OMeta2AndOrOpt class
+!classDefinition: 'OMeta2AndOrOptimizer class' category: #OMeta2!
+OMeta2AndOrOptimizer class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2FinalizeOptimizer category: #OMeta2!
+OMeta2NullOptimizer subclass: #OMeta2FinalizeOptimizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2'!
+!classDefinition: 'OMeta2FinalizeOptimizer class' category: #OMeta2!
+OMeta2FinalizeOptimizer class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2Optimizer category: #OMeta2!
@@ -126,6 +128,26 @@ OMeta2 subclass: #OMeta2RuleTranslator
 OMeta2RuleTranslator class
 	instanceVariableNames: ''!
 
+!classDefinition: #OMeta2SqueakSmalltalkRecognizer category: #OMeta2!
+OMeta2 subclass: #OMeta2SqueakSmalltalkRecognizer
+	instanceVariableNames: 'useArgTypeTable'
+	classVariableNames: 'ArgTypeTable TypeTable'
+	poolDictionaries: ''
+	category: 'OMeta2'!
+!classDefinition: 'OMeta2SqueakSmalltalkRecognizer class' category: #OMeta2!
+OMeta2SqueakSmalltalkRecognizer class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2CuisSmalltalkRecognizer category: #OMeta2!
+OMeta2SqueakSmalltalkRecognizer subclass: #OMeta2CuisSmalltalkRecognizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2'!
+!classDefinition: 'OMeta2CuisSmalltalkRecognizer class' category: #OMeta2!
+OMeta2CuisSmalltalkRecognizer class
+	instanceVariableNames: ''!
+
 
 !OMeta2 commentStamp: '<historical>' prior: 0!
 OMeta Implementation
@@ -148,39 +170,39 @@ Todos:
 * consider implementing position-related functionality (see http://www.tinlizzie.org/ometa-js/ometa-base.js)
 * consider the optimization suggestions in the comments of OMeta2Lib's methods!
 
-!O2SqueakRecognizer commentStamp: '<historical>' prior: 0!
-I am a null Smalltalk parser.  While I don't actually *do* anything with parsed Smalltalk code, I am useful as a minimal test to determine if any given text is valid Smalltalk code.  I also serve as a minimal example of parsing a programming language using OMeta.
-
-OMeta implementation!
-
 !OMeta2Flattener commentStamp: '<historical>' prior: 0!
 OMeta2Flattener is phase 4 of OMeta code compilation.  I take the rendered code tree produced by phase 3 and flatten it into a single string of source code that will be passed to the Smalltalk compiler or parser.
 
 OMeta implementation!
 
-!OMeta2NullOpt commentStamp: '<historical>' prior: 0!
-Base syntax tree grammar to perform code transformations. Currrently not used directly as I am essentially an identity transform.  OMeta2AndOrOpt is called during phase 2.
+!OMeta2NullOptimizer commentStamp: '<historical>' prior: 0!
+I am an identity transform used to build OMeta AST optimizers.  Typically each subclass represents an optimization pass performing a specific type of optimization returning the transformed AST.  Optimizers, such as OMeta2AndOrOptimizer, are called during phase 2.
 
 OMeta implementation!
 
-!OMeta2AndOrOpt commentStamp: '<historical>' prior: 0!
+!OMeta2AndOrOptimizer commentStamp: '<historical>' prior: 0!
 Syntax tree grammar used by OMeta2Optimizer in stage 2 of compilation.
 
 OMeta implementation!
 
+!OMeta2FinalizeOptimizer commentStamp: '<historical>' prior: 0!
+Wrap #And nodes with a #TrueIfTrue node when necessary
+
+OMeta implementation!
+
 !OMeta2Optimizer commentStamp: '<historical>' prior: 0!
-OMeta2Optimizer is phase 2 of OMeta code compilation.  I take the parse tree from phase 1 and apply a syntax tree grammar (OMeta2AndOrOpt) which provides transformations to produce a simplified syntax tree.
+OMeta2Optimizer is phase 2 of OMeta code compilation.  I take the parse tree from phase 1 and apply a syntax tree grammar (OMeta2AndOrOptimizer) which provides transformations to produce a simplified syntax tree.
 
 OMeta implementation!
 
 !OMeta2RuleParser commentStamp: '<historical>' prior: 0!
 OMeta2RuleParser is phase 1 of OMeta code compilation.  I take arbitrary source code and produce an syntax tree of raw operations in a Lispy nested list containing elements in the form #(arg1. arg2...) where:
 
-arg1 is the OMeta primitive to perform (#Act, #And, #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Or, #Lookahead, #Many, #Many1, #Not, #Pred, #Rule, #Set, #SuperApp) each corresponding to an OMeta primitive operation:
+arg1 is the OMeta primitive to perform (#SemAct, #And, #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Or, #Lookahead, #Many, #Many1, #Not, #SemPred, #Rule, #Set, #SuperApp) each corresponding to an OMeta primitive operation:
 - #And and #Or correspond to Smalltalk #and: and #or:
-- #Act and #Rule indicate a method call defined in arg2
+- #SemAct and #Rule indicate a method call defined in arg2
 - #Set indicates a collection (implemented as an array)
-- #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Lookahead, #Many, #Many1, #Not, #Pred and #SuperApp have corresponding methods in OMeta2Base
+- #App, #ConsBy, #Form, #IdxConsBy, #Opt, #Lookahead, #Many, #Many1, #Not, #SemPred and #SuperApp have corresponding methods in OMeta2Base
 
 arg2 is either an operand for the atomic operation (an OMeta or application rule name or semantic predicate/action code snippet) or a list of child operations in the case of #And and #Or operations.
 
@@ -197,6 +219,14 @@ OMeta2RuleTranslator is phase 3 of OMeta code compilation.  I take the parse tre
 
 OMeta implementation!
 
+!OMeta2SqueakSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
+I am a null Smalltalk parser for the Squeak dialect.  While I don't actually *do* anything with parsed Smalltalk code, I am useful as a minimal test to determine if any given text is valid Smalltalk code.  I also serve as an example of parsing a programming language with OMeta.
+
+OMeta implementation!
+
+!OMeta2CuisSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
+Extensions specific to Cuis!
+
 !OMeta2 class methodsFor: 'methods' stamp: 'jmv 5/23/2019 10:44:30'!
 methodNodeFor: sourceCode noPattern: aBoolean
 	(OMeta2RuleParser isOMeta2Rule: sourceCode) ifTrue: [ ^ nil ].
@@ -207,9 +237,13 @@ name =
 
 	spaces nsName! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:53'!
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:42:37'!
+comment =
+
+	$" <(~$" anything)*> $" $.?! !
+
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/2/2020 14:26:03'!
 empty
-	"fixme - inline?"
 	^ true.! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:23'!
@@ -222,27 +256,27 @@ exactly :wanted =
 
 	anything:got ?[wanted = got] -> [wanted]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/2/2020 14:26:16'!
 firstAndRest
-	"A meta rule for 'first rest+' where the rule names are substituted with the values of first and rest.  See listOf for another example of a meta rule.  fixme - rewrite in OMeta"
+	"A meta rule for 'first rest+' where the rule names are substituted with the values of first and rest.  See listOf for another example of a meta rule.  FIXME - rewrite in OMeta"
 	| first rest |
 	first := self apply: #anything.
 	rest := self apply: #anything.
 	^ self pvtOMetaGenericMany: [self apply: rest] into: (OrderedCollection with: (self apply: first))! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/10/2015 15:55'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 23:14:38'!
 fromTo :x :y =
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
-	seq(x) (~seq(y) anything)*:t seq(y) -> [t]! !
+	seq(x) (~seq(y) anything)*:enclosed seq(y) -> [enclosed]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/22/2020 03:36:58'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 23:16:43'!
 fromToOrEnd :x :y =
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
-	seq(x) (~seq(y) anything)*:t (seq(y) | end) -> [t]! !
+	seq(x) (~seq(y) anything)*:enclosed (seq(y) | end) -> [enclosed]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/1/2020 22:57:52'!
 listOf :rule :delim =
-
+	// Match :rule one or more times delimited by :delim returning the results as a collection
 		pvtOMetaApply(rule):x (token(delim) pvtOMetaApply(rule))*:xs -> [xs addFirst: x; yourself]
 	|	empty -> [#()]! !
 
@@ -301,11 +335,11 @@ upper =
 
 	char:x ?[x isUppercase] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 4/22/2020 03:35:48'!
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/2/2020 14:24:51'!
 fromToEnd :from =
 	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
-	fixme - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
-	[Character newLineCharacter asString]:to fromToOrEnd(from. to)! !
+	FIXME - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
+	fromToOrEnd(from, Character newLineCharacter asString)! !
 
 !OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
 letterOrDigit =
@@ -338,195 +372,6 @@ matchAll: aSequenceableCollection with: aRule ifFail: failBlock
 		do: [ :ex |
 			ex return: failBlock value ].! !
 
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:43'!
-arrayConstr =
-
-	"{" expr ("." expr)* ("." | empty) "}"
-|	"{" "}"! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:57'!
-arrayLit =
-
-	"#" "(" (literal | arrayLit | spaces tsArraySymbol)* ")"! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:57'!
-binary =
-
-	spaces tsBinary! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
-binaryExpr =
-
-	binaryExpr binaryMsg
-|	unaryExpr! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
-binaryMsg =
-
-	binary unaryExpr! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:08'!
-block =
-
-	"["
-		(	(":" identifier)+ "|"
-		|	empty
-		)
-
-		(	"|" identifier* "|"
-		|	empty
-		)
-
-		(	expr ("." expr)* ("." "^" expr | empty)
-		|	"^" expr
-		|	empty
-		)
-
-		(	"."
-		|	empty
-		)
-
-	"]"! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
-cascade =
-
-	identifier
-|	binaryMsg
-|	keywordMsg! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:59'!
-expr =
-
-	identifier (":=" | "_") expr
-|	msgExpr! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:18'!
-identifier =
-
-	spaces tsIdentifier ~$:! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:19'!
-keyword =
-
-	spaces tsKeyword! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:19'!
-keywordExpr =
-
-	binaryExpr keywordMsg! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:19'!
-keywordMsg =
-
-	keywordMsg keywordMsgPart
-|	keywordMsgPart! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:20'!
-keywordMsgPart =
-
-	keyword binaryExpr! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:20'!
-literal =
-
-	spaces	(	tsNumber
-			|	tsCharacter
-			|	tsString
-			|	tsSymbol
-			)
-! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:21'!
-msgExpr =
-
-	(keywordExpr | binaryExpr) (";" cascade)*! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:23'!
-symbol =
-
-	"#" spaces
-		(	tsString
-		|	tsKeyword (tsIdentifier | empty)
-		)! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:23'!
-tcBinaryChar =
-
-	char:x ?[(TypeTable at: x asciiValue) == #xBinary]! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
-tsArraySymbol =
-
-	tsKeyword+ (tsIdentifier | empty)
-|	tsIdentifier! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
-tsBinary =
-
-	($| | tcBinaryChar) tcBinaryChar*! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
-tsCharacter =
-
-	$$ char! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:26'!
-tsIdentifier =
-
-	letter (letter | digit)*! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:31'!
-tsKeyword =
-
-	tsIdentifier $:! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:26'!
-tsNatural =
-
-	digit+! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:27'!
-tsNumber =
-
-	($+ | $- | empty) tsNatural! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
-tsString =
-
-	$' ($' $' | ~$' char)* $'! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
-tsSymbol =
-
-	$# spaces (tsString | tsArraySymbol)! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
-unaryExpr =
-
-	unit identifier*! !
-
-!O2SqueakRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:29'!
-unit =
-
-	literal
-|	identifier
-|	arrayLit
-|	arrayConstr
-|	block
-|	"(" expr ")"
-! !
-
-!O2SqueakRecognizer methodsFor: 'grammar root' stamp: 'aw 2/20/2009 01:30'!
-squeakExpr =
-
-	<expr>! !
-
-!O2SqueakRecognizer class methodsFor: 'class initialization' stamp: 'aw 2/20/2009 02:04'!
-initialize
-
-	TypeTable := #(#xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xDelimiter #xDelimiter #xBinary #xDelimiter #xDelimiter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #doIt #xBinary #xDelimiter #xBinary #xDoubleQuote #xLitQuote #xDollar #xBinary #xBinary #xSingleQuote #leftParenthesis #rightParenthesis #xBinary #xBinary #xBinary #xBinary #period #xBinary #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xColon #semicolon #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBracket #xBinary #rightBracket #upArrow #leftArrow #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBrace #verticalBar #rightBrace #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary)! !
-
 !OMeta2Flattener methodsFor: 'grammar root' stamp: 'pb 5/22/2015 18:40'!
 flatten :tree =
 
@@ -544,84 +389,123 @@ initialize
 	super initialize.
 	ws := (String new: 64) writeStream! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 and = trans*:xs -> [xs addFirst: #And; yourself]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 consby = trans:x -> [{#ConsBy. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 form = trans:x -> [{#Form. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:01'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:01'!
 helped = ?[didSomething]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 idxconsby = trans:x -> [{#IdxConsBy. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 lookahead = trans:x -> [{#Lookahead. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 many = trans:x -> [{#Many. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:44'!
 many1 = trans:x -> [{#Many1. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 not = trans:x -> [{#Not. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 opt = trans:x -> [{#Opt. x}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 or = trans*:xs -> [xs addFirst: #Or; yourself]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 rule = _:name _:temps trans:body -> [{#Rule. name. temps. body}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:45'!
 set = _:name trans:val -> [{#Set. name. val}]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:00'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:00'!
 setHelped = [didSomething := true]! !
 
-!OMeta2NullOpt methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 trans =
 
 	{:t [t asLowercase asSymbol]:t ?[self class canUnderstand: t] pvtOMetaApply(t):ans} -> [ans]
 |	_! !
 
-!OMeta2NullOpt methodsFor: 'initialization' stamp: 'aw 5/20/2009 12:30'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'pb 4/27/2020 20:59:38'!
+trueiftrue =
+	trans:x -> [{#TrueIfTrue. x}]! !
+
+!OMeta2NullOptimizer methodsFor: 'initialization' stamp: 'aw 5/20/2009 12:30'!
 initialize
 
 	super initialize.
 	didSomething := false! !
 
-!OMeta2NullOpt methodsFor: 'grammar root' stamp: 'aw 5/20/2009 12:02'!
+!OMeta2NullOptimizer methodsFor: 'grammar root' stamp: 'aw 5/20/2009 12:02'!
 optimize = trans:x helped -> [x]! !
 
-!OMeta2AndOrOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:46'!
+!OMeta2AndOrOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:46'!
 and =
 
 	trans:x end setHelped -> [x]
 |	transInside(#And):xs -> [xs addFirst: #And; yourself]! !
 
-!OMeta2AndOrOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:46'!
+!OMeta2AndOrOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:46'!
 or =
 
 	trans:x end setHelped -> [x]
 |	transInside(#Or):xs -> [xs addFirst: #Or; yourself]! !
 
-!OMeta2AndOrOpt methodsFor: 'private' stamp: 'aw 5/20/2009 12:36'!
+!OMeta2AndOrOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:36'!
 transInside :t =
 
 	{exactly(t) transInside(t):xs} transInside(t):ys setHelped -> [xs, ys]
 |	trans:x transInside(t):xs -> [xs addFirst: x; yourself]
 |	empty -> [OrderedCollection new]! !
 
+!OMeta2FinalizeOptimizer methodsFor: 'private' stamp: 'pb 4/30/2020 23:08:55'!
+rule =
+	_:name _:temps trans:body
+		-> [OrderedCollection new
+			add: #Rule;
+			add: name;
+			add: temps;
+			add: ((#(#Or #TrueIfTrue) includes: body first)
+				ifTrue: [body]
+				ifFalse: [self setHelped. {#TrueIfTrue. body}]);
+			yourself]! !
+
+!OMeta2FinalizeOptimizer methodsFor: 'private' stamp: 'pb 4/28/2020 01:12:29'!
+set =
+	_:name trans:val
+		-> [{#Set.
+				name.
+				val first = #And
+					ifTrue: [
+						self setHelped.
+						{#TrueIfTrue. val}]
+					ifFalse: [val]}]! !
+
+!OMeta2Optimizer methodsFor: 'grammar root' stamp: 'pb 4/27/2020 20:42:56'!
+finalOptimizeRule = _:ans (OMeta2FinalizeOptimizer.optimize(ans):ans)* -> [ans]! !
+
 !OMeta2Optimizer methodsFor: 'grammar root' stamp: 'pb 6/7/2015 17:47'!
-optimizeRule = _:ans (OMeta2AndOrOpt.optimize(ans):ans)* -> [ans]! !
+optimizeRule = _:ans (OMeta2AndOrOptimizer.optimize(ans):ans)* -> [ans]! !
+
+!OMeta2Optimizer class methodsFor: 'optimize' stamp: 'pb 4/27/2020 22:31:33'!
+optimizeOMetaAst: ast
+	^ self
+		match:
+			(self
+				match: ast
+				with: #optimizeRule)
+		with: #finalOptimizeRule.! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 application =
@@ -630,10 +514,16 @@ application =
 |	name:grm $. nsName:rule args:as	-> [{#App. #pvtOMetaForeignParser. grm. ('#', rule) asSymbol}, as]
 |	name:rule args:as						-> [{#App. rule}, as]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:00'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 01:29:30'!
 args =
-
-	$( listOf(#squeakExpression. '.'):ans ")" -> [ans]
+	/* FIXME
+	$( (
+	listOf(#squeakArgExprOrWrappedInnerBlock, ',')
+	|  listOf(#squeakExpression, '.')
+	):ans ")" -> [ans]
+	*/
+	$( listOf(#squeakArgExprOrWrappedInnerBlock, ','):ans ")" -> [ans] // new syntax
+|	$( listOf(#squeakExpression, '.'):ans ")" -> ["Transcript show: 'legacy listOf syntax with args: ', ans asString; finishEntry." ans] // legacy syntax
 |	~$( -> [#()]! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:00'!
@@ -646,14 +536,14 @@ characters =
 
 	"``" (~($' $') char)*:xs $' $' -> [{#App. #seq. (String withAll: xs) storeString}]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 19:05'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 00:12:28'!
 expr =
 	// Wrap the sub-expressions with an 'or'.  If it's not needed, we'll optimize it away later.
-	listOf(#expr4. '|'):xs -> [(OrderedCollection with: #Or) addAll: xs; yourself]! !
+	listOf(#expr4, '|'):xs -> [(OrderedCollection with: #Or) addAll: xs; yourself]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/11/2015 18:56'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 14:34:33'!
 expr1 =
-	// Handle any syntactic sugar and parse the final expression
+	// Handle any syntactic sugar (brackets etc) and the rest of the expression
 	(keyword('true') | keyword('false') | keyword('nil')):lit -> [{#App. #exactly. lit}]
 |	application
 |	semanticAction
@@ -705,10 +595,10 @@ nameRest =
 
 	nameFirst | digit! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:03'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 00:31:49'!
 nsName =
 
-	firstAndRest(#nameFirst. #nameRest):xs -> [(String withAll: xs) asSymbol]
+	firstAndRest(#nameFirst, #nameRest):xs -> [(String withAll: xs) asSymbol]
 |	$_ -> [#anything]
 ! !
 
@@ -734,23 +624,40 @@ rulePart :ruleName =
 		|	empty			-> [b1]
 		)! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:05'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 4/29/2020 00:05:44'!
 semanticAction =
 
-	"->"? "[" squeakExpression:e $] -> [{#Act. e}]! !
+	"->"? "[" (squeakExpression:expr | squeakInnerBlock:blk) $]
+		-> [expr ifNil: [Array with: #SemBlkAct with: blk] ifNotNil: [Array with: #SemAct with: expr]]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:05'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 4/29/2020 00:31:55'!
 semanticPredicate =
 
-	"?[" squeakExpression:e $] -> [{#Pred. e}]! !
+	"?[" (squeakExpression:expr | squeakInnerBlock:blk) $]
+		-> [expr ifNil: [Array with: #SemBlkPred with: blk] ifNotNil: [Array with: #SemPred with: expr]]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/5/2015 22:15'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 00:32:43'!
 space =
 
-	^space | fromTo('/*'. '*/') | fromToEnd('//')! !
+	^space | fromTo('/*', '*/') | fromToEnd('//')! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/7/2015 17:48'!
-squeakExpression = O2SqueakRecognizer.squeakExpr:ans spaces -> [ans]! !
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 19:27:58'!
+squeakArgExprOrWrappedInnerBlock =
+
+	[self pvtOMetaGetExternalSmalltalkRecognizerClass]:recog
+	recog.squeakArgExprOrWrappedInnerBlock:ans spaces -> [ans]! !
+
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 19:28:13'!
+squeakExpression =
+
+	[self pvtOMetaGetExternalSmalltalkRecognizerClass]:recog
+	recog.squeakExpr:ans spaces -> [ans]! !
+
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 19:28:24'!
+squeakInnerBlock =
+
+	[self pvtOMetaGetExternalSmalltalkRecognizerClass]:recog
+	recog.squeakInnerBlock:ans spaces -> [ans]! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:06'!
 stringLiteral =
@@ -774,32 +681,42 @@ initialize
 	super initialize.
 	temps := IdentitySet new! !
 
-!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 6/11/2015 19:04'!
-rule =
-	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}] // This isn't OMeta code so we'll handoff to Squeak when the time comes
-|	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
+!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 4/27/2020 01:45:58'!
+ometaRule =
+	&(^space* nsName):n rulePart(n):x ("," rulePart(n))*:xs spaces end
 		-> [{#Rule. n. temps asSortedCollection. (OrderedCollection with: #Or with: x) addAll: xs; yourself}]! !
+
+!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 5/2/2020 14:36:30'!
+rule =
+	squeakRule
+|	ometaRule! !
+
+!OMeta2RuleParser methodsFor: 'grammar root' stamp: 'pb 4/27/2020 01:46:09'!
+squeakRule =
+	// This isn't OMeta code so we'll handoff to Squeak when the time comes
+	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}]! !
 
 !OMeta2RuleParser class methodsFor: 'testing' stamp: 'aw 2/23/2009 10:07'!
 isOMeta2Rule: aString
 
 	^ [(self matchAll: aString with: #rule) first ~= #Squeak] on: OM2Fail do: [false]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:07'!
-act = string:x -> [{'('. x. ')'}]! !
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/28/2020 23:53:08'!
+and =
+	trans*:xs -> [{self delim: xs with: '. '}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:08'!
-and = trans*:xs -> [{'(true ifTrue: ['. self delim: xs with: '. '. '])'}]! !
-
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/15/2020 03:34:54'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/30/2020 23:05:41'!
 app =
 	[self flag: #apply:;
 		flag: #apply:withArgs:]
 	symbol:rule
-	(	anything+:args [self delim: args with: '. ']:args -> [{'(self apply: '. rule storeString. ' withArgs: {'. args. '})'}]
+	(	anything+:args
+		-> [args size = 1
+				ifTrue: [{'(self apply: '. rule storeString. ' withArgument: '. args first. ')'}]
+				ifFalse: [{'(self apply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]
+			]
 	|	[{'(self apply: '. rule storeString. ')'}]
-	)
-! !
+	)! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 consby =
@@ -859,18 +776,41 @@ or =
 	[self flag: #pvtOMetaOr:]
 	(trans:x -> [{'['. x. ']'}])*:xs -> [{'(self pvtOMetaOr: {'. self delim: xs with: '. '. '})'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/15/2020 03:31:43'!
-pred =
-	[self flag: #pvtOMetaPred:]
-	string:x -> [{'(self pvtOMetaPred: ('. x. '))'}]! !
-
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/23/2018 03:00:30'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 02:50:16'!
 rule =
-
 	symbol:name
 	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
 	trans:body
-	-> [{name. self class constOMetaGeneratorString. ' |'. self delim: temps asSortedCollection with: ' '. ' | ^ '. body}]! !
+	-> [|oc tift|
+		tift := false.
+		oc := OrderedCollection new.
+		oc
+			add: name;
+			add: self class constOMetaGeneratorString;
+			add: ' |';
+			add: (self delim: temps asSortedCollection with: ' ');
+			add: ' | ^ '.
+		tift ifTrue: [oc add: 'true ifTrue: ["from #rule"'].
+		oc add: body.
+		tift ifTrue: [oc add: ']'].
+		oc]
+! !
+
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:07'!
+semact = string:x -> [{'('. x. ')'}]! !
+
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 00:07:28'!
+semblkact = string:x -> [{'true ifTrue:['. x. ']'}]! !
+
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 00:33:01'!
+semblkpred =
+	[self flag: #pvtOMetaPred:]
+	string:x -> [{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'}]! !
+
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/15/2020 03:31:43'!
+sempred =
+	[self flag: #pvtOMetaPred:]
+	string:x -> [{'(self pvtOMetaPred: ('. x. '))'}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:12'!
 set =
@@ -880,15 +820,23 @@ set =
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:12'!
 squeak = string! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/15/2020 03:32:25'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/30/2020 23:05:50'!
 superapp =
 	[self flag: #super:apply:withArgs:]
 	symbol:rule anything*:args
-	[self delim: args with: '. ']:args
-	-> [{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgs: {'. args. '})'}]! !
+		-> [args size = 1
+				ifTrue: [{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'}]
+				ifFalse: [{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]]
+! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 trans = {symbol:type pvtOMetaApply(type asLowercase asSymbol):ans} -> [ans]! !
+
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/28/2020 23:52:51'!
+trueiftrue =
+	[self flag: #ifTrue:]
+	trans*:xs -> [{'(true ifTrue: ['. xs. '])'}]
+! !
 
 !OMeta2RuleTranslator methodsFor: 'grammar root' stamp: 'pb 5/22/2015 19:13'!
 translate :grammarClass = trans! !
@@ -896,5 +844,286 @@ translate :grammarClass = trans! !
 !OMeta2RuleTranslator class methodsFor: 'constants' stamp: 'pb 5/23/2018 03:01:33'!
 constOMetaGeneratorString
 	^ '"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"'.! !
-O2SqueakRecognizer initialize!
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:43'!
+arrayConstr =
+
+	"{" expr ("." expr)* ("." | empty) "}"
+|	"{" "}"! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:56:31'!
+arrayLit =
+
+	"#" "(" (literal | arrayLit | arraySubLit | commentAndSpaces tsArraySymbol)* ")"! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:56:16'!
+arraySubLit =
+
+	// A subarray in an array literal doesn't require the leading #
+	"(" (literal | arrayLit | arraySubLit | commentAndSpaces tsArraySymbol)* ")"! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:56:50'!
+binary =
+
+	commentAndSpaces tsBinary! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
+binaryExpr =
+
+	binaryExpr binaryMsg
+|	unaryExpr! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
+binaryMsg =
+
+	binary unaryExpr! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:58:07'!
+block =
+
+	"["
+		(	(":" identifier)+ "|"
+		|	empty
+		)
+
+		(	"|" identifier* "|"
+		|	empty
+		)
+
+		commentAndSpaces
+
+		(	expr ("." expr)* ("." "^" expr | empty)
+		|	"^" expr
+		|	empty
+		)
+
+		commentAndSpaces
+
+		(	"."
+		|	empty
+		)
+
+		commentAndSpaces
+	"]"! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:58'!
+cascade =
+
+	identifier
+|	binaryMsg
+|	keywordMsg! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:42:23'!
+commentAndSpaces =
+
+	((spaces comment)+
+	| spaces comment?)
+	spaces
+! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 00:59'!
+expr =
+
+	identifier (":=" | "_") expr
+|	msgExpr! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:58:21'!
+identifier =
+
+	commentAndSpaces tsIdentifier ~$:! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:58:29'!
+keyword =
+
+	commentAndSpaces tsKeyword! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:19'!
+keywordExpr =
+
+	binaryExpr keywordMsg! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:19'!
+keywordMsg =
+
+	keywordMsg keywordMsgPart
+|	keywordMsgPart! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:20'!
+keywordMsgPart =
+
+	keyword binaryExpr! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 19:58:40'!
+literal =
+
+	commentAndSpaces (	tsNumber
+			|	tsCharacter
+			|	tsString
+			|	tsSymbol
+			)
+! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:21'!
+msgExpr =
+
+	(keywordExpr | binaryExpr) (";" cascade)*! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 14:39:05'!
+pvtGetTypeTable
+	^ useArgTypeTable
+		ifTrue: [ ArgTypeTable ]
+		ifFalse: [ TypeTable ].! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:23'!
+symbol =
+
+	"#" spaces
+		(	tsString
+		|	tsKeyword (tsIdentifier | empty)
+		)! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/1/2020 23:45:51'!
+tcBinaryChar =
+
+	char:x ?[(self pvtGetTypeTable at: x asciiValue) == #xBinary]! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
+tsArraySymbol =
+
+	tsKeyword+ (tsIdentifier | empty)
+|	tsIdentifier! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
+tsBinary =
+
+	($| | tcBinaryChar) tcBinaryChar*! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:25'!
+tsCharacter =
+
+	$$ char! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:26'!
+tsIdentifier =
+
+	letter (letter | digit)*! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:31'!
+tsKeyword =
+
+	tsIdentifier $:! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:26'!
+tsNatural =
+
+	digit+! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:27'!
+tsNumber =
+
+	($+ | $- | empty) tsNatural! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
+tsString =
+
+	$' ($' $' | ~$' char)* $'! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
+tsSymbol =
+
+	$# spaces (tsString | tsArraySymbol)! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:28'!
+unaryExpr =
+
+	unit identifier*! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private' stamp: 'aw 2/20/2009 01:29'!
+unit =
+
+	literal
+|	identifier
+|	arrayLit
+|	arrayConstr
+|	block
+|	"(" expr ")"
+! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/2/2020 00:09:00'!
+squeakArgExprOrWrappedInnerBlock =
+	"[" squeakInnerBlock:inner "]" -> ['(true ifTrue: [', inner, '])']
+|	[useArgTypeTable := true] squeakExpr:expr -> [expr]
+! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'aw 2/20/2009 01:30'!
+squeakExpr =
+
+	<expr>! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/2/2020 14:41:29'!
+squeakInnerBlock =
+	// Needed for OMeta semantic actions and predicates
+	<(	(":" identifier)+ "|"
+		|	empty
+		)
+
+		(	"|" identifier* "|"
+		|	empty
+		)
+
+		(	expr ("." expr)* ("." "^" expr | empty)
+		|	"^" expr
+		|	empty
+		)
+
+		(	"."
+		|	empty
+	)>:innerBlock -> [innerBlock]! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'initialization' stamp: 'pb 5/1/2020 23:44:37'!
+initialize
+	super initialize.
+	useArgTypeTable := false.! !
+
+!OMeta2SqueakSmalltalkRecognizer class methodsFor: 'class initialization' stamp: 'pb 5/2/2020 00:41:27'!
+initialize
+	TypeTable := #(#xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xDelimiter #xDelimiter #xBinary #xDelimiter #xDelimiter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #doIt #xBinary #xDelimiter #xBinary #xDoubleQuote #xLitQuote #xDollar #xBinary #xBinary #xSingleQuote #leftParenthesis #rightParenthesis #xBinary #xBinary #xBinary #xBinary #period #xBinary #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xDigit #xColon #semicolon #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBracket #xBinary #rightBracket #upArrow #leftArrow #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #leftBrace #verticalBar #rightBrace #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xLetter #xBinary #xBinary #xBinary #xBinary #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xLetter #xBinary ).
+	ArgTypeTable := TypeTable copy.
+	ArgTypeTable
+		at: 44
+		put: #xLetter.! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:56:23'!
+backtickExpr =
+
+	$` (~$` anything)* $`! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:56:28'!
+byteArrayLit =
+
+	"#" "[" (literal | commentAndSpaces tsArraySymbol)* "]" ! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:54:28'!
+identifier =
+
+	(commentAndSpaces backtickExpr)
+|	^ identifier! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:56:36'!
+msgExpr =
+
+	(keywordExpr | binaryExpr) (";" cascade)* ("::" cascade)*! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:56:41'!
+tsSymbolIdentifier =
+
+	<(letter | $_) (letter | digit | $_ | $:)*>! !
+
+!OMeta2CuisSmalltalkRecognizer methodsFor: 'private' stamp: 'pb 5/2/2020 18:56:45'!
+unit =
+
+	byteArrayLit
+|	backtickExpr
+|	^ unit! !
+OMeta2SqueakSmalltalkRecognizer initialize!
 OMeta2Package postPackageInstall!

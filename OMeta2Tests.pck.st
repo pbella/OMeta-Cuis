@@ -1,8 +1,8 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #3760] on QDate(2019-05-24T00:00:00+00:00D1:00:00:00) at 7:13:00 pm'!
+'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-02) at 2:31:05 pm'!
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 8!
+!provides: 'OMeta2Tests' 2 9!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -49,9 +49,9 @@ testForm
 	self should: (OMeta2DebugExample debugMatch: #('testing') with: #debugForm) = #('testing')
 ! !
 
-!OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 6/12/2015 15:04'!
+!OMeta2DebugTests methodsFor: 'test case' stamp: 'pb 5/2/2020 14:30:20'!
 testInfiniteRecursion
-	self flag: #fixme. "Also need to handle case where not eos but input not advancing"
+	self flag: #FIXME. "Also need to handle case where not eos but input not advancing"
 	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #infiniteRecursion] raise: OMeta2DebugError "Infinite recursion detected".
 ! !
 
@@ -70,9 +70,15 @@ testFactorial
 testGreeting
 	self should: (OMeta2Examples matchAll: 'howdy' with: #greeting) = 'howdy'! !
 
-!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:56'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/1/2020 03:41:31'!
 testIdentifierIndex
-	self should: (OMeta2Examples matchAll: 'abc123sd' with: #identifierIdx) = (Association key: 1 value: 9)! !
+	"rangeAssoc"
+	self
+		assert:
+			(OMeta2Examples
+				matchAll: 'abc123sd'
+				with: #identifierIdx)
+		equals: (1 -> 9).! !
 
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/23/2015 22:01'!
 testLambdaCalculus
@@ -238,10 +244,10 @@ test00Anything
 	self should: (OMeta2StepByStepExample matchAll: #($a 'b' (1 2 3) nil) with: #testManyAnything) = (OrderedCollection new add: $a; add: 'b'; add: #(1 2 3); add: nil; yourself). "in this case, the array is treated as a collection of objects to be matched"
 	self should: (OMeta2StepByStepExample matchAll: 'aaa' with: #testManyAnything) = (OrderedCollection new add: $a; add: $a; add: $a; yourself) "a string is just a collection of characters.  this will be hit on a couple of more times... it's important!!"! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/9/2015 23:04'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/2/2020 14:30:39'!
 test01Character
 	| emptyOC aOC aaaaaOC |
-	"fixme - need to cover letter, digit, etc."
+	"FIXME - need to cover letter, digit, etc."
 	"covers the use of literals as well as * and + operators with character matches"
 	emptyOC := OrderedCollection new.
 	aOC := (OrderedCollection new add: $a; yourself).
@@ -281,12 +287,24 @@ test03Sequence
 	self should: (OMeta2StepByStepExample matchAll: #($i $t $e $m $i $t $e $m) with: #testSeqString) = 'item'. "sequences of characters are strings as far as seq is concerned"
 	self should: (OMeta2StepByStepExample matchAll: #(1 2 3) with: #testSeqObject) = #(1 2 3). "not just for strings though"! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/1/2020 03:42:30'!
 test04ConsumedBy
+	"rangeAssoc"
 	"pvtOMetaConsumedBy <> and pvtOMetaIndexConsumedBy @<>"
-	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedBy) = 'feed me'. "Returns the input 'consumed' by the rule.  Now we don't have to deal with a collection of characters"
-	self should: (OMeta2StepByStepExample matchAll: 'feed me' with: #testConsumedByIndex) =
-(Association key: 1 value: 8) "this returns the positional index range of the beginning and end of the match"! !
+	"Returns the input 'consumed' by the rule.  Now we don't have to deal with a collection of characters"
+	self
+		assert:
+			(OMeta2StepByStepExample
+				matchAll: 'feed me'
+				with: #testConsumedBy)
+		equals: 'feed me'.
+	"this returns the positional index range of the beginning and end of the match"
+	self
+		assert:
+			(OMeta2StepByStepExample
+				matchAll: 'feed me'
+				with: #testConsumedByIndex)
+		equals: (1 -> 8).! !
 
 !OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/9/2019 23:22:07'!
 test05PredicateAction
@@ -306,9 +324,9 @@ test06PrioritizedChoice
 	self should: (OMeta2StepByStepExample matchAll: 'not' with: #testPrioritizedChoice) = 'not'.
 ! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/10/2015 00:45'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/2/2020 14:30:49'!
 test07Lookahead
-	"fixme - todo & operator"
+	"FIXME - todo & operator"
 	self should: (OMeta2StepByStepExample matchAll: '''not a double quote''' with: #testLookaheadNot) = #($' $n $o $t $  $a $  $d $o $u $b $l $e $  $q $u $o $t $e $') asOrderedCollection. "we get a sequence of characters back because this rule matches character by character."! !
 
 !OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 6/10/2015 14:36'!

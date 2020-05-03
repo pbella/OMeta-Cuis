@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4119] on QDate(2020-04-25) at 3:26:28 am'!
+'From Cuis 5.0 [latest update: #4128] on 3 May 2020 at 1:14:56 am'!
 'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
-!provides: 'OMeta2Examples' 2 9!
+!provides: 'OMeta2Examples' 2 10!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 
@@ -33,6 +33,16 @@ OMeta2 subclass: #OMeta2Examples
 	category: 'OMeta2Examples'!
 !classDefinition: 'OMeta2Examples class' category: #OMeta2Examples!
 OMeta2Examples class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2ExtendedSyntaxExamples category: #OMeta2Examples!
+OMeta2 subclass: #OMeta2ExtendedSyntaxExamples
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2ExtendedSyntaxExamples class' category: #OMeta2Examples!
+OMeta2ExtendedSyntaxExamples class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2LambdaCalculusParserExample category: #OMeta2Examples!
@@ -135,6 +145,9 @@ Here's how to run these examples:
 	OMeta2Examples matchAll: #($a $b $c 1 2 3 #(4 5)) with: #structure.
 	OMeta2Examples matchAll: 'howdy' with: #greeting.!
 
+!OMeta2ExtendedSyntaxExamples commentStamp: '<historical>' prior: 0!
+Several enhancements have been made to OMeta syntax.  These rules provide a quick comparison of the old (legacy*) and the new (extended*) ways of doing things.!
+
 !OMeta2LambdaCalculusParserExample commentStamp: '<historical>' prior: 0!
 A port of the Lambda Calculus parser from: http://www.tinlizzie.org/ometa-js/#Lambda_Calculus
 
@@ -184,10 +197,6 @@ See OMeta2TreeExample!
 debugForm =
 	{ 'testing' }! !
 
-!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/20/2016 22:19'!
-debugShouldTrace
-	^ true.! !
-
 !OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 6/12/2015 14:44'!
 infiniteRecursion  = irRule*! !
 
@@ -207,21 +216,25 @@ irRule = irField (exactly(delimCol) irField)* exactly(delimRow)?! !
 notASequence =
 	seq($a)! !
 
+!OMeta2DebugExample methodsFor: 'as yet unclassified' stamp: 'pb 5/1/2020 00:02:56'!
+pvtOMetaDebugShouldTrace
+	^ true.! !
+
 !OMeta2CsvExample methodsFor: 'ometa grammar' stamp: 'pb 5/23/2018 04:11:48'!
 csv =
 	row* -> [rows]! !
 
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:12:59'!
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 4/29/2020 02:50:56'!
 field =
 	<(~(exactly(delimCol) | exactly(delimRow)) anything)*>:field
-		-> [[curRow add: field.
-			Transcript show: 'field'; finishEntry] value]! !
+		-> [|| curRow add: field.
+			Transcript show: 'field'; finishEntry]! !
 
-!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:13:08'!
+!OMeta2CsvExample methodsFor: 'private' stamp: 'pb 4/29/2020 02:50:49'!
 row =
 	~end field (exactly(delimCol) field)* (exactly(delimRow) | end)
-		-> [[rows add: curRow.
-			curRow := OrderedCollection new] value]! !
+		-> [|| rows add: curRow.
+			curRow := OrderedCollection new]! !
 
 !OMeta2CsvExample methodsFor: 'initialization' stamp: 'pb 6/12/2015 04:21'!
 initialize
@@ -304,6 +317,54 @@ structure =
 
 	$a $b $c 1 2 3 {anything*}! !
 
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:09:32'!
+legacyParameterSyntax =
+	// This rule describes how things *used* to work in older versions of OMeta
+
+	// A period ($.) delimits multiple parameters
+	fromTo('/*'. '*/')
+
+	// A *single* param (i.e. one expression)
+	seq(Date today asString, ' ', Time now asString)
+! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 00:58:23'!
+legacySemanticSyntax =
+	// This rule describes how things *used* to work in older versions of OMeta
+
+	// Compound semantic predicates / actions
+	anything:any ?[[|result|
+							result := any notNil.
+							Transcript show: result asString.
+							result] value]
+		-> [[Transcript show: 'got something'.
+			any] value]! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:12:00'!
+extendedParameterSyntax =
+	// This rule describes how things *now* work in current versions of OMeta
+
+	// A comma ($,) delimits multiple parameters
+	fromTo('/*', '*/')
+
+	// To treat the following as a single expression, wrap in a block
+	seq([Date today asString, ' ', Time now asString])
+
+	// Note: legacy ($.) parameter syntax, while deprecated, still works.  Please update your code!! To see if/where you're using it,  uncomment the 'Transcript show:...' code in OMeta2RuleParser>>args! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 00:59:49'!
+extendedSemanticSyntax =
+	// This rule describes how things *now* work in current versions of OMeta
+
+	// Compound semantic predicates / actions
+	anything:any ?[|result|
+							result := any notNil.
+							Transcript show: result asString.
+							result]
+		-> [|| Transcript show: 'got something'.
+			"the || is to work around a parsing bug... yes, you can embed comments now!!"
+			any]! !
+
 !OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:06'!
 addExpr  = addExpr:x "+" mulExpr:y  -> [{'add'. x. y}]
          | addExpr:x "-" mulExpr:y             -> [{'sub'. x. y}]         
@@ -315,8 +376,8 @@ digit    = ^digit:d                 -> [d digitValue]! !
 !OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 05:07'!
 expr = addExpr:e -> [{e}]! !
 
-!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 17:57'!
-iName        = firstAndRest(#nameFirst. #nameRest):r -> [(String withAll: r) asSymbol]! !
+!OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/2/2020 01:25:12'!
+iName        = firstAndRest(#nameFirst, #nameRest):r -> [(String withAll: r) asSymbol]! !
 
 !OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:06'!
 logExpr  = logExpr:x "and" primExpr:y -> [{'and'. x. y}]
@@ -366,19 +427,19 @@ root = root:r  ";" expr:ef -> [r, ef]
 demo
 	^ self matchAll: 'x and y;x*y' with: #root.! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 21:43'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/2/2020 01:32:19'!
 app = #car                {{:hd anything*}}                -> [hd]
          | #cdr                {{:hd anything*:tl}}             -> [tl]
          | #cons               {:hd :tl}                              -> [{hd. tl}]
          | #atom               {:x}                                   -> [(x class = Array) not]
          | #eq                 {:x :y}                                 -> [(x == y)]
          | {#lambda :fs :body} :args
-             enter bind(fs. args) ev(body):ans leave     -> [ans]
+             enter bind(fs, args) ev(body):ans leave     -> [ans]
 ! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 19:00'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/2/2020 01:32:34'!
 bind   = {}                {}
-         | {:f anything*:fs} {:a anything*:as} bind(fs. as) -> [self envAt: f put: a]! !
+         | {:f anything*:fs} {:a anything*:as} bind(fs, as) -> [self envAt: f put: a]! !
 
 !OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2015 04:07'!
 condF  = ~condT anything! !
@@ -414,12 +475,12 @@ envAt: key put: value
 		at: key
 		put: value.! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/26/2015 18:09'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/2/2020 01:32:59'!
 ev    = string:a                                                    -> [self envAt: a]
          | {#lambda :fs :body}                                 -> [{#lambda. fs. body}]
          | {#quote   :ans}                                        -> [ans]
          | {#cond    evCond:ans}                             -> [ans]
-         | {ev:f        ev*:xs}     app(f. xs):ans            -> [ans]! !
+         | {ev:f        ev*:xs}     app(f, xs):ans            -> [ans]! !
 
 !OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/23/2018 04:17:44'!
 evCond = 
@@ -522,68 +583,70 @@ testConsumedByIndex =
 	// Sometimes you may only care about the positional indexes of the consumed range
 	@<testManyAnything>! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 02:15'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:27:29'!
 testFromTo =
 	// fromTo will find items between the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
-	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
-	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	fromTo('/* ', ' */'):first spaces (~``tex'' anything)+
 	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
 	<fromToEnd('tex')>:last -> [first, ' ', last]
 	
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
-	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 03:23'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:27:47'!
 testFromToObject =
-	/* fixme - wip.  trying to get this to work:
+	/* FIXME - wip.  trying to get this to work:
 	OMeta2StepByStepExample
 			matchAll: #((1 1) (2 2) (3 3) (4 4) (5 5) ($a 1) ($b 2) ($c 3) 'text' (123 456)) 
 			with: #testFromToObject.
 			*/
 	// fromTo will find items between (spatially) the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
-	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
-	[#(3 3)]:fromSeq (~seq(fromSeq) anything)* fromTo(fromSeq. #($b 2)):first  anything* //(~``text'' anything)+
+	[#(3 3)]:fromSeq (~seq(fromSeq) anything)* fromTo(fromSeq, #($b 2)):first  anything* //(~``text'' anything)+
 	-> [first]
 	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
 	//<fromToOrEnd('text'. nil)>:last -> [{first. last}]
 	
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
-	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 02:10'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:28:10'!
 testFromToOrEnd =
-	// fixme - broken.  the following should work when called from workspace:
+	// FIXME - broken.  the following should work when called from workspace:
 	//OMeta2StepByStepExample matchAll: '/* finding */ the test text...' with: #testFromToOrEnd.
 	// my best guess is that the issue is attempting to pass the variable rather than its value?
 
 	// fromTo will find items between the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
-	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	fromTo('/* ', ' */'):first spaces (~``tex'' anything)+
 	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
 	[Character newLineCharacter asString]:nl
-	<fromToOrEnd('tex'. nl)>:last -> [first, ' ', last]
+	<fromToOrEnd('tex', nl)>:last -> [first, ' ', last]
 	
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
-	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/11/2015 19:11'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:28:24'!
 testFromToString =
 	// fromTo will find items between (spatially) the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
-	// IMPORTANT: notice the $. separating arguments not a $,  This is because inside the parens is Smalltalk code containing array elements.
 	// spaces is a built in rule which consumes any whitespace
-	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+
+	fromTo('/* ', ' */'):first spaces (~``tex'' anything)+
 	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
 	<fromToEnd('tex')>:last -> [first, ' ', last]
 	
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
-	// fixme - can the 2nd param be optional and use lf only if not specified?! !
+	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
+
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 01:36:56'!
+testLegacyParameterSyntax =
+	fromTo('/* '. ' */'):first spaces (~``tex'' anything)+ // legacy syntax - the only thing different is that instead of using $, as parameter separators we use $.
+! !
 
 !OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 23:58'!
 testLiteralChar =
@@ -644,10 +707,25 @@ testSemanticAction =
 	// -> is the action to perform if the predicate succeeds
 	testConsumedBy:x ?[x='testing'] -> ['got it!!']! !
 
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 4/29/2020 00:48:12'!
+testSemanticActionBlock =
+	// An action can be a zero-argument block
+	testConsumedBy:x ?[x='testing']
+		-> [|tmpStr|
+			tmpStr := 'got it: '.
+			tmpStr, x]! !
+
 !OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 19:32'!
 testSemanticPredicate =
 	// ?expr is the semantic predicate, if it succeeds the match continues.  We're also assigning the match to x so that we can use it in the predicate.
 	testConsumedBy:x ?[x='testing']! !
+
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 4/29/2020 00:48:18'!
+testSemanticPredicateBlock =
+	// A predicate can be a zero-argument block
+	testConsumedBy:x ?[|other|
+		other := 4.
+		x='testing' and: [other = 4]]! !
 
 !OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 6/9/2015 18:30'!
 testSeqObject =
