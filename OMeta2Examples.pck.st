@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4128] on 3 May 2020 at 1:14:56 am'!
+'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-05) at 7:56:11 am'!
 'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
-!provides: 'OMeta2Examples' 2 10!
+!provides: 'OMeta2Examples' 2 11!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 
@@ -146,7 +146,7 @@ Here's how to run these examples:
 	OMeta2Examples matchAll: 'howdy' with: #greeting.!
 
 !OMeta2ExtendedSyntaxExamples commentStamp: '<historical>' prior: 0!
-Several enhancements have been made to OMeta syntax.  These rules provide a quick comparison of the old (legacy*) and the new (extended*) ways of doing things.!
+Several enhancements have been made to OMeta syntax.  These rules provide a quick comparison of the old (legacy*) and the new (extended*) ways of doing things.  For functionality that is additive (i.e. has no corresponding legacy implementation), the rule names will be in the form of new*.!
 
 !OMeta2LambdaCalculusParserExample commentStamp: '<historical>' prior: 0!
 A port of the Lambda Calculus parser from: http://www.tinlizzie.org/ometa-js/#Lambda_Calculus
@@ -317,29 +317,6 @@ structure =
 
 	$a $b $c 1 2 3 {anything*}! !
 
-!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:09:32'!
-legacyParameterSyntax =
-	// This rule describes how things *used* to work in older versions of OMeta
-
-	// A period ($.) delimits multiple parameters
-	fromTo('/*'. '*/')
-
-	// A *single* param (i.e. one expression)
-	seq(Date today asString, ' ', Time now asString)
-! !
-
-!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 00:58:23'!
-legacySemanticSyntax =
-	// This rule describes how things *used* to work in older versions of OMeta
-
-	// Compound semantic predicates / actions
-	anything:any ?[[|result|
-							result := any notNil.
-							Transcript show: result asString.
-							result] value]
-		-> [[Transcript show: 'got something'.
-			any] value]! !
-
 !OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:12:00'!
 extendedParameterSyntax =
 	// This rule describes how things *now* work in current versions of OMeta
@@ -364,6 +341,37 @@ extendedSemanticSyntax =
 		-> [|| Transcript show: 'got something'.
 			"the || is to work around a parsing bug... yes, you can embed comments now!!"
 			any]! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:09:32'!
+legacyParameterSyntax =
+	// This rule describes how things *used* to work in older versions of OMeta
+
+	// A period ($.) delimits multiple parameters
+	fromTo('/*'. '*/')
+
+	// A *single* param (i.e. one expression)
+	seq(Date today asString, ' ', Time now asString)
+! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 00:58:23'!
+legacySemanticSyntax =
+	// This rule describes how things *used* to work in older versions of OMeta
+
+	// Compound semantic predicates / actions
+	anything:any ?[[|result|
+							result := any notNil.
+							Transcript show: result asString.
+							result] value]
+		-> [[Transcript show: 'got something'.
+			any] value]! !
+
+!OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 18:55:18'!
+newThisRule =
+	// New functionality for self-referencing rules (esp. left-recursion).  You can optionally use thisRule rather than newThisRule to reference the current rule in the same way self references the current object in Smalltalk code
+	// FIXME - TODO
+
+	thisRule 'ok'
+	| 'ok'! !
 
 !OMeta2LambdaCalculusParserExample methodsFor: 'private' stamp: 'pb 5/23/2015 18:06'!
 addExpr  = addExpr:x "+" mulExpr:y  -> [{'add'. x. y}]

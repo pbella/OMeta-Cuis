@@ -461,14 +461,14 @@ anything
 	input := input tail.
 	^ ans! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:01'!
-pvtOMetaApply
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 14:01'!
+applyRule
 	| aRule |
-	aRule := self apply: #anything.
-	^ self apply: aRule! !
+	aRule := self privateOMetaApply: #anything.
+	^ self privateOMetaApply: aRule! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 01:00'!
-apply: aRule
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+privateOMetaApply: aRule
     "A memoRec is an association whose key is the answer, and whose value is the next input. Failers pretend to be memoRecs, but throw a fail in response to #value"
 	| memo memoRec |
 	input == haltingPoint ifTrue: [self halt].
@@ -500,15 +500,15 @@ apply: aRule
 	input := memoRec value.
 	^ memoRec key! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 20:00'!
-apply: aRule withArgument: arg
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/30/2020 20:00'!
+privateOMetaApply: aRule withArgument: arg
 	input := OM2Stream new
 		initHead: arg
 		tail: input.
 	^ self perform: aRule.! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 13:39'!
-apply: aRule withArgs: args
+!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 13:39'!
+privateOMetaApply: aRule withArgs: args
 
 	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
 	^ self perform: aRule! !
@@ -531,10 +531,10 @@ pvtOMetaConsumedBy: aBlock
 pvtOMetaForeignParser
 
 	| aGrammar aRule g ans |
-	aGrammar := self apply: #anything.
-	aRule := self apply: #anything.
+	aGrammar := self privateOMetaApply: #anything.
+	aRule := self privateOMetaApply: #anything.
 	g := aGrammar new initOMetaInputStream: (OM2StreamProxy for: input).
-	ans := g apply: aRule.
+	ans := g privateOMetaApply: aRule.
 	input := g ometaInputStream target.
 	^ ans! !
 
@@ -561,12 +561,12 @@ pvtOMetaIsForm: obj
 pvtOMetaForm: aBlock
 
 	| v origInput |
-	v := self apply: #anything.
+	v := self privateOMetaApply: #anything.
 	self pvtOMetaPred: (self pvtOMetaIsForm: v).
 	origInput := input.
 	input := self pvtOMetaStreams at: v ifAbsentPut: [OM2LazyStream for: v readStream withPos: 1].
 	aBlock value.
-	self apply: #end.
+	self privateOMetaApply: #end.
 	input := origInput.
 	^ v! !
 
@@ -678,23 +678,23 @@ pvtOMetaPred: aBooleanValue
 seq
 
 	| xs |
-	xs := self apply: #anything.
+	xs := self privateOMetaApply: #anything.
 	xs do: [:x |
-		" may want to inline #apply:withArgs: below as an
+		" may want to inline #privateOMetaApply:withArgs: below as an
 		  optimization, since this rule gets used a lot "
-		self apply: #exactly withArgument: x
+		self privateOMetaApply: #exactly withArgument: x
 	].
 	^ xs
 	! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 15:03'!
-super: superclass apply: aRule withArgs: args
+!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 15:03'!
+pvtOMetaSuper: superclass apply: aRule withArgs: args
 
 	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
 	^ self perform: aRule withArguments: #() inSuperclass: superclass! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 20:00'!
-super: superclass apply: aRule withArgument: argument
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/30/2020 20:00'!
+pvtOMetaSuper: superclass apply: aRule withArgument: argument
 
 	input := OM2Stream new initHead: argument tail: input.
 	^ self perform: aRule withArguments: #() inSuperclass: superclass! !
@@ -749,9 +749,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 	input := OM2LazyStream for: aReadStream withPos: 1.
 	matcher := self new initOMetaInputStream: input.
 	[
-		matcher apply: #empty withArgs: args.
-		ans := matcher apply: aRule.
-		matcher apply: #end.
+		matcher privateOMetaApply: #empty withArgs: args.
+		ans := matcher privateOMetaApply: aRule.
+		matcher privateOMetaApply: #end.
 	] on: OM2Fail do: [:e |
 		| curr prev prevPrev |
 		debugging ifFalse: [e pass].
@@ -773,9 +773,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		curr ifNil: [self error: 'you''ve found a bug -- please report it'].
 		curr become: (OM2StreamDebugger for: curr copy).
 		matcher ometaHaltingPoint: curr.
-		matcher apply: #empty withArgs: args.
-		ans := matcher apply: aRule.
-		matcher apply: #end.
+		matcher privateOMetaApply: #empty withArgs: args.
+		ans := matcher privateOMetaApply: aRule.
+		matcher privateOMetaApply: #end.
 	].
 	^ ans! !
 
@@ -862,14 +862,14 @@ Smalltalk implementation!
 !OMeta2 methodsFor: 'private-ometa2preload'!
 char
 	| t1 |
-	t1 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: (t1 isKindOf: Character).
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 digit
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isDigit.
 	^ t1! !
 
@@ -880,44 +880,44 @@ empty
 !OMeta2 methodsFor: 'private-ometa2preload'!
 end
 	^ self
-		pvtOMetaNot: [self apply: #anything]! !
+		pvtOMetaNot: [self privateOMetaApply: #anything]! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 exactly
 	| t1 t2 |
-	t1 := self apply: #anything.
-	t2 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
+	t2 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: t1 = t2.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 firstAndRest
 	| t1 t2 |
-	t1 := self apply: #anything.
-	t2 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
+	t2 := self privateOMetaApply: #anything.
 	^ self
-		pvtOMetaGenericMany: [self apply: t2]
+		pvtOMetaGenericMany: [self privateOMetaApply: t2]
 		into: (OrderedCollection
-				with: (self apply: t1))! !
+				with: (self privateOMetaApply: t1))! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 fromTo
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| t x y |
 	^ true ifTrue: [
-		x := self apply: #anything.
-		y := self apply: #anything.
+		x := self privateOMetaApply: #anything.
+		y := self privateOMetaApply: #anything.
 		self
-			apply: #seq
+			privateOMetaApply: #seq
 			withArgument: x.
 		t := self pvtOMetaMany: [
 			self pvtOMetaNot: [
 				self
-					apply: #seq
+					privateOMetaApply: #seq
 					withArgument: y ].
-			self apply: #anything ].
+			self privateOMetaApply: #anything ].
 		self
-			apply: #seq
+			privateOMetaApply: #seq
 			withArgument: y.
 		t ]! !
 
@@ -926,10 +926,10 @@ fromToEnd
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| from to |
 	^ true ifTrue: [
-		from := self apply: #anything.
+		from := self privateOMetaApply: #anything.
 		to := Character newLineCharacter asString.
 		self
-			apply: #fromToOrEnd
+			privateOMetaApply: #fromToOrEnd
 			withArgs:
 				{from. to} ]! !
 
@@ -938,121 +938,121 @@ fromToOrEnd
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| t x y |
 	^ true ifTrue: [
-		x _ self apply: #anything.
-		y _ self apply: #anything.
+		x _ self privateOMetaApply: #anything.
+		y _ self privateOMetaApply: #anything.
 		self
-			apply: #seq
+			privateOMetaApply: #seq
 			withArgument: x.
 		t _ self pvtOMetaMany: [
 			self pvtOMetaNot: [
 				self
-					apply: #seq
+					privateOMetaApply: #seq
 					withArgument: y ].
-			self apply: #anything ].
+			self privateOMetaApply: #anything ].
 		self pvtOMetaOr:
 			{
 				[
 				self
-					apply: #seq
+					privateOMetaApply: #seq
 					withArgument: y ]. 
-				[ self apply: #end ]
+				[ self privateOMetaApply: #end ]
 			}.
 		t ]! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 letter
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isLetter.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 letterOrDigit
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isAlphaNumeric.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 listOf
 	| t1 t2 t3 |
-	t1 := self apply: #anything.
-	t2 := self apply: #anything.
-	^ self pvtOMetaOr: {[t3 := self apply: t1.
+	t1 := self privateOMetaApply: #anything.
+	t2 := self privateOMetaApply: #anything.
+	^ self pvtOMetaOr: {[t3 := self privateOMetaApply: t1.
 		self
-			pvtOMetaGenericMany: [self apply: #token withArgument: t2.
-				self apply: t1]
+			pvtOMetaGenericMany: [self privateOMetaApply: #token withArgument: t2.
+				self privateOMetaApply: t1]
 			into: (OrderedCollection with: t3)]. [#()]}! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 lower
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isLowercase.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 notLast
 	| t1 t2 |
-	t1 := self apply: #anything.
-	t2 := self apply: t1.
+	t1 := self privateOMetaApply: #anything.
+	t2 := self privateOMetaApply: t1.
 	self
-		pvtOMetaLookahead: [self apply: t1].
+		pvtOMetaLookahead: [self privateOMetaApply: t1].
 	^ t2! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 number
 	| t1 |
-	t1 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: t1 isNumber.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 range
 	| t1 t2 t3 |
-	t1 := self apply: #anything.
-	t2 := self apply: #anything.
-	t3 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
+	t2 := self privateOMetaApply: #anything.
+	t3 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: t1 <= t3 & (t3 <= t2).
 	^ t3! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 space
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 asciiValue <= 32.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 spaces
 	^ self
-		pvtOMetaMany: [self apply: #space]! !
+		pvtOMetaMany: [self privateOMetaApply: #space]! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 string
 	| t1 |
-	t1 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: t1 isString.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 symbol
 	| t1 |
-	t1 := self apply: #anything.
+	t1 := self privateOMetaApply: #anything.
 	self pvtOMetaPred: t1 isSymbol.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 token
 	| t1 |
-	t1 := self apply: #anything.
-	self apply: #spaces.
-	^ self apply: #seq withArgument: t1! !
+	t1 := self privateOMetaApply: #anything.
+	self privateOMetaApply: #spaces.
+	^ self privateOMetaApply: #seq withArgument: t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 upper
 	| t1 |
-	t1 := self apply: #char.
+	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isUppercase.
 	^ t1! !
 
@@ -1064,22 +1064,22 @@ application
 		{
 			[
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: '^'.
-			rule _ self apply: #name.
-			as _ self apply: #args.
+			rule _ self privateOMetaApply: #name.
+			as _ self privateOMetaApply: #args.
 			{#SuperApp. rule} , as ]. 
 			[
-			grm _ self apply: #name.
+			grm _ self privateOMetaApply: #name.
 			self
-				apply: #exactly
+				privateOMetaApply: #exactly
 				withArgument: $..
-			rule _ self apply: #nsName.
-			as _ self apply: #args.
+			rule _ self privateOMetaApply: #nsName.
+			as _ self privateOMetaApply: #args.
 			{#App. #pvtOMetaForeignParser. grm. ('#' , rule) asSymbol} , as ]. 
 			[
-			rule _ self apply: #name.
-			as _ self apply: #args.
+			rule _ self privateOMetaApply: #name.
+			as _ self privateOMetaApply: #args.
 			{#App. rule} , as ]
 		}! !
 
@@ -1091,26 +1091,26 @@ args
 		{
 			[
 			self
-				apply: #exactly
+				privateOMetaApply: #exactly
 				withArgument: $(.
 			ans := self
-				apply: #listOf
+				privateOMetaApply: #listOf
 				withArgs:
 					{#squeakArgExprOrWrappedInnerBlock. ','}.
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: ')'.
 			ans ]. 
 			[
 			self
-				apply: #exactly
+				privateOMetaApply: #exactly
 				withArgument: $(.
 			ans := self
-				apply: #listOf
+				privateOMetaApply: #listOf
 				withArgs:
 					{#squeakExpression. '.'}.
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: ')'.
 			true ifTrue: [
 			    "FIXME - uncomment to show warnings while loading...
@@ -1119,7 +1119,7 @@ args
 			[
 			self pvtOMetaNot: [
 				self
-					apply: #exactly
+					privateOMetaApply: #exactly
 					withArgument: $( ].
 			#() ]
 		}.! !
@@ -1127,68 +1127,68 @@ args
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 characterLiteral
 	| t1 |
-	self apply: #spaces.
-	self apply: #exactly withArgument: $$.
-	t1 := self apply: #char.
+	self privateOMetaApply: #spaces.
+	self privateOMetaApply: #exactly withArgument: $$.
+	t1 := self privateOMetaApply: #char.
 	^ {#App. #exactly. t1 storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 characters
 	| t1 |
-	self apply: #token withArgument: '``'.
+	self privateOMetaApply: #token withArgument: '``'.
 	t1 := self
 				pvtOMetaMany: [self
-						pvtOMetaNot: [self apply: #exactly withArgument: $'.
-							self apply: #exactly withArgument: $'].
-					self apply: #char].
-	self apply: #exactly withArgument: $'.
-	self apply: #exactly withArgument: $'.
+						pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $'.
+							self privateOMetaApply: #exactly withArgument: $'].
+					self privateOMetaApply: #char].
+	self privateOMetaApply: #exactly withArgument: $'.
+	self privateOMetaApply: #exactly withArgument: $'.
 	^ {#App. #seq. (String withAll: t1) storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr
 	| t1 |
-	t1 := self apply: #listOf withArgs: {#expr4. '|'}.
+	t1 := self privateOMetaApply: #listOf withArgs: {#expr4. '|'}.
 	^ (OrderedCollection with: #Or) addAll: t1;
 		 yourself! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr1
 	| t1 t2 |
-	^ self pvtOMetaOr: {[t1 := self pvtOMetaOr: {[self apply: #keyword withArgument: 'true']. [self apply: #keyword withArgument: 'false']. [self apply: #keyword withArgument: 'nil']}.
-		{#App. #exactly. t1}]. [self apply: #application]. [self apply: #semanticAction]. [self apply: #semanticPredicate]. [self apply: #characters]. [self apply: #tokenSugar]. [self apply: #stringLiteral]. [self apply: #symbolLiteral]. [self apply: #numberLiteral]. [self apply: #characterLiteral]. [self apply: #token withArgument: '{'.
-		t2 := self apply: #expr.
-		self apply: #token withArgument: '}'.
-		{#Form. t2}]. [self apply: #token withArgument: '<'.
-		t2 := self apply: #expr.
-		self apply: #token withArgument: '>'.
-		{#ConsBy. t2}]. [self apply: #token withArgument: '@<'.
-		t2 := self apply: #expr.
-		self apply: #token withArgument: '>'.
-		{#IdxConsBy. t2}]. [self apply: #token withArgument: '('.
-		t2 := self apply: #expr.
-		self apply: #token withArgument: ')'.
+	^ self pvtOMetaOr: {[t1 := self pvtOMetaOr: {[self privateOMetaApply: #keyword withArgument: 'true']. [self privateOMetaApply: #keyword withArgument: 'false']. [self privateOMetaApply: #keyword withArgument: 'nil']}.
+		{#App. #exactly. t1}]. [self privateOMetaApply: #application]. [self privateOMetaApply: #semanticAction]. [self privateOMetaApply: #semanticPredicate]. [self privateOMetaApply: #characters]. [self privateOMetaApply: #tokenSugar]. [self privateOMetaApply: #stringLiteral]. [self privateOMetaApply: #symbolLiteral]. [self privateOMetaApply: #numberLiteral]. [self privateOMetaApply: #characterLiteral]. [self privateOMetaApply: #token withArgument: '{'.
+		t2 := self privateOMetaApply: #expr.
+		self privateOMetaApply: #token withArgument: '}'.
+		{#Form. t2}]. [self privateOMetaApply: #token withArgument: '<'.
+		t2 := self privateOMetaApply: #expr.
+		self privateOMetaApply: #token withArgument: '>'.
+		{#ConsBy. t2}]. [self privateOMetaApply: #token withArgument: '@<'.
+		t2 := self privateOMetaApply: #expr.
+		self privateOMetaApply: #token withArgument: '>'.
+		{#IdxConsBy. t2}]. [self privateOMetaApply: #token withArgument: '('.
+		t2 := self privateOMetaApply: #expr.
+		self privateOMetaApply: #token withArgument: ')'.
 		t2]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr2
 	| t1 |
-	^ self pvtOMetaOr: {[self apply: #token withArgument: '~'.
-		t1 := self apply: #expr2.
-		{#Not. t1}]. [self apply: #token withArgument: '&'.
-		t1 := self apply: #expr2.
-		{#Lookahead. t1}]. [self apply: #expr1]}! !
+	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '~'.
+		t1 := self privateOMetaApply: #expr2.
+		{#Not. t1}]. [self privateOMetaApply: #token withArgument: '&'.
+		t1 := self privateOMetaApply: #expr2.
+		{#Lookahead. t1}]. [self privateOMetaApply: #expr1]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 expr3
 	| t1 t2 |
-	^ self pvtOMetaOr: {[t1 := self apply: #expr2.
-		t1 := self apply: #optIter withArgument: t1.
-		self pvtOMetaOr: {[self apply: #exactly withArgument: $:.
-			t2 := self apply: #nsName.
+	^ self pvtOMetaOr: {[t1 := self privateOMetaApply: #expr2.
+		t1 := self privateOMetaApply: #optIter withArgument: t1.
+		self pvtOMetaOr: {[self privateOMetaApply: #exactly withArgument: $:.
+			t2 := self privateOMetaApply: #nsName.
 			temps add: t2.
-			{#Set. t2. t1}]. [t1]}]. [self apply: #token withArgument: ':'.
-		t2 := self apply: #nsName.
+			{#Set. t2. t1}]. [t1]}]. [self privateOMetaApply: #token withArgument: ':'.
+		t2 := self privateOMetaApply: #nsName.
 		temps add: t2.
 		{#Set. t2. {#App. #anything}}]}! !
 
@@ -1196,7 +1196,7 @@ expr3
 expr4
 	| t1 |
 	t1 := self
-				pvtOMetaMany: [self apply: #expr3].
+				pvtOMetaMany: [self privateOMetaApply: #expr3].
 	^ (OrderedCollection with: #And) addAll: t1;
 		 yourself! !
 
@@ -1208,52 +1208,52 @@ initialize
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 keyword
 	| t1 |
-	t1 := self apply: #anything.
-	self apply: #token withArgument: t1.
+	t1 := self privateOMetaApply: #anything.
+	self privateOMetaApply: #token withArgument: t1.
 	self
-		pvtOMetaNot: [self apply: #letterOrDigit].
+		pvtOMetaNot: [self privateOMetaApply: #letterOrDigit].
 	^ t1! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 name
-	self apply: #spaces.
-	^ self apply: #nsName! !
+	self privateOMetaApply: #spaces.
+	^ self privateOMetaApply: #nsName! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nameFirst
-	^ self apply: #letter! !
+	^ self privateOMetaApply: #letter! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nameRest
-	^ self pvtOMetaOr: {[self apply: #nameFirst]. [self apply: #digit]}! !
+	^ self pvtOMetaOr: {[self privateOMetaApply: #nameFirst]. [self privateOMetaApply: #digit]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 nsName
 	| t1 |
-	^ self pvtOMetaOr: {[t1 := self apply: #firstAndRest withArgs: {#nameFirst. #nameRest}.
-		(String withAll: t1) asSymbol]. [self apply: #exactly withArgument: $_.
+	^ self pvtOMetaOr: {[t1 := self privateOMetaApply: #firstAndRest withArgs: {#nameFirst. #nameRest}.
+		(String withAll: t1) asSymbol]. [self privateOMetaApply: #exactly withArgument: $_.
 		^ #anything]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 numberLiteral
 	| t1 t2 |
-	self apply: #spaces.
-	t1 := self pvtOMetaOr: {[self apply: #exactly withArgument: $-.
-				self apply: #spaces.
+	self privateOMetaApply: #spaces.
+	t1 := self pvtOMetaOr: {[self privateOMetaApply: #exactly withArgument: $-.
+				self privateOMetaApply: #spaces.
 				-1]. [1]}.
 	t2 := self
-				pvtOMetaMany1: [self apply: #digit].
+				pvtOMetaMany1: [self privateOMetaApply: #digit].
 	^ {#App. #exactly. (t1 * (String withAll: t2) asNumber) storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 optIter
 	| t1 |
-	t1 := self apply: #anything.
-	^ self pvtOMetaOr: {[self apply: #token withArgument: '*'.
-		{#Many. t1}]. [self apply: #token withArgument: '+'.
-		{#Many1. t1}]. [self apply: #token withArgument: '?'.
+	t1 := self privateOMetaApply: #anything.
+	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '*'.
+		{#Many. t1}]. [self privateOMetaApply: #token withArgument: '+'.
+		{#Many1. t1}]. [self privateOMetaApply: #token withArgument: '?'.
 		self
-			pvtOMetaNot: [self apply: #exactly withArgument: $[].
+			pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $[].
 		{#Opt. t1}]. [t1]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1264,22 +1264,22 @@ ometaRule
 		n := self pvtOMetaLookahead: [
 			self pvtOMetaMany: [
 				self
-					super: OMeta2
+					pvtOMetaSuper: OMeta2
 					apply: #space
 					withArgs: #() ].
-			self apply: #nsName ].
+			self privateOMetaApply: #nsName ].
 		x := self
-			apply: #rulePart
+			privateOMetaApply: #rulePart
 			withArgument: n.
 		xs := self pvtOMetaMany: [
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: ','.
 			self
-				apply: #rulePart
+				privateOMetaApply: #rulePart
 				withArgument: n ].
-		self apply: #spaces.
-		self apply: #end.
+		self privateOMetaApply: #spaces.
+		self privateOMetaApply: #end.
 		{
 			#Rule. 
 			n. 
@@ -1299,32 +1299,32 @@ squeakRule
 		self pvtOMetaNot: [
 			self pvtOMetaMany: [
 				self
-					super: OMeta2
+					pvtOMetaSuper: OMeta2
 					apply: #space
 					withArgs: #() ].
-			self apply: #nsName.
-			self apply: #expr4.
+			self privateOMetaApply: #nsName.
+			self privateOMetaApply: #expr4.
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: '=' ].
-		squeakCode _ self pvtOMetaConsumedBy: [ self pvtOMetaMany: [ self apply: #char ]].
+		squeakCode _ self pvtOMetaConsumedBy: [ self pvtOMetaMany: [ self privateOMetaApply: #char ]].
 		{#Squeak. squeakCode} ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ self pvtOMetaOr:
-		{[ self apply: #squeakRule ]. [ self apply: #ometaRule ]}.! !
+		{[ self privateOMetaApply: #squeakRule ]. [ self privateOMetaApply: #ometaRule ]}.! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rulePart
 	| t1 t2 t3 |
-	t1 := self apply: #anything.
-	self pvtOMetaPred: (self apply: #name)
+	t1 := self privateOMetaApply: #anything.
+	self pvtOMetaPred: (self privateOMetaApply: #name)
 			= t1.
-	t2 := self apply: #expr4.
-	^ self pvtOMetaOr: {[self apply: #token withArgument: '='.
-		t3 := self apply: #expr.
+	t2 := self privateOMetaApply: #expr4.
+	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '='.
+		t3 := self privateOMetaApply: #expr.
 		{#And. t2. t3}]. [t2]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1334,15 +1334,15 @@ semanticAction
 	^ true ifTrue: [
 		self pvtOMetaOpt: [
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: '->' ].
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '['.
 		self pvtOMetaOr:
-			{[ expr := self apply: #squeakExpression ]. [ blk := self apply: #squeakInnerBlock ]}.
+			{[ expr := self privateOMetaApply: #squeakExpression ]. [ blk := self privateOMetaApply: #squeakInnerBlock ]}.
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $].
 		expr
 			ifNil: [
@@ -1360,12 +1360,12 @@ semanticPredicate
 	| blk expr |
 	^ true ifTrue: [
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '?['.
 		self pvtOMetaOr:
-			{[ expr := self apply: #squeakExpression ]. [ blk := self apply: #squeakInnerBlock ]}.
+			{[ expr := self privateOMetaApply: #squeakExpression ]. [ blk := self privateOMetaApply: #squeakInnerBlock ]}.
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $].
 		expr
 			ifNil: [
@@ -1384,17 +1384,17 @@ space
 		{
 			[
 			self
-				super: OMeta2
+				pvtOMetaSuper: OMeta2
 				apply: #space
 				withArgs: #() ]. 
 			[
 			self
-				apply: #fromTo
+				privateOMetaApply: #fromTo
 				withArgs:
 					{'/*'. '*/'} ]. 
 			[
 			self
-				apply: #fromToEnd
+				privateOMetaApply: #fromToEnd
 				withArgument: '//' ]
 		}! !
 
@@ -1405,10 +1405,10 @@ squeakArgExprOrWrappedInnerBlock
 	^ true ifTrue: [
 		recog _ self pvtOMetaGetExternalSmalltalkRecognizerClass.
 		ans _ self
-			apply: #pvtOMetaForeignParser
+			privateOMetaApply: #pvtOMetaForeignParser
 			withArgs:
 				{recog. #squeakArgExprOrWrappedInnerBlock}.
-		self apply: #spaces.
+		self privateOMetaApply: #spaces.
 		ans ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1418,10 +1418,10 @@ squeakExpression
 	^ true ifTrue: [
 		recog := self pvtOMetaGetExternalSmalltalkRecognizerClass.
 		ans := self
-			apply: #pvtOMetaForeignParser
+			privateOMetaApply: #pvtOMetaForeignParser
 			withArgs:
 				{recog. #squeakExpr}.
-		self apply: #spaces.
+		self privateOMetaApply: #spaces.
 		ans ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
@@ -1431,41 +1431,41 @@ squeakInnerBlock
 	^ true ifTrue: [
 		recog := self pvtOMetaGetExternalSmalltalkRecognizerClass.
 		ans := self
-			apply: #pvtOMetaForeignParser
+			privateOMetaApply: #pvtOMetaForeignParser
 			withArgs:
 				{recog. #squeakInnerBlock}.
-		self apply: #spaces.
+		self privateOMetaApply: #spaces.
 		ans ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 stringLiteral
 	| t1 |
-	self apply: #token withArgument: ''''.
+	self privateOMetaApply: #token withArgument: ''''.
 	t1 := self
-				pvtOMetaMany: [self pvtOMetaOr: {[self apply: #exactly withArgument: $'.
-						self apply: #exactly withArgument: $'.
+				pvtOMetaMany: [self pvtOMetaOr: {[self privateOMetaApply: #exactly withArgument: $'.
+						self privateOMetaApply: #exactly withArgument: $'.
 						$']. [self
-							pvtOMetaNot: [self apply: #exactly withArgument: $'].
-						self apply: #char]}].
-	self apply: #exactly withArgument: $'.
+							pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $'].
+						self privateOMetaApply: #char]}].
+	self privateOMetaApply: #exactly withArgument: $'.
 	^ {#App. #exactly. (String withAll: t1) storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 symbolLiteral
 	| t1 |
-	self apply: #token withArgument: '#'.
-	t1 := self apply: #nsName.
+	self privateOMetaApply: #token withArgument: '#'.
+	t1 := self privateOMetaApply: #nsName.
 	^ {#App. #exactly. t1 storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 tokenSugar
 	| t1 |
-	self apply: #token withArgument: '"'.
+	self privateOMetaApply: #token withArgument: '"'.
 	t1 := self
 				pvtOMetaMany: [self
-						pvtOMetaNot: [self apply: #exactly withArgument: $"].
-					self apply: #char].
-	self apply: #exactly withArgument: $".
+						pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $"].
+					self privateOMetaApply: #char].
+	self privateOMetaApply: #exactly withArgument: $".
 	^ {#App. #token. (String withAll: t1) storeString}! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -1495,10 +1495,10 @@ optimizeRule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| ans |
 	^ true ifTrue: [
-		ans := self apply: #anything.
+		ans := self privateOMetaApply: #anything.
 		self pvtOMetaMany: [
 			ans := self
-				apply: #pvtOMetaForeignParser
+				privateOMetaApply: #pvtOMetaForeignParser
 				withArgs:
 					{OMeta2AndOrOptimizer. #optimize. ans} ].
 		ans ]! !
@@ -1509,10 +1509,10 @@ finalOptimizeRule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| ans |
 	^ true ifTrue: [
-		ans _ self apply: #anything.
+		ans _ self privateOMetaApply: #anything.
 		self pvtOMetaMany: [
 			ans _ self
-				apply: #pvtOMetaForeignParser
+				privateOMetaApply: #pvtOMetaForeignParser
 				withArgs:
 					{OMeta2FinalizeOptimizer. #optimize. ans} ].
 		ans ]! !
@@ -1520,39 +1520,39 @@ finalOptimizeRule
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 arrayConstr
 	^ self pvtOMetaOr: {[true
-			ifTrue: [self apply: #token withArgument: '{'.
-				self apply: #expr.
+			ifTrue: [self privateOMetaApply: #token withArgument: '{'.
+				self privateOMetaApply: #expr.
 				self
 					pvtOMetaMany: [true
-							ifTrue: [self apply: #token withArgument: '.'.
-								self apply: #expr]].
-				self pvtOMetaOr: {[self apply: #token withArgument: '.']. [self apply: #empty]}.
-				self apply: #token withArgument: '}']]. [true
-			ifTrue: [self apply: #token withArgument: '{'.
-				self apply: #token withArgument: '}']]}! !
+							ifTrue: [self privateOMetaApply: #token withArgument: '.'.
+								self privateOMetaApply: #expr]].
+				self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '.']. [self privateOMetaApply: #empty]}.
+				self privateOMetaApply: #token withArgument: '}']]. [true
+			ifTrue: [self privateOMetaApply: #token withArgument: '{'.
+				self privateOMetaApply: #token withArgument: '}']]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 arrayLit
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '#'.
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '('.
 		self pvtOMetaMany: [
 			self pvtOMetaOr:
 				{
-					[ self apply: #literal ]. 
-					[ self apply: #arrayLit ]. 
-					[ self apply: #arraySubLit ]. 
+					[ self privateOMetaApply: #literal ]. 
+					[ self privateOMetaApply: #arrayLit ]. 
+					[ self privateOMetaApply: #arraySubLit ]. 
 					[
-					self apply: #commentAndSpaces.
-					self apply: #tsArraySymbol ]
+					self privateOMetaApply: #commentAndSpaces.
+					self privateOMetaApply: #tsArraySymbol ]
 				} ].
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: ')' ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
@@ -1560,140 +1560,140 @@ arraySubLit
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '('.
 		self pvtOMetaMany: [
 			self pvtOMetaOr:
 				{
-					[ self apply: #literal ]. 
-					[ self apply: #arrayLit ]. 
-					[ self apply: #arraySubLit ]. 
+					[ self privateOMetaApply: #literal ]. 
+					[ self privateOMetaApply: #arrayLit ]. 
+					[ self privateOMetaApply: #arraySubLit ]. 
 					[
-					self apply: #commentAndSpaces.
-					self apply: #tsArraySymbol ]
+					self privateOMetaApply: #commentAndSpaces.
+					self privateOMetaApply: #tsArraySymbol ]
 				} ].
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: ')' ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 binary
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
-		self apply: #commentAndSpaces.
-		self apply: #tsBinary ]! !
+		self privateOMetaApply: #commentAndSpaces.
+		self privateOMetaApply: #tsBinary ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 binaryExpr
 	^ self pvtOMetaOr: {[true
-			ifTrue: [self apply: #binaryExpr.
-				self apply: #binaryMsg]]. [self apply: #unaryExpr]}! !
+			ifTrue: [self privateOMetaApply: #binaryExpr.
+				self privateOMetaApply: #binaryMsg]]. [self privateOMetaApply: #unaryExpr]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 binaryMsg
 	^ true
-		ifTrue: [self apply: #binary.
-			self apply: #unaryExpr]! !
+		ifTrue: [self privateOMetaApply: #binary.
+			self privateOMetaApply: #unaryExpr]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 block
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '['.
 		self pvtOMetaOr:
 			{
 				[
 				self pvtOMetaMany1: [
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: ':'.
-					self apply: #identifier ].
+					self privateOMetaApply: #identifier ].
 				self
-					apply: #token
+					privateOMetaApply: #token
 					withArgument: '|' ]. 
-				[ self apply: #empty ]
+				[ self privateOMetaApply: #empty ]
 			}.
 		self pvtOMetaOr:
 			{
 				[
 				self
-					apply: #token
+					privateOMetaApply: #token
 					withArgument: '|'.
-				self pvtOMetaMany: [ self apply: #identifier ].
+				self pvtOMetaMany: [ self privateOMetaApply: #identifier ].
 				self
-					apply: #token
+					privateOMetaApply: #token
 					withArgument: '|' ]. 
-				[ self apply: #empty ]
+				[ self privateOMetaApply: #empty ]
 			}.
-		self apply: #commentAndSpaces.
+		self privateOMetaApply: #commentAndSpaces.
 		self pvtOMetaOr:
 			{
 				[
-				self apply: #expr.
+				self privateOMetaApply: #expr.
 				self pvtOMetaMany: [
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '.'.
-					self apply: #expr ].
+					self privateOMetaApply: #expr ].
 				self pvtOMetaOr:
 					{
 						[
 						self
-							apply: #token
+							privateOMetaApply: #token
 							withArgument: '.'.
 						self
-							apply: #token
+							privateOMetaApply: #token
 							withArgument: '^'.
-						self apply: #expr ]. 
-						[ self apply: #empty ]
+						self privateOMetaApply: #expr ]. 
+						[ self privateOMetaApply: #empty ]
 					} ]. 
 				[
 				self
-					apply: #token
+					privateOMetaApply: #token
 					withArgument: '^'.
-				self apply: #expr ]. 
-				[ self apply: #empty ]
+				self privateOMetaApply: #expr ]. 
+				[ self privateOMetaApply: #empty ]
 			}.
-		self apply: #commentAndSpaces.
+		self privateOMetaApply: #commentAndSpaces.
 		self pvtOMetaOr:
 			{
 				[
 				self
-					apply: #token
+					privateOMetaApply: #token
 					withArgument: '.' ]. 
-				[ self apply: #empty ]
+				[ self privateOMetaApply: #empty ]
 			}.
-		self apply: #commentAndSpaces.
+		self privateOMetaApply: #commentAndSpaces.
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: ']' ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 cascade
-	^ self pvtOMetaOr: {[self apply: #identifier]. [self apply: #binaryMsg]. [self apply: #keywordMsg]}! !
+	^ self pvtOMetaOr: {[self privateOMetaApply: #identifier]. [self privateOMetaApply: #binaryMsg]. [self privateOMetaApply: #keywordMsg]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 comment
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $".
 		self pvtOMetaConsumedBy: [
 			self pvtOMetaMany: [
 				self pvtOMetaNot: [
 					self
-						apply: #exactly
+						privateOMetaApply: #exactly
 						withArgument: $" ].
-				self apply: #anything ]].
+				self privateOMetaApply: #anything ]].
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $".
 		self pvtOMetaOpt: [
 			self
-				apply: #exactly
+				privateOMetaApply: #exactly
 				withArgument: $. ]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
@@ -1704,30 +1704,30 @@ commentAndSpaces
 			{
 				[
 				self pvtOMetaMany1: [
-					self apply: #spaces.
-					self apply: #comment ]]. 
+					self privateOMetaApply: #spaces.
+					self privateOMetaApply: #comment ]]. 
 				[
-				self apply: #spaces.
-				self pvtOMetaOpt: [ self apply: #comment ]]
+				self privateOMetaApply: #spaces.
+				self pvtOMetaOpt: [ self privateOMetaApply: #comment ]]
 			}.
-		self apply: #spaces ]! !
+		self privateOMetaApply: #spaces ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 expr
 	^ self pvtOMetaOr: {[true
-			ifTrue: [self apply: #identifier.
-				self pvtOMetaOr: {[self apply: #token withArgument: ':=']. [self apply: #token withArgument: '_']}.
-				self apply: #expr]]. [self apply: #msgExpr]}! !
+			ifTrue: [self privateOMetaApply: #identifier.
+				self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: ':=']. [self privateOMetaApply: #token withArgument: '_']}.
+				self privateOMetaApply: #expr]]. [self privateOMetaApply: #msgExpr]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 identifier
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
-		self apply: #commentAndSpaces.
-		self apply: #tsIdentifier.
+		self privateOMetaApply: #commentAndSpaces.
+		self privateOMetaApply: #tsIdentifier.
 		self pvtOMetaNot: [
 			self
-				apply: #exactly
+				privateOMetaApply: #exactly
 				withArgument: $: ]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
@@ -1739,43 +1739,43 @@ initialize
 keyword
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
-		self apply: #commentAndSpaces.
-		self apply: #tsKeyword ]! !
+		self privateOMetaApply: #commentAndSpaces.
+		self privateOMetaApply: #tsKeyword ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 keywordExpr
 	^ true
-		ifTrue: [self apply: #binaryExpr.
-			self apply: #keywordMsg]! !
+		ifTrue: [self privateOMetaApply: #binaryExpr.
+			self privateOMetaApply: #keywordMsg]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 keywordMsg
 	^ self pvtOMetaOr: {[true
-			ifTrue: [self apply: #keywordMsg.
-				self apply: #keywordMsgPart]]. [self apply: #keywordMsgPart]}! !
+			ifTrue: [self privateOMetaApply: #keywordMsg.
+				self privateOMetaApply: #keywordMsgPart]]. [self privateOMetaApply: #keywordMsgPart]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 keywordMsgPart
 	^ true
-		ifTrue: [self apply: #keyword.
-			self apply: #binaryExpr]! !
+		ifTrue: [self privateOMetaApply: #keyword.
+			self privateOMetaApply: #binaryExpr]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 literal
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
-		self apply: #commentAndSpaces.
+		self privateOMetaApply: #commentAndSpaces.
 		self pvtOMetaOr:
-			{[ self apply: #tsNumber ]. [ self apply: #tsCharacter ]. [ self apply: #tsString ]. [ self apply: #tsSymbol ]} ]! !
+			{[ self privateOMetaApply: #tsNumber ]. [ self privateOMetaApply: #tsCharacter ]. [ self privateOMetaApply: #tsString ]. [ self privateOMetaApply: #tsSymbol ]} ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 msgExpr
 	^ true
-		ifTrue: [self pvtOMetaOr: {[self apply: #keywordExpr]. [self apply: #binaryExpr]}.
+		ifTrue: [self pvtOMetaOr: {[self privateOMetaApply: #keywordExpr]. [self privateOMetaApply: #binaryExpr]}.
 			self
 				pvtOMetaMany: [true
-						ifTrue: [self apply: #token withArgument: ';'.
-							self apply: #cascade]]]! !
+						ifTrue: [self privateOMetaApply: #token withArgument: ';'.
+							self privateOMetaApply: #cascade]]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 pvtGetTypeTable
@@ -1786,7 +1786,7 @@ pvtGetTypeTable
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 squeakExpr
 	^ self
-		pvtOMetaConsumedBy: [self apply: #expr]! !
+		pvtOMetaConsumedBy: [self privateOMetaApply: #expr]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 squeakInnerBlock
@@ -1799,61 +1799,61 @@ squeakInnerBlock
 					[
 					self pvtOMetaMany1: [
 						self
-							apply: #token
+							privateOMetaApply: #token
 							withArgument: ':'.
-						self apply: #identifier ].
+						self privateOMetaApply: #identifier ].
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '|' ]. 
-					[ self apply: #empty ]
+					[ self privateOMetaApply: #empty ]
 				}.
 			self pvtOMetaOr:
 				{
 					[
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '|'.
-					self pvtOMetaMany: [ self apply: #identifier ].
+					self pvtOMetaMany: [ self privateOMetaApply: #identifier ].
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '|' ]. 
-					[ self apply: #empty ]
+					[ self privateOMetaApply: #empty ]
 				}.
 			self pvtOMetaOr:
 				{
 					[
-					self apply: #expr.
+					self privateOMetaApply: #expr.
 					self pvtOMetaMany: [
 						self
-							apply: #token
+							privateOMetaApply: #token
 							withArgument: '.'.
-						self apply: #expr ].
+						self privateOMetaApply: #expr ].
 					self pvtOMetaOr:
 						{
 							[
 							self
-								apply: #token
+								privateOMetaApply: #token
 								withArgument: '.'.
 							self
-								apply: #token
+								privateOMetaApply: #token
 								withArgument: '^'.
-							self apply: #expr ]. 
-							[ self apply: #empty ]
+							self privateOMetaApply: #expr ]. 
+							[ self privateOMetaApply: #empty ]
 						} ]. 
 					[
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '^'.
-					self apply: #expr ]. 
-					[ self apply: #empty ]
+					self privateOMetaApply: #expr ]. 
+					[ self privateOMetaApply: #empty ]
 				}.
 			self pvtOMetaOr:
 				{
 					[
 					self
-						apply: #token
+						privateOMetaApply: #token
 						withArgument: '.' ]. 
-					[ self apply: #empty ]
+					[ self privateOMetaApply: #empty ]
 				} ].
 		innerBlock ]! !
 
@@ -1865,113 +1865,113 @@ squeakArgExprOrWrappedInnerBlock
 		{
 			[
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: '['.
-			inner _ self apply: #squeakInnerBlock.
+			inner _ self privateOMetaApply: #squeakInnerBlock.
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: ']'.
 			'(true ifTrue: [' , inner , '])' ]. 
 			[
 			useArgTypeTable _ true.
-			expr _ self apply: #squeakExpr.
+			expr _ self privateOMetaApply: #squeakExpr.
 			expr ]
 		}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 symbol
 	^ true
-		ifTrue: [self apply: #token withArgument: '#'.
-			self apply: #spaces.
-			self pvtOMetaOr: {[self apply: #tsString]. [true
-					ifTrue: [self apply: #tsKeyword.
-						self pvtOMetaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]}]! !
+		ifTrue: [self privateOMetaApply: #token withArgument: '#'.
+			self privateOMetaApply: #spaces.
+			self pvtOMetaOr: {[self privateOMetaApply: #tsString]. [true
+					ifTrue: [self privateOMetaApply: #tsKeyword.
+						self pvtOMetaOr: {[self privateOMetaApply: #tsIdentifier]. [self privateOMetaApply: #empty]}]]}]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tcBinaryChar
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| x |
 	^ true ifTrue: [
-		x := self apply: #char.
+		x := self privateOMetaApply: #char.
 		self pvtOMetaPred: (self pvtGetTypeTable at: x asciiValue) == #xBinary ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsArraySymbol
 	^ self pvtOMetaOr: {[true
 			ifTrue: [self
-					pvtOMetaMany1: [self apply: #tsKeyword].
-				self pvtOMetaOr: {[self apply: #tsIdentifier]. [self apply: #empty]}]]. [self apply: #tsIdentifier]}! !
+					pvtOMetaMany1: [self privateOMetaApply: #tsKeyword].
+				self pvtOMetaOr: {[self privateOMetaApply: #tsIdentifier]. [self privateOMetaApply: #empty]}]]. [self privateOMetaApply: #tsIdentifier]}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsBinary
 	^ true
-		ifTrue: [self pvtOMetaOr: {[self apply: #exactly withArgument: $|]. [self apply: #tcBinaryChar]}.
+		ifTrue: [self pvtOMetaOr: {[self privateOMetaApply: #exactly withArgument: $|]. [self privateOMetaApply: #tcBinaryChar]}.
 			self
-				pvtOMetaMany: [self apply: #tcBinaryChar]]! !
+				pvtOMetaMany: [self privateOMetaApply: #tcBinaryChar]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsCharacter
 	^ true
-		ifTrue: [self apply: #exactly withArgument: $$.
-			self apply: #char]! !
+		ifTrue: [self privateOMetaApply: #exactly withArgument: $$.
+			self privateOMetaApply: #char]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsIdentifier
 	^ true
-		ifTrue: [self apply: #letter.
+		ifTrue: [self privateOMetaApply: #letter.
 			self
-				pvtOMetaMany: [self pvtOMetaOr: {[self apply: #letter]. [self apply: #digit]}]]! !
+				pvtOMetaMany: [self pvtOMetaOr: {[self privateOMetaApply: #letter]. [self privateOMetaApply: #digit]}]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsKeyword
 	^ true
-		ifTrue: [self apply: #tsIdentifier.
-			self apply: #exactly withArgument: $:]! !
+		ifTrue: [self privateOMetaApply: #tsIdentifier.
+			self privateOMetaApply: #exactly withArgument: $:]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsNatural
 	^ self
-		pvtOMetaMany1: [self apply: #digit]! !
+		pvtOMetaMany1: [self privateOMetaApply: #digit]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsNumber
 	^ true
-		ifTrue: [self pvtOMetaOr: {[self apply: #exactly withArgument: $+]. [self apply: #exactly withArgument: $-]. [self apply: #empty]}.
-			self apply: #tsNatural]! !
+		ifTrue: [self pvtOMetaOr: {[self privateOMetaApply: #exactly withArgument: $+]. [self privateOMetaApply: #exactly withArgument: $-]. [self privateOMetaApply: #empty]}.
+			self privateOMetaApply: #tsNatural]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsString
 	^ true
-		ifTrue: [self apply: #exactly withArgument: $'.
+		ifTrue: [self privateOMetaApply: #exactly withArgument: $'.
 			self
 				pvtOMetaMany: [self pvtOMetaOr: {[true
-							ifTrue: [self apply: #exactly withArgument: $'.
-								self apply: #exactly withArgument: $']]. [true
+							ifTrue: [self privateOMetaApply: #exactly withArgument: $'.
+								self privateOMetaApply: #exactly withArgument: $']]. [true
 							ifTrue: [self
-									pvtOMetaNot: [self apply: #exactly withArgument: $'].
-								self apply: #char]]}].
-			self apply: #exactly withArgument: $']! !
+									pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $'].
+								self privateOMetaApply: #char]]}].
+			self privateOMetaApply: #exactly withArgument: $']! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsSymbol
 	^ true
-		ifTrue: [self apply: #exactly withArgument: $#.
-			self apply: #spaces.
-			self pvtOMetaOr: {[self apply: #tsString]. [self apply: #tsArraySymbol]}]! !
+		ifTrue: [self privateOMetaApply: #exactly withArgument: $#.
+			self privateOMetaApply: #spaces.
+			self pvtOMetaOr: {[self privateOMetaApply: #tsString]. [self privateOMetaApply: #tsArraySymbol]}]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 unaryExpr
 	^ true
-		ifTrue: [self apply: #unit.
+		ifTrue: [self privateOMetaApply: #unit.
 			self
-				pvtOMetaMany: [self apply: #identifier]]! !
+				pvtOMetaMany: [self privateOMetaApply: #identifier]]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 unit
-	^ self pvtOMetaOr: {[self apply: #literal]. [self apply: #identifier]. [self apply: #arrayLit]. [self apply: #arrayConstr]. [self apply: #block]. [true
-			ifTrue: [self apply: #token withArgument: '('.
-				self apply: #expr.
-				self apply: #token withArgument: ')']]}! !
+	^ self pvtOMetaOr: {[self privateOMetaApply: #literal]. [self privateOMetaApply: #identifier]. [self privateOMetaApply: #arrayLit]. [self privateOMetaApply: #arrayConstr]. [self privateOMetaApply: #block]. [true
+			ifTrue: [self privateOMetaApply: #token withArgument: '('.
+				self privateOMetaApply: #expr.
+				self privateOMetaApply: #token withArgument: ')']]}! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1994,16 +1994,16 @@ backtickExpr
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $`.
 		self pvtOMetaMany: [
 			self pvtOMetaNot: [
 				self
-					apply: #exactly
+					privateOMetaApply: #exactly
 					withArgument: $` ].
-			self apply: #anything ].
+			self privateOMetaApply: #anything ].
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: $` ]! !
 
 !OMeta2CuisSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
@@ -2011,21 +2011,21 @@ byteArrayLit
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '#'.
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: '['.
 		self pvtOMetaMany: [
 			self pvtOMetaOr:
 				{
-					[ self apply: #literal ]. 
+					[ self privateOMetaApply: #literal ]. 
 					[
-					self apply: #commentAndSpaces.
-					self apply: #tsArraySymbol ]
+					self privateOMetaApply: #commentAndSpaces.
+					self privateOMetaApply: #tsArraySymbol ]
 				} ].
 		self
-			apply: #token
+			privateOMetaApply: #token
 			withArgument: ']' ]! !
 
 !OMeta2CuisSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
@@ -2034,11 +2034,11 @@ identifier
 	^ self pvtOMetaOr:
 		{
 			[
-			self apply: #commentAndSpaces.
-			self apply: #backtickExpr ]. 
+			self privateOMetaApply: #commentAndSpaces.
+			self privateOMetaApply: #backtickExpr ]. 
 			[
 			self
-				super: OMeta2SqueakSmalltalkRecognizer
+				pvtOMetaSuper: OMeta2SqueakSmalltalkRecognizer
 				apply: #identifier
 				withArgs:
 					{} ]
@@ -2049,17 +2049,17 @@ msgExpr
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ true ifTrue: [
 		self pvtOMetaOr:
-			{[ self apply: #keywordExpr ]. [ self apply: #binaryExpr ]}.
+			{[ self privateOMetaApply: #keywordExpr ]. [ self privateOMetaApply: #binaryExpr ]}.
 		self pvtOMetaMany: [
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: ';'.
-			self apply: #cascade ].
+			self privateOMetaApply: #cascade ].
 		self pvtOMetaMany: [
 			self
-				apply: #token
+				privateOMetaApply: #token
 				withArgument: '::'.
-			self apply: #cascade ]]! !
+			self privateOMetaApply: #cascade ]]! !
 
 !OMeta2CuisSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsSymbolIdentifier
@@ -2068,24 +2068,24 @@ tsSymbolIdentifier
 		self pvtOMetaConsumedBy: [
 			self pvtOMetaOr:
 				{
-					[ self apply: #letter ]. 
+					[ self privateOMetaApply: #letter ]. 
 					[
 					self
-						apply: #exactly
+						privateOMetaApply: #exactly
 						withArgument: $_ ]
 				}.
 			self pvtOMetaMany: [
 				self pvtOMetaOr:
 					{
-						[ self apply: #letter ]. 
-						[ self apply: #digit ]. 
+						[ self privateOMetaApply: #letter ]. 
+						[ self privateOMetaApply: #digit ]. 
 						[
 						self
-							apply: #exactly
+							privateOMetaApply: #exactly
 							withArgument: $_ ]. 
 						[
 						self
-							apply: #exactly
+							privateOMetaApply: #exactly
 							withArgument: $: ]
 					} ]]]! !
 
@@ -2094,11 +2094,11 @@ unit
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	^ self pvtOMetaOr:
 		{
-			[ self apply: #byteArrayLit ]. 
-			[ self apply: #backtickExpr ]. 
+			[ self privateOMetaApply: #byteArrayLit ]. 
+			[ self privateOMetaApply: #backtickExpr ]. 
 			[
 			self
-				super: OMeta2SqueakSmalltalkRecognizer
+				pvtOMetaSuper: OMeta2SqueakSmalltalkRecognizer
 				apply: #unit
 				withArgs:
 					{} ]
@@ -2109,7 +2109,7 @@ and
 	| t1 |
 	^ true
 		ifTrue: [t1 := self
-						pvtOMetaMany: [self apply: #trans].
+						pvtOMetaMany: [self privateOMetaApply: #trans].
 			t1 addFirst: #And;
 				 yourself]! !
 
@@ -2117,14 +2117,14 @@ and
 consby
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#ConsBy. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 form
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Form. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
@@ -2135,7 +2135,7 @@ helped
 idxconsby
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#IdxConsBy. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
@@ -2147,43 +2147,43 @@ initialize
 lookahead
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Lookahead. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 many
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Many. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 many1
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Many1. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 not
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Not. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 opt
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#Opt. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 optimize
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
-			self apply: #helped.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			self privateOMetaApply: #helped.
 			t1]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
@@ -2191,7 +2191,7 @@ or
 	| t1 |
 	^ true
 		ifTrue: [t1 := self
-						pvtOMetaMany: [self apply: #trans].
+						pvtOMetaMany: [self privateOMetaApply: #trans].
 			t1 addFirst: #Or;
 				 yourself]! !
 
@@ -2199,17 +2199,17 @@ or
 rule
 	| t1 t2 t3 |
 	^ true
-		ifTrue: [t2 := self apply: #anything.
-			t3 := self apply: #anything.
-			t1 := self apply: #trans.
+		ifTrue: [t2 := self privateOMetaApply: #anything.
+			t3 := self privateOMetaApply: #anything.
+			t1 := self privateOMetaApply: #trans.
 			{#Rule. t2. t3. t1}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 set
 	| t1 t2 |
 	^ true
-		ifTrue: [t1 := self apply: #anything.
-			t2 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #anything.
+			t2 := self privateOMetaApply: #trans.
 			{#Set. t1. t2}]! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
@@ -2218,22 +2218,27 @@ setHelped
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 trans
-	| t1 t2 |
-	^ self pvtOMetaOr: {[true
-			ifTrue: [self
-					pvtOMetaForm: [true
-							ifTrue: [t1 := self apply: #anything.
-								t1 := t1 asLowercase asSymbol.
-								self
-									pvtOMetaPred: (self class canUnderstand: t1).
-								t2 := self apply: #pvtOMetaApply withArgument: t1]].
-				t2]]. [self apply: #anything]}! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| ans t |
+	^ self pvtOMetaOr:
+		{
+			[
+			self pvtOMetaForm: [
+				t := self privateOMetaApply: #anything.
+				t := t asLowercase asSymbol.
+				self pvtOMetaPred: (self class canUnderstand: t).
+				ans := self
+					privateOMetaApply: #applyRule
+					withArgument: t ].
+			ans ]. 
+			[ self privateOMetaApply: #anything ]
+		}! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 trueiftrue
 	| t1 |
 	^ true
-		ifTrue: [t1 := self apply: #trans.
+		ifTrue: [t1 := self privateOMetaApply: #trans.
 			{#TrueIfTrue. t1}]! !
 
 !OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
@@ -2243,13 +2248,13 @@ and
 	^ self pvtOMetaOr:
 		{
 			[
-			x _ self apply: #trans.
-			self apply: #end.
-			self apply: #setHelped.
+			x _ self privateOMetaApply: #trans.
+			self privateOMetaApply: #end.
+			self privateOMetaApply: #setHelped.
 			x ]. 
 			[
 			xs _ self
-				apply: #transInside
+				privateOMetaApply: #transInside
 				withArgument: #And.
 			xs
 				addFirst: #And;
@@ -2263,13 +2268,13 @@ or
 	^ self pvtOMetaOr:
 		{
 			[
-			x := self apply: #trans.
-			self apply: #end.
-			self apply: #setHelped.
+			x := self privateOMetaApply: #trans.
+			self privateOMetaApply: #end.
+			self privateOMetaApply: #setHelped.
 			x ]. 
 			[
 			xs := self
-				apply: #transInside
+				privateOMetaApply: #transInside
 				withArgument: #Or.
 			xs
 				addFirst: #Or;
@@ -2281,32 +2286,32 @@ transInside
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| t x xs ys |
 	^ true ifTrue: [
-		t := self apply: #anything.
+		t := self privateOMetaApply: #anything.
 		self pvtOMetaOr:
 			{
 				[
 				self pvtOMetaForm: [
 					self
-						apply: #exactly
+						privateOMetaApply: #exactly
 						withArgument: t.
 					xs := self
-						apply: #transInside
+						privateOMetaApply: #transInside
 						withArgument: t ].
 				ys := self
-					apply: #transInside
+					privateOMetaApply: #transInside
 					withArgument: t.
-				self apply: #setHelped.
+				self privateOMetaApply: #setHelped.
 				xs , ys ]. 
 				[
-				x := self apply: #trans.
+				x := self privateOMetaApply: #trans.
 				xs := self
-					apply: #transInside
+					privateOMetaApply: #transInside
 					withArgument: t.
 				xs
 					addFirst: x;
 					yourself ]. 
 				[
-				self apply: #empty.
+				self privateOMetaApply: #empty.
 				OrderedCollection new ]
 			} ]! !
 
@@ -2315,9 +2320,9 @@ rule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| body name temps |
 	^ true ifTrue: [
-		name := self apply: #anything.
-		temps := self apply: #anything.
-		body := self apply: #trans.
+		name := self privateOMetaApply: #anything.
+		temps := self privateOMetaApply: #anything.
+		body := self privateOMetaApply: #trans.
 		OrderedCollection new
 			add: #Rule;
 			add: name;
@@ -2336,8 +2341,8 @@ set
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| name val |
 	^ true ifTrue: [
-		name := self apply: #anything.
-		val := self apply: #trans.
+		name := self privateOMetaApply: #anything.
+		val := self privateOMetaApply: #trans.
 		{
 			#Set. 
 			name. 
@@ -2351,7 +2356,7 @@ set
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 semact
 	| t1 |
-	t1 := self apply: #string.
+	t1 := self privateOMetaApply: #string.
 	^ {'('. t1. ')'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -2359,7 +2364,7 @@ semblkact
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| x |
 	^ true ifTrue: [
-		x := self apply: #string.
+		x := self privateOMetaApply: #string.
 		{'true ifTrue:['. x. ']'} ]! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -2367,7 +2372,7 @@ and
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| xs |
 	^ true ifTrue: [
-		xs := self pvtOMetaMany: [ self apply: #trans ].
+		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
 		{
 			self
 				delim: xs
@@ -2380,19 +2385,19 @@ app
 	| args rule |
 	^ true ifTrue: [
 		self
-			flag: #apply:;
-			flag: #apply:withArgs:.
-		rule := self apply: #symbol.
+			flag: #privateOMetaApply:;
+			flag: #privateOMetaApply:withArgs:.
+		rule := self privateOMetaApply: #symbol.
 		self pvtOMetaOr:
 			{
 				[
-				args := self pvtOMetaMany1: [ self apply: #anything ].
+				args := self pvtOMetaMany1: [ self privateOMetaApply: #anything ].
 				args size = 1
 					ifTrue: [
-						{'(self apply: '. rule storeString. ' withArgument: '. args first. ')'} ]
+						{'(self privateOMetaApply: '. rule storeString. ' withArgument: '. args first. ')'} ]
 					ifFalse: [
 						{
-							'(self apply: '. 
+							'(self privateOMetaApply: '. 
 							rule storeString. 
 							' withArgs: {'. 
 							self
@@ -2401,13 +2406,13 @@ app
 							'})'
 						} ]]. 
 				[
-				{'(self apply: '. rule storeString. ')'} ]
+				{'(self privateOMetaApply: '. rule storeString. ')'} ]
 			} ]! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 consby
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaConsumedBy: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -2426,57 +2431,57 @@ delim: t1 with: t2
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 form
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaForm: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 idxconsby
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaIndexConsumedBy: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 lookahead
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaLookahead: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaMany: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 many1
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaMany1: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 not
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaNot: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 opt
 	| t1 |
-	t1 := self apply: #trans.
+	t1 := self privateOMetaApply: #trans.
 	^ {'(self pvtOMetaOpt: ['. t1. '])'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 or
 	| t1 t2 |
 	t1 := self
-				pvtOMetaMany: [t2 := self apply: #trans.
+				pvtOMetaMany: [t2 := self privateOMetaApply: #trans.
 					{'['. t2. ']'}].
 	^ {'(self pvtOMetaOr: {'. self delim: t1 with: '. '. '})'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 sempred
 	| t1 |
-	t1 := self apply: #string.
+	t1 := self privateOMetaApply: #string.
 	^ {'(self pvtOMetaPred: ('. t1. '))'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -2485,7 +2490,7 @@ semblkpred
 	| x |
 	^ true ifTrue: [
 		self flag: #pvtOMetaPred:.
-		x _ self apply: #string.
+		x _ self privateOMetaApply: #string.
 		{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'} ]! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
@@ -2493,11 +2498,11 @@ rule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| body name temps |
 	^ true ifTrue: [
-		name := self apply: #symbol.
-		temps := self apply: #anything.
+		name := self privateOMetaApply: #symbol.
+		temps := self privateOMetaApply: #anything.
 		temps := temps select: [ :t |
 			(grammarClass instVarNames includes: t) not ].
-		body := self apply: #trans.
+		body := self privateOMetaApply: #trans.
 		{
 			name. 
 			self class constOMetaGeneratorString. 
@@ -2513,28 +2518,28 @@ rule
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 set
 	| t1 t2 |
-	t1 := self apply: #symbol.
-	t2 := self apply: #trans.
+	t1 := self privateOMetaApply: #symbol.
+	t2 := self privateOMetaApply: #trans.
 	^ {'('. t1 asString. ' := '. t2. ')'}! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 squeak
-	^ self apply: #string! !
+	^ self privateOMetaApply: #string! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 superapp
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| args rule |
 	^ true ifTrue: [
-		self flag: #super:apply:withArgs:.
-		rule := self apply: #symbol.
-		args := self pvtOMetaMany: [ self apply: #anything ].
+		self flag: #pvtOMetaSuper:apply:withArgs:.
+		rule := self privateOMetaApply: #symbol.
+		args := self pvtOMetaMany: [ self privateOMetaApply: #anything ].
 		args size = 1
 			ifTrue: [
-				{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'} ]
+				{'(self pvtOMetaSuper: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'} ]
 			ifFalse: [
 				{
-					'(self super: '. 
+					'(self pvtOMetaSuper: '. 
 					grammarClass superclass name. 
 					' apply: '. 
 					rule storeString. 
@@ -2549,21 +2554,21 @@ superapp
 trans
 	| t1 t2 |
 	self
-		pvtOMetaForm: [t1 := self apply: #symbol.
-			t2 := self apply: t1 asLowercase asSymbol].
+		pvtOMetaForm: [t1 := self privateOMetaApply: #symbol.
+			t2 := self privateOMetaApply: t1 asLowercase asSymbol].
 	^ t2! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 translate
-	grammarClass := self apply: #anything.
-	^ self apply: #trans! !
+	grammarClass := self privateOMetaApply: #anything.
+	^ self privateOMetaApply: #trans! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 trueiftrue
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| xs |
 	^ true ifTrue: [
-		xs := self pvtOMetaMany: [ self apply: #trans ].
+		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
 		{'(true ifTrue: ['. xs. '])'} ]! !
 
 !OMeta2RuleTranslator class methodsFor: 'constants' stamp: 'pb 5/23/2018 03:01:33'!
@@ -2574,17 +2579,17 @@ constOMetaGeneratorString
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!
 flatten
 	| t1 |
-	t1 := self apply: #anything.
-	self apply: #iFlatten withArgument: t1.
+	t1 := self privateOMetaApply: #anything.
+	self privateOMetaApply: #iFlatten withArgument: t1.
 	^ ws contents! !
 
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!
 iFlatten
 	| t1 |
-	^ self pvtOMetaOr: {[t1 := self apply: #string.
+	^ self pvtOMetaOr: {[t1 := self privateOMetaApply: #string.
 		ws nextPutAll: t1]. [self
 			pvtOMetaForm: [self
-				pvtOMetaMany: [self apply: #iFlatten]]]}! !
+				pvtOMetaMany: [self privateOMetaApply: #iFlatten]]]}! !
 
 !OMeta2Flattener methodsFor: 'private-ometa2preload'!
 initialize

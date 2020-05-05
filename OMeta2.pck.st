@@ -1,4 +1,4 @@
-'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-02) at 8:04:41 pm'!
+'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-05) at 7:55:48 am'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,7 +11,7 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 13!
+!provides: 'OMeta2' 2 14!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -260,9 +260,9 @@ exactly :wanted =
 firstAndRest
 	"A meta rule for 'first rest+' where the rule names are substituted with the values of first and rest.  See listOf for another example of a meta rule.  FIXME - rewrite in OMeta"
 	| first rest |
-	first := self apply: #anything.
-	rest := self apply: #anything.
-	^ self pvtOMetaGenericMany: [self apply: rest] into: (OrderedCollection with: (self apply: first))! !
+	first := self privateOMetaApply: #anything.
+	rest := self privateOMetaApply: #anything.
+	^ self pvtOMetaGenericMany: [self privateOMetaApply: rest] into: (OrderedCollection with: (self privateOMetaApply: first))! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 23:14:38'!
 fromTo :x :y =
@@ -274,16 +274,16 @@ fromToOrEnd :x :y =
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
 	seq(x) (~seq(y) anything)*:enclosed (seq(y) | end) -> [enclosed]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/1/2020 22:57:52'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 07:33:08'!
 listOf :rule :delim =
 	// Match :rule one or more times delimited by :delim returning the results as a collection
-		pvtOMetaApply(rule):x (token(delim) pvtOMetaApply(rule))*:xs -> [xs addFirst: x; yourself]
+		applyRule(rule):x (token(delim) applyRule(rule))*:xs -> [xs addFirst: x; yourself]
 	|	empty -> [#()]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 07:33:00'!
 notLast :rule =
 
-	pvtOMetaApply(rule):ans &pvtOMetaApply(rule) -> [ans]! !
+	applyRule(rule):ans &applyRule(rule) -> [ans]! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:31'!
 number =
@@ -431,10 +431,10 @@ set = _:name trans:val -> [{#Set. name. val}]! !
 !OMeta2NullOptimizer methodsFor: 'private' stamp: 'aw 5/20/2009 12:00'!
 setHelped = [didSomething := true]! !
 
-!OMeta2NullOptimizer methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2NullOptimizer methodsFor: 'private' stamp: 'pb 5/5/2020 07:32:54'!
 trans =
 
-	{:t [t asLowercase asSymbol]:t ?[self class canUnderstand: t] pvtOMetaApply(t):ans} -> [ans]
+	{:t [t asLowercase asSymbol]:t ?[self class canUnderstand: t] applyRule(t):ans} -> [ans]
 |	_! !
 
 !OMeta2NullOptimizer methodsFor: 'private' stamp: 'pb 4/27/2020 20:59:38'!
@@ -707,15 +707,15 @@ and =
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/30/2020 23:05:41'!
 app =
-	[self flag: #apply:;
-		flag: #apply:withArgs:]
+	[self flag: #privateOMetaApply:;
+		flag: #privateOMetaApply:withArgs:]
 	symbol:rule
 	(	anything+:args
 		-> [args size = 1
-				ifTrue: [{'(self apply: '. rule storeString. ' withArgument: '. args first. ')'}]
-				ifFalse: [{'(self apply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]
+				ifTrue: [{'(self privateOMetaApply: '. rule storeString. ' withArgument: '. args first. ')'}]
+				ifFalse: [{'(self privateOMetaApply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]
 			]
-	|	[{'(self apply: '. rule storeString. ')'}]
+	|	[{'(self privateOMetaApply: '. rule storeString. ')'}]
 	)! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
@@ -822,15 +822,15 @@ squeak = string! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/30/2020 23:05:50'!
 superapp =
-	[self flag: #super:apply:withArgs:]
+	[self flag: #pvtOMetaSuper:apply:withArgs:]
 	symbol:rule anything*:args
 		-> [args size = 1
-				ifTrue: [{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'}]
-				ifFalse: [{'(self super: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]]
+				ifTrue: [{'(self pvtOMetaSuper: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'}]
+				ifFalse: [{'(self pvtOMetaSuper: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgs: {'. (self delim: args with: '. '). '})'}]]
 ! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-trans = {symbol:type pvtOMetaApply(type asLowercase asSymbol):ans} -> [ans]! !
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/5/2020 07:32:46'!
+trans = {symbol:type applyRule(type asLowercase asSymbol):ans} -> [ans]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/28/2020 23:52:51'!
 trueiftrue =

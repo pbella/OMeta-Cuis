@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4128] on 3 May 2020 at 2:09:38 pm'!
+'From Cuis 5.0 [latest update: #4128] on 5 May 2020 at 8:28:23 am'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 16!
+!provides: 'OMeta2Extensions' 2 17!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -543,8 +543,8 @@ initialize
 	om2TransId := 0.
 	om2TraceLog := OrderedCollection new.! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 03:15:48'!
-apply: aRule
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 08:22:32'!
+privateOMetaApply: aRule
 	input class = OM2EndOfStream ifTrue: [
 		om2Eos > 100000
 			ifTrue: [ OMeta2DebugError new signal: 'Infinite recursion detected'
@@ -556,11 +556,11 @@ apply: aRule
 			(om2ApplyPc
 				at: aRule
 				ifAbsentPut: [ 0 ]) + 1.
-	^ super apply: aRule.
+	^ super privateOMetaApply: aRule.
 ! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 10/1/2017 15:25:24'!
-apply: aRule withArgs: args
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 08:22:46'!
+privateOMetaApply: aRule withArgs: args
 	om2ApplyWithArgsPc
 		at: aRule
 		put:
@@ -568,19 +568,19 @@ apply: aRule withArgs: args
 				at: aRule
 				ifAbsentPut: [ 0 ]) + 1.
 	^ super
-		apply: aRule
+		privateOMetaApply: aRule
 		withArgs: args.! !
 
-!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 21:23:04'!
+!OMeta2Debug methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 08:27:25'!
 seq
 	| xs |
-	xs := self apply: #anything.
+	xs := self privateOMetaApply: #anything.
 	[
 	xs do: [ :x |
 		" may want to inline #apply:withArgs: below as an
 		  optimization, since this rule gets used a lot "
 		self
-			apply: #exactly
+			privateOMetaApply: #exactly
 			withArgument: x ].
 	^ xs ] on: Exception
 		do: [ :e |
@@ -649,7 +649,7 @@ pvtOMetaDebugStartTrans: name
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'private' stamp: 'pb 4/30/2020 23:59:38'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 5/5/2020 08:27:52'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
@@ -660,10 +660,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 	LastMatcher := matcher.
 	[
 	matcher
-		apply: #empty
+		privateOMetaApply: #empty
 		withArgs: args.
-	ans := matcher apply: aRule.
-	matcher apply: #end ]
+	ans := matcher privateOMetaApply: aRule.
+	matcher privateOMetaApply: #end ]
 		on: OM2Fail
 		do: [ :e | | curr prev prevPrev |
 			debugging ifFalse: [ e pass ].
@@ -683,10 +683,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 			matcher
 				ometaHaltingPoint: curr;
 				
-					apply: #empty
+					privateOMetaApply: #empty
 					withArgs: args.
-			ans := matcher apply: aRule.
-			matcher apply: #end.
+			ans := matcher privateOMetaApply: aRule.
+			matcher privateOMetaApply: #end.
 			Transcript
 				show: matcher ometaDebugPc asString;
 				finishEntry ].
