@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4128] on 5 May 2020 at 8:28:23 am'!
+'From Cuis 5.0 [latest update: #4128] on 5 May 2020 at 7:21:44 pm'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 17!
+!provides: 'OMeta2Extensions' 2 18!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -649,7 +649,7 @@ pvtOMetaDebugStartTrans: name
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'private' stamp: 'pb 5/5/2020 08:27:52'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 5/5/2020 19:18:22'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
@@ -660,10 +660,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 	LastMatcher := matcher.
 	[
 	matcher
-		privateOMetaApply: #empty
+		applyRule: #empty
 		withArgs: args.
-	ans := matcher privateOMetaApply: aRule.
-	matcher privateOMetaApply: #end ]
+	ans := matcher applyRule: aRule.
+	matcher applyRule: #end ]
 		on: OM2Fail
 		do: [ :e | | curr prev prevPrev |
 			debugging ifFalse: [ e pass ].
@@ -683,10 +683,10 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 			matcher
 				ometaHaltingPoint: curr;
 				
-					privateOMetaApply: #empty
+					applyRule: #empty
 					withArgs: args.
-			ans := matcher privateOMetaApply: aRule.
-			matcher privateOMetaApply: #end.
+			ans := matcher applyRule: aRule.
+			matcher applyRule: #end.
 			Transcript
 				show: matcher ometaDebugPc asString;
 				finishEntry ].

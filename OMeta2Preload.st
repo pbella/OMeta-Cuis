@@ -461,15 +461,28 @@ anything
 	input := input tail.
 	^ ans! !
 
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 14:01'!
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 19:00'!
 applyRule
+	"Entry point to enable other rules to apply an arbitrary rule parametrically.  Used primarily by higher order rules (i.e. listOf etc.)"
 	| aRule |
 	aRule := self privateOMetaApply: #anything.
 	^ self privateOMetaApply: aRule! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2Base methodsFor: 'external access' stamp: 'pb 5/5/2020 19:00'!
+applyRule: aRule
+	"Entry point for external (i.e. non-rule) code to apply an arbitrary rule."
+	^ self privateOMetaApply: aRule! !
+
+!OMeta2Base methodsFor: 'external access' stamp: 'pb 5/5/2020 19:00'!
+applyRule: aRule withArgs: args
+	"Entry point for external (i.e. non-rule) code to apply an arbitrary rule with arguments."
+	^ self privateOMetaApply: aRule withArgs: args! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
 privateOMetaApply: aRule
-    "A memoRec is an association whose key is the answer, and whose value is the next input. Failers pretend to be memoRecs, but throw a fail in response to #value"
+	"Apply taking no arguments.  Non-rule code should not send directly as I am an implementation detail and subject to change.
+
+	A memoRec is an association whose key is the answer, and whose value is the next input. Failers pretend to be memoRecs, but throw a fail in response to #value."
 	| memo memoRec |
 	input == haltingPoint ifTrue: [self halt].
 	memo := input memo.
@@ -500,16 +513,17 @@ privateOMetaApply: aRule
 	input := memoRec value.
 	^ memoRec key! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/30/2020 20:00'!
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
 privateOMetaApply: aRule withArgument: arg
+	"Apply taking a single argument, arg. Non-rule code should not send directly as I am an implementation detail and subject to change."
 	input := OM2Stream new
 		initHead: arg
 		tail: input.
 	^ self perform: aRule.! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 13:39'!
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
 privateOMetaApply: aRule withArgs: args
-
+	"Apply taking an argument array, args. Non-rule code should not send directly as I am an implementation detail and subject to change."
 	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
 	^ self perform: aRule! !
 
@@ -749,9 +763,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 	input := OM2LazyStream for: aReadStream withPos: 1.
 	matcher := self new initOMetaInputStream: input.
 	[
-		matcher privateOMetaApply: #empty withArgs: args.
-		ans := matcher privateOMetaApply: aRule.
-		matcher privateOMetaApply: #end.
+		matcher applyRule: #empty withArgs: args.
+		ans := matcher applyRule: aRule.
+		matcher applyRule: #end.
 	] on: OM2Fail do: [:e |
 		| curr prev prevPrev |
 		debugging ifFalse: [e pass].
@@ -773,9 +787,9 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 		curr ifNil: [self error: 'you''ve found a bug -- please report it'].
 		curr become: (OM2StreamDebugger for: curr copy).
 		matcher ometaHaltingPoint: curr.
-		matcher privateOMetaApply: #empty withArgs: args.
-		ans := matcher privateOMetaApply: aRule.
-		matcher privateOMetaApply: #end.
+		matcher applyRule: #empty withArgs: args.
+		ans := matcher applyRule: aRule.
+		matcher applyRule: #end.
 	].
 	^ ans! !
 
