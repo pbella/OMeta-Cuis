@@ -1,8 +1,8 @@
-'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-02) at 2:31:05 pm'!
+'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-10) at 3:27:24 am'!
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 9!
+!provides: 'OMeta2Tests' 2 10!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -70,15 +70,15 @@ testFactorial
 testGreeting
 	self should: (OMeta2Examples matchAll: 'howdy' with: #greeting) = 'howdy'! !
 
-!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/1/2020 03:41:31'!
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/9/2020 04:40:53'!
 testIdentifierIndex
 	"rangeAssoc"
 	self
-		assert:
+		assert: 1 -> 9
+		equals:
 			(OMeta2Examples
 				matchAll: 'abc123sd'
-				with: #identifierIdx)
-		equals: (1 -> 9).! !
+				with: #identifierIdx).! !
 
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/23/2015 22:01'!
 testLambdaCalculus
@@ -287,24 +287,24 @@ test03Sequence
 	self should: (OMeta2StepByStepExample matchAll: #($i $t $e $m $i $t $e $m) with: #testSeqString) = 'item'. "sequences of characters are strings as far as seq is concerned"
 	self should: (OMeta2StepByStepExample matchAll: #(1 2 3) with: #testSeqObject) = #(1 2 3). "not just for strings though"! !
 
-!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/1/2020 03:42:30'!
+!OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/9/2020 04:41:21'!
 test04ConsumedBy
 	"rangeAssoc"
 	"pvtOMetaConsumedBy <> and pvtOMetaIndexConsumedBy @<>"
 	"Returns the input 'consumed' by the rule.  Now we don't have to deal with a collection of characters"
 	self
-		assert:
+		assert: 'feed me'
+		equals:
 			(OMeta2StepByStepExample
 				matchAll: 'feed me'
-				with: #testConsumedBy)
-		equals: 'feed me'.
+				with: #testConsumedBy).
 	"this returns the positional index range of the beginning and end of the match"
 	self
-		assert:
+		assert: 1 -> 8
+		equals:
 			(OMeta2StepByStepExample
 				matchAll: 'feed me'
-				with: #testConsumedByIndex)
-		equals: (1 -> 8).! !
+				with: #testConsumedByIndex).! !
 
 !OMeta2StepByStepTests methodsFor: 'test case' stamp: 'pb 5/9/2019 23:22:07'!
 test05PredicateAction

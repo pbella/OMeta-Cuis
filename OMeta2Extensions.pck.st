@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4128] on 5 May 2020 at 7:21:44 pm'!
+'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:30:18 pm'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 18!
+!provides: 'OMeta2Extensions' 2 19!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -649,7 +649,7 @@ pvtOMetaDebugStartTrans: name
 lastMatcher
 	^ LastMatcher! !
 
-!OMeta2Debug class methodsFor: 'private' stamp: 'pb 5/5/2020 19:18:22'!
+!OMeta2Debug class methodsFor: 'private' stamp: 'pb 5/10/2020 14:19:09'!
 matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
 	| input matcher ans |
 	input := OM2LazyStream
@@ -658,38 +658,15 @@ matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debug
 	matcher := self new initOMetaInputStream: input.
 	matcher ometaDebugRoot: aRule.
 	LastMatcher := matcher.
-	[
-	matcher
-		applyRule: #empty
-		withArgs: args.
-	ans := matcher applyRule: aRule.
-	matcher applyRule: #end ]
-		on: OM2Fail
-		do: [ :e | | curr prev prevPrev |
-			debugging ifFalse: [ e pass ].
-			curr := input.
-			prev := nil.
-			prevPrev := nil.
-			[ curr notNil ] whileTrue: [
-				prevPrev := prev.
-				prev := curr.
-				curr := curr basicTail ].
-			curr := prevPrev ifNil: [ prev ].
-			matcher
-				initOMetaInputStream: input;
-				ometaForgetEverything.
-			curr ifNil: [ self error: 'you''ve found a bug -- please tell Phil' ].
-			curr become: (OM2StreamDebugger for: curr copy).
-			matcher
-				ometaHaltingPoint: curr;
-				
-					applyRule: #empty
-					withArgs: args.
-			ans := matcher applyRule: aRule.
-			matcher applyRule: #end.
-			Transcript
-				show: matcher ometaDebugPc asString;
-				finishEntry ].
+	ans := self
+		pvtMatchOMetaStream: input
+		matcher: matcher
+		with: aRule
+		withArgs: args
+		withPlaybackDebugging: debugging.
+	Transcript
+		show: matcher ometaDebugPc asString;
+		finishEntry.
 	^ ans.! !
 
 !OMeta2Debug class methodsFor: 'private' stamp: 'pb 2/3/2016 21:33'!
@@ -933,12 +910,12 @@ semanticPredicate =
 				ifNil: [(self pvtNewNode: #SemBlkPred) properties: {#op -> blk. self pvtNewRange: spIdx1 and: spIdx2 type: #patternArg}]
 				ifNotNil: [(self pvtNewNode: #SemPred) properties: {#op -> expr. self pvtNewRange: spIdx1 and: spIdx2 type: #patternArg}]]! !
 
-!OMeta2ExtendedRuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 01:40:28'!
+!OMeta2ExtendedRuleParser methodsFor: 'private' stamp: 'pb 5/16/2020 21:36:54'!
 space =
 	^space
 	| @<fromTo('/*', '*/')>:longCommentIdx
 		-> [(curNode properties at: #comments) add: (self pvtNewSHRangeType: #comment rangeAssoc: longCommentIdx)]
-	| @<fromToEnd('//')>:commentIdx
+	| @<fromToEndOfLine('//')>:commentIdx
 		-> [(curNode properties at: #comments) add: (self pvtNewSHRangeType: #comment rangeAssoc: commentIdx)]
 ! !
 

@@ -1,4 +1,4 @@
-'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-05) at 7:55:48 am'!
+'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:29:51 pm'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,7 +11,7 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 14!
+!provides: 'OMeta2' 2 15!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -246,8 +246,9 @@ comment =
 empty
 	^ true.! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:23'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/16/2020 22:07:13'!
 end =
+
 	// Are we at the end of the input stream?
 	~anything! !
 
@@ -264,18 +265,21 @@ firstAndRest
 	rest := self privateOMetaApply: #anything.
 	^ self pvtOMetaGenericMany: [self privateOMetaApply: rest] into: (OrderedCollection with: (self privateOMetaApply: first))! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 23:14:38'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/16/2020 22:07:23'!
 fromTo :x :y =
+
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
 	seq(x) (~seq(y) anything)*:enclosed seq(y) -> [enclosed]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 4/30/2020 23:16:43'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/16/2020 22:07:27'!
 fromToOrEnd :x :y =
+
 	// Match the sequence from x to y.  Example to match a comment: fromTo("/*", "*/"):commentText
 	seq(x) (~seq(y) anything)*:enclosed (seq(y) | end) -> [enclosed]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/5/2020 07:33:08'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/16/2020 22:07:32'!
 listOf :rule :delim =
+
 	// Match :rule one or more times delimited by :delim returning the results as a collection
 		applyRule(rule):x (token(delim) applyRule(rule))*:xs -> [xs addFirst: x; yourself]
 	|	empty -> [#()]! !
@@ -290,66 +294,80 @@ number =
 
 	anything:x ?[x isNumber] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 6/4/2015 17:24'!
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/16/2020 22:07:40'!
 range :a :b =
+
 	// Is the next object within the range of a .. b?  Example usage: checking if an input character falls within the given range.
 	anything:x ?[a <= x & (x <= b)] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:34'!
+string =
+
+	anything:x ?[x isString] -> [x]! !
 
 !OMeta2 methodsFor: 'ometa grammar' stamp: 'pb 5/22/2015 18:34'!
 symbol =
 
 	anything:x ?[x isSymbol] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:23'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:00:46'!
 char =
 
-	anything:x ?[x isKindOf: Character] -> [x]! !
+	anything:x ?[x class == Character] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:24'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:04:53'!
 digit =
 
-	char:x ?[x isDigit] -> [x]! !
+// Inlined for performance
+//	char:x ?[x isDigit] -> [x]
+	anything:x ?[x class == Character and: [x isDigit]] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:28'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:04:48'!
 letter =
 
-	char:x ?[x isLetter] -> [x]! !
+// Inlined for performance
+//	char:x ?[x isLetter] -> [x]
+	anything:x ?[x class == Character and: [x isLetter]] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:30'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:04:43'!
+letterOrDigit =
+
+// Inlined for performance
+//	char:x ?[x isAlphaNumeric] -> [x]
+	anything:x ?[x class == Character and: [x isAlphaNumeric]] -> [x]! !
+
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:11:31'!
 lower =
 
-	char:x ?[x isLowercase] -> [x]! !
+// Inlined for performance
+//	char:x ?[x isLowercase] -> [x]
+	anything:x ?[x class == Character and: [x isLowercase]] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:32'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:03:45'!
 space =
 
-	char:x ?[x asciiValue <= 32] -> [x]! !
+// Inlined for performance
+//	char:x ?[x numericValue <= 32] -> [x]
+	anything:x ?[x class == Character and: [x numericValue <= 32]] -> [x]! !
 
 !OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:33'!
 spaces =
 
 	space*! !
 
-!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/22/2015 18:35'!
+!OMeta2 methodsFor: 'ometa grammar - character' stamp: 'pb 5/16/2020 22:04:11'!
 upper =
 
-	char:x ?[x isUppercase] -> [x]! !
+// Inlined for performance
+//	char:x ?[x isUppercase] -> [x]
+	anything:x ?[x class == Character and: [x isUppercase]] -> [x]! !
 
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/2/2020 14:24:51'!
-fromToEnd :from =
-	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEnd("//"):commentText
+!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/16/2020 22:07:54'!
+fromToEndOfLine :from =
+
+	/* Match the sequence :from to either the end of line or the input stream.  Example to match a comment: fromToEndOfLine("//"):commentText
 	FIXME - if 2nd param could be made optional and default to lf, this rule would be usable by any type of object */
-	fromToOrEnd(from, Character newLineCharacter asString)! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:28'!
-letterOrDigit =
-
-	char:x ?[x isAlphaNumeric] -> [x]! !
-
-!OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
-string =
-
-	anything:x ?[x isString] -> [x]! !
+	fromToOrEnd(from, `Character newLineCharacter asString`)! !
 
 !OMeta2 methodsFor: 'ometa grammar - text' stamp: 'pb 5/22/2015 18:34'!
 token :t =
@@ -636,10 +654,10 @@ semanticPredicate =
 	"?[" (squeakExpression:expr | squeakInnerBlock:blk) $]
 		-> [expr ifNil: [Array with: #SemBlkPred with: blk] ifNotNil: [Array with: #SemPred with: expr]]! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 00:32:43'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/16/2020 21:36:59'!
 space =
 
-	^space | fromTo('/*', '*/') | fromToEnd('//')! !
+	^space | fromTo('/*', '*/') | fromToEndOfLine('//')! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 19:27:58'!
 squeakArgExprOrWrappedInnerBlock =

@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4128] on QDate(2020-05-05) at 7:56:11 am'!
+'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:29:57 pm'!
 'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
-!provides: 'OMeta2Examples' 2 11!
+!provides: 'OMeta2Examples' 2 12!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 
@@ -496,8 +496,9 @@ evCond =
 	| condF* anything*	-> [nil]
 ! !
 
-!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/29/2015 18:13'!
+!OMeta2LispExample methodsFor: 'private' stamp: 'pb 5/7/2020 03:11:10'!
 initialize
+	super initialize.
 	envStack := OrderedCollection new.
 	envStackPointer := 0.
 	env := Dictionary new
@@ -591,16 +592,16 @@ testConsumedByIndex =
 	// Sometimes you may only care about the positional indexes of the consumed range
 	@<testManyAnything>! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:27:29'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/16/2020 21:37:20'!
 testFromTo =
 	// fromTo will find items between the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
 	fromTo('/* ', ' */'):first spaces (~``tex'' anything)+
-	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// fromToEndOfLine only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
-	<fromToEnd('tex')>:last -> [first, ' ', last]
+	<fromToEndOfLine('tex')>:last -> [first, ' ', last]
 	
-	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// Note: because fromToEndOfLine is searching for a particular character value, it is generally limited to searching strings
 	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
 !OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:27:47'!
@@ -638,17 +639,17 @@ testFromToOrEnd =
 	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
 	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
-!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 14:28:24'!
+!OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/16/2020 21:37:30'!
 testFromToString =
 	// fromTo will find items between (spatially) the from and to parameters
 	// by default, the fromTo* rules will return the a result exclusive of the match criteria.
 	// spaces is a built in rule which consumes any whitespace
 	fromTo('/* ', ' */'):first spaces (~``tex'' anything)+
-	// fromToEnd only takes a from parameter and continues until either a linefeed or end of stream is reached
+	// fromToEndOfLine only takes a from parameter and continues until either a linefeed or end of stream is reached
 	// Wrap in consumed by to get the entire text.
-	<fromToEnd('tex')>:last -> [first, ' ', last]
+	<fromToEndOfLine('tex')>:last -> [first, ' ', last]
 	
-	// Note: because fromToEnd is searching for a particular character value, it is generally limited to searching strings
+	// Note: because fromToEndOfLine is searching for a particular character value, it is generally limited to searching strings
 	// FIXME - can the 2nd param be optional and use lf only if not specified?! !
 
 !OMeta2StepByStepExample methodsFor: 'test case support' stamp: 'pb 5/2/2020 01:36:56'!
