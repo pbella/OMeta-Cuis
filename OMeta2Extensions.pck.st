@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:30:18 pm'!
+'From Cuis 5.0 [latest update: #4219] on QDate(2020-06-18) at 2:51:48 am'!
 'Description Optional extensions to OMeta including: syntax highlighting in Browser windows, basic debugging and profiling.'!
-!provides: 'OMeta2Extensions' 2 19!
+!provides: 'OMeta2Extensions' 2 20!
 !requires: 'OMeta2' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Extensions!
 
@@ -262,6 +262,10 @@ initialize
 	useSmalltalkStyler := false.
 	smalltalkFallbackStyler := SHTextStylerST80 new.! !
 
+!SHTextStylerOMeta2 class methodsFor: 'accessing' stamp: 'pb 5/1/2020 19:13:39'!
+rangeParserClass
+	^ OMeta2ExtendedRuleParser.! !
+
 !SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/17/2015 00:15'!
 attributeArrayForColor: aColorOrNil emphasis: anEmphasisSymbolOrArrayorNil
 	"Answer a new Array containing any non nil TextAttributes specified"
@@ -425,9 +429,9 @@ initialTextAttributes
 					};
 				yourself ].! !
 
-!SHTextStylerOMeta2 class methodsFor: 'as yet unclassified' stamp: 'pb 5/1/2020 19:13:39'!
-rangeParserClass
-	^ OMeta2ExtendedRuleParser.! !
+!SHTextStylerOMeta2 class methodsFor: 'private' stamp: 'pb 6/18/2020 02:35:14'!
+privateResetTextAttributes
+	textAttributes := nil! !
 
 !SHTextStylerOMeta2 class methodsFor: 'private-development' stamp: 'pb 6/17/2015 01:09'!
 resetAttributes
@@ -506,11 +510,13 @@ debugTmpResult :='. body. '.
 self pvtOMetaDebugFinishTrans: #'. rule. ' id: debugTmpTransId.
 ^ debugTmpResult'}.! !
 
-!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 4/30/2020 23:55:56'!
+!OMeta2DebugRuleTranslator methodsFor: 'private' stamp: 'pb 5/30/2020 16:04:08'!
 form =
 // FIXME - doing it here so that #pvtOMetaForm: doesn't need to know about debug transactions...
 // Form is a sort of built-in sub-rule that can be useful to trace when troubleshooting with structured data
 //	trans:x -> [{'(self pvtOMetaForm: ['. x. '])'}]
+	[self flag: #pvtOMetaForm:;
+		flag: #pvtOMetaDebugStartTrans:]
 	[self debugNextSequenceId asString]:ftId
 	trans:x -> [{'[|fresult',ftId,' ftr',ftId,'|
 			ftr',ftId,' := self pvtOMetaDebugStartTrans: #subRuleForm.
@@ -896,9 +902,14 @@ rulePart :ruleName =
 		|	empty			-> [retVal := curNode addChild: b1]
 		)! !
 
-!OMeta2ExtendedRuleParser methodsFor: 'private' stamp: 'pb 5/2/2020 05:22:00'!
+!OMeta2ExtendedRuleParser methodsFor: 'private' stamp: 'pb 6/16/2020 11:25:26'!
+ruleProduction =
+
+	"->"! !
+
+!OMeta2ExtendedRuleParser methodsFor: 'private' stamp: 'pb 6/16/2020 11:25:37'!
 semanticAction =
-	@<"->"? "[">:saIdx1 (squeakExpression:expr|squeakInnerBlock:blk) @<$]>:saIdx2
+	@<ruleProduction? "[">:saIdx1 (squeakExpression:expr|squeakInnerBlock:blk) @<$]>:saIdx2
 		-> [expr
 				ifNil: [(self pvtNewNode: #SemBlkAct) properties: {#op -> blk. self pvtNewRange: saIdx1 and: saIdx2 type: #patternArg}]
 				ifNotNil: [(self pvtNewNode: #SemAct) properties: {#op -> expr. self pvtNewRange: saIdx1 and: saIdx2 type: #patternArg}]]! !
@@ -1276,14 +1287,13 @@ parseOMetaRuleOrNil: aSymbol
 		with: #ometaRule
 		ifFail: [ ].! !
 
-!OMeta2 class methodsFor: '*OMeta2Extensions' stamp: 'pb 5/3/2020 14:09:17'!
+!OMeta2 class methodsFor: '*OMeta2Extensions' stamp: 'pb 5/27/2020 02:54:36'!
 recompileAllOMetaRules
 	"Need to subscribe to add/change/delete method events via SystemChangeNotifier #methodAdded, #methodChanged, #methodRemoved events and dispatch here if the method changed was #isOMetaLeftRecursionEnabled
 	FIXME - WIP"
-	self methodDict keys do: [ :eaRule |
-		(self parseOMetaRuleOrNil: eaRule) ifNotNil: [ | p1 p2 p3 |
-			"
-			Transcript show: 're-parsing: ' , eaRule asString.
+	self methodDict keysAndValuesDo: [ :eaRule :eaCompiledMethod |
+		(self parseOMetaRuleOrNil: eaRule) ifNotNil: [
+			Transcript show: 're-compiling: ' , eaRule asString , ' in cat ' , eaCompiledMethod category.
 			"
 			p1 := self ometa2RuleParserClass
 				matchAll: (self sourceCodeAt: eaRule) readStream
@@ -1296,4 +1306,8 @@ recompileAllOMetaRules
 					{OMeta2}.
 			self ometa2FlattenerClass
 				match: p3
-				with: #flatten ]].! !
+				with: #flatten.
+			"
+			self
+				compile: (self sourceCodeAt: eaRule)
+				classified: eaCompiledMethod category ]].! !

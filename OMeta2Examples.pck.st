@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:29:57 pm'!
+'From Cuis 5.0 [latest update: #4145] on QDate(2020-05-20) at 12:37:09 am'!
 'Description Example parsers for OMeta2 including: CSV, Lambda Calculus, Lisp, a tree parser, debugging and general tutorial/example parsers.'!
-!provides: 'OMeta2Examples' 2 12!
+!provides: 'OMeta2Examples' 2 13!
 !requires: 'OMeta2Extensions' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Examples!
 
@@ -33,6 +33,16 @@ OMeta2 subclass: #OMeta2Examples
 	category: 'OMeta2Examples'!
 !classDefinition: 'OMeta2Examples class' category: #OMeta2Examples!
 OMeta2Examples class
+	instanceVariableNames: ''!
+
+!classDefinition: #OMeta2ExamplesCoverage category: #OMeta2Examples!
+OMeta2 subclass: #OMeta2ExamplesCoverage
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Examples'!
+!classDefinition: 'OMeta2ExamplesCoverage class' category: #OMeta2Examples!
+OMeta2ExamplesCoverage class
 	instanceVariableNames: ''!
 
 !classDefinition: #OMeta2ExtendedSyntaxExamples category: #OMeta2Examples!
@@ -144,6 +154,9 @@ Here's how to run these examples:
 	OMeta2Examples matchAll: 'abc123' with: #identifier.
 	OMeta2Examples matchAll: #($a $b $c 1 2 3 #(4 5)) with: #structure.
 	OMeta2Examples matchAll: 'howdy' with: #greeting.!
+
+!OMeta2ExamplesCoverage commentStamp: '<historical>' prior: 0!
+Needed for test coverage!
 
 !OMeta2ExtendedSyntaxExamples commentStamp: '<historical>' prior: 0!
 Several enhancements have been made to OMeta syntax.  These rules provide a quick comparison of the old (legacy*) and the new (extended*) ways of doing things.  For functionality that is additive (i.e. has no corresponding legacy implementation), the rule names will be in the form of new*.!
@@ -316,6 +329,31 @@ structure =
 	// this example shows how the {}s are used for matching sequenceable collections
 
 	$a $b $c 1 2 3 {anything*}! !
+
+!OMeta2ExamplesCoverage methodsFor: 'as yet unclassified' stamp: 'pb 5/20/2020 00:04:33'!
+allLowercase =
+	// Not currently used by OMeta... added to ensure test coverage
+	lower+ -> [true]! !
+
+!OMeta2ExamplesCoverage methodsFor: 'as yet unclassified' stamp: 'pb 5/20/2020 00:04:44'!
+allUppercase =
+	// Not currently used by OMeta... added to ensure test coverage
+	upper+ -> [true]! !
+
+!OMeta2ExamplesCoverage methodsFor: 'as yet unclassified' stamp: 'pb 5/20/2020 00:33:42'!
+notLastNumber =
+	// Not currently used by OMeta... added to ensure test coverage
+	notLast(#number) anything+ -> [true]! !
+
+!OMeta2ExamplesCoverage methodsFor: 'as yet unclassified' stamp: 'pb 5/20/2020 00:33:36'!
+notLastUppercase =
+	// Not currently used by OMeta... added to ensure test coverage
+	notLast(#upper) char+-> [true]! !
+
+!OMeta2ExamplesCoverage methodsFor: 'as yet unclassified' stamp: 'pb 5/20/2020 00:05:08'!
+rangeFromTo :from :to =
+	// Not currently used by OMeta... added to ensure test coverage
+	range(from, to)! !
 
 !OMeta2ExtendedSyntaxExamples methodsFor: 'as yet unclassified' stamp: 'pb 5/3/2020 01:12:00'!
 extendedParameterSyntax =

@@ -1,4 +1,4 @@
-'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-16) at 10:29:51 pm'!
+'From Cuis 5.0 [latest update: #4219] on QDate(2020-06-16) at 11:00:22 am'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,7 +11,7 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 15!
+!provides: 'OMeta2' 2 16!
 SystemOrganization addCategory: #OMeta2!
 
 
@@ -227,10 +227,12 @@ OMeta implementation!
 !OMeta2CuisSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
 Extensions specific to Cuis!
 
-!OMeta2 class methodsFor: 'methods' stamp: 'jmv 5/23/2019 10:44:30'!
+!OMeta2 class methodsFor: 'methods' stamp: 'pb 5/22/2020 03:09:24'!
 methodNodeFor: sourceCode noPattern: aBoolean
-	(OMeta2RuleParser isOMeta2Rule: sourceCode) ifTrue: [ ^ nil ].
-	^ super methodNodeFor: sourceCode noPattern: aBoolean! !
+	(self ometa2RuleParserClass isOMeta2Rule: sourceCode) ifTrue: [ ^ nil ].
+	^ super
+		methodNodeFor: sourceCode
+		noPattern: aBoolean.! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 5/22/2015 19:02'!
 name =
@@ -642,10 +644,15 @@ rulePart :ruleName =
 		|	empty			-> [b1]
 		)! !
 
-!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 4/29/2020 00:05:44'!
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/16/2020 10:58:09'!
+ruleProduction =
+
+	"->"! !
+
+!OMeta2RuleParser methodsFor: 'private' stamp: 'pb 6/16/2020 10:58:16'!
 semanticAction =
 
-	"->"? "[" (squeakExpression:expr | squeakInnerBlock:blk) $]
+	ruleProduction? "[" (squeakExpression:expr | squeakInnerBlock:blk) $]
 		-> [expr ifNil: [Array with: #SemBlkAct with: blk] ifNotNil: [Array with: #SemAct with: expr]]! !
 
 !OMeta2RuleParser methodsFor: 'private' stamp: 'pb 4/29/2020 00:31:55'!
@@ -714,10 +721,15 @@ squeakRule =
 	// This isn't OMeta code so we'll handoff to Squeak when the time comes
 	~(^space* nsName expr4 "=") <char*>:squeakCode -> [{#Squeak. squeakCode}]! !
 
-!OMeta2RuleParser class methodsFor: 'testing' stamp: 'aw 2/23/2009 10:07'!
+!OMeta2RuleParser class methodsFor: 'testing' stamp: 'pb 5/17/2020 03:14:16'!
 isOMeta2Rule: aString
-
-	^ [(self matchAll: aString with: #rule) first ~= #Squeak] on: OM2Fail do: [false]! !
+	^ [
+	(self
+		matchAll: aString
+		with: #rule) first ~= #Squeak ]
+		on: OM2Fail
+		do: [ :ex |
+			ex return: false ].! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/28/2020 23:53:08'!
 and =
@@ -1067,8 +1079,9 @@ unit =
 |	"(" expr ")"
 ! !
 
-!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/2/2020 00:09:00'!
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/31/2020 01:37:18'!
 squeakArgExprOrWrappedInnerBlock =
+
 	"[" squeakInnerBlock:inner "]" -> ['(true ifTrue: [', inner, '])']
 |	[useArgTypeTable := true] squeakExpr:expr -> [expr]
 ! !
@@ -1078,8 +1091,9 @@ squeakExpr =
 
 	<expr>! !
 
-!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/2/2020 14:41:29'!
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'grammar root' stamp: 'pb 5/31/2020 01:37:26'!
 squeakInnerBlock =
+
 	// Needed for OMeta semantic actions and predicates
 	<(	(":" identifier)+ "|"
 		|	empty

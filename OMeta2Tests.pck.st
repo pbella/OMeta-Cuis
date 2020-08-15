@@ -1,8 +1,8 @@
-'From Cuis 5.0 [latest update: #4140] on QDate(2020-05-10) at 3:27:24 am'!
+'From Cuis 5.0 [latest update: #4145] on QDate(2020-05-20) at 12:37:38 am'!
 'Description Tests for OMeta2.  These are tests for the Extensions and Examples packages.
 
 Note: the main OMeta2 package is effectively both a set of unit and system tests for OMeta itself, as it rewrites the bulk of OMeta in OMeta. If you are able to successfully load the OMeta2 package, you can be confident that its core functionality is working correctly.  The tests included in this package validate the remaining functionality that the core package does not exercise.'!
-!provides: 'OMeta2Tests' 2 10!
+!provides: 'OMeta2Tests' 2 11!
 !requires: 'OMeta2Examples' 2 0 nil!
 SystemOrganization addCategory: #OMeta2Tests!
 
@@ -59,6 +59,28 @@ testInfiniteRecursion
 testNotASequence
 	self should: [OMeta2DebugExample match: 'does not matter what goes here' with: #notASequence] raise: OMeta2DebugError "Not a sequence: a".
 ! !
+
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/20/2020 00:08:12'!
+testAllLowercase
+	self should:
+		(OMeta2ExamplesCoverage
+			matchAll: 'lower'
+			with: #allLowercase).
+	self shouldFail: [
+		OMeta2ExamplesCoverage
+			matchAll: 'Lower'
+			with: #allLowercase ].! !
+
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/20/2020 00:08:12'!
+testAllUppercase
+	self should:
+		(OMeta2ExamplesCoverage
+			matchAll: 'UPPER'
+			with: #allUppercase).
+	self shouldFail: [
+		OMeta2ExamplesCoverage
+			matchAll: 'Upper'
+			with: #allUppercase ].! !
 
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/26/2015 03:43'!
 testFactorial
@@ -203,6 +225,30 @@ testLisp
 				#(#quote #c )
 			)) = #invalid.! !
 
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/20/2020 00:30:59'!
+testNotLastNumber
+	self should:
+		(OMeta2ExamplesCoverage
+			matchAll:
+				{1. 1. 'ok'}
+			with: #notLastNumber).
+	self shouldFail: [
+		OMeta2ExamplesCoverage
+			matchAll:
+				{1. 'bad'. 'ok'}
+			with: #notLastNumber ].! !
+
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/20/2020 00:35:52'!
+testNotLastUppercase
+	self should:
+		(OMeta2ExamplesCoverage
+			matchAll: 'CAps'
+			with: #notLastUppercase).
+	self shouldFail: [
+		OMeta2ExamplesCoverage
+			matchAll: 'Caps'
+			with: #notLastUppercase ].! !
+
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/26/2015 03:34'!
 testNumber
 	self should: (OMeta2Examples matchAll: '1234' with: #number) = 1234.
@@ -213,6 +259,27 @@ testNumber
 testObjectStructure
 	self should: (OMeta2Examples matchAll: #($a $b $c 1 2 3 #(4 5)) with: #structure) = #(4 5)
 ! !
+
+!OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/20/2020 00:08:12'!
+testRangeFromTo
+	self should:
+		(OMeta2ExamplesCoverage
+			match: $c
+			with: #rangeFromTo
+			withArgs:
+				{$a. $f}) = $c.
+	self shouldFail: [
+		OMeta2ExamplesCoverage
+			match: $g
+			with: #rangeFromTo
+			withArgs:
+				{$a. $f} ].
+	self should:
+		(OMeta2ExamplesCoverage
+			match: 20
+			with: #rangeFromTo
+			withArgs:
+				{10. 100}) = 20.! !
 
 !OMeta2ExampleTests methodsFor: 'test case' stamp: 'pb 5/22/2015 16:52'!
 testStringMatch
