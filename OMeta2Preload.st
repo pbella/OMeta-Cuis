@@ -1,115 +1,173 @@
-'From Moshi of 3 March 2007 [latest update: #908] on 21 May 2009 at 1:17:33 pm'!
+!classDefinition: #OM2Fail category: #OMeta2Preload!
 Exception subclass: #OM2Fail
 	instanceVariableNames: 'parserFailedAt'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Preload'!
-Object subclass: #OM2Failer
-	instanceVariableNames: 'used'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-Object subclass: #OM2Stream
-	instanceVariableNames: 'head tail memo'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-OM2Stream subclass: #OM2StreamProxy
-	instanceVariableNames: 'target'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-OM2Stream subclass: #OM2StreamDebugger
-	instanceVariableNames: 'om2stream'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-OM2Stream subclass: #OM2LazyStream
-	instanceVariableNames: 'stream pos'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-OM2Stream subclass: #OM2EndOfStream
-	instanceVariableNames: 'stream pos'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
+!OM2Fail commentStamp: '<historical>' prior: 0!
+I represent a match failure.  Try using #matchAll:with:ifFail: rather than handling me directly.!
+
+
+!OM2Fail methodsFor: 'exceptionDescription' stamp: 'aw 2/26/2009 11:03'!
+defaultAction
+
+	self error: 'match failed'! !
+
+
+!OM2Fail methodsFor: 'accessing' stamp: 'pb 9/5/2017 13:01'!
+parserFailedAt
+	^ parserFailedAt.! !
+
+
+!OM2Fail methodsFor: 'private' stamp: 'pb 9/5/2017 13:01'!
+privateParserFailedAt: pos
+	parserFailedAt := pos.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OM2Fail class' category: #OMeta2Preload!
+OM2Fail class
+	instanceVariableNames: ''!
+
+!OM2Fail class methodsFor: 'exceptionInstantiator' stamp: 'pb 9/5/2017 13:01'!
+parserFailedAt: positionInStream
+	^ self new
+		privateParserFailedAt: positionInStream;
+		signal.! !
+
+
+!classDefinition: #OMeta2Compiler category: #OMeta2Preload!
 Compiler subclass: #OMeta2Compiler
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2Preload'!
-Object subclass: #OMeta2Base
-	instanceVariableNames: 'input om2streams haltingPoint'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2Preload'!
-OMeta2Base subclass: #OMeta2
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2 subclass: #OMeta2RuleParser
-	instanceVariableNames: 'temps'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2 subclass: #OMeta2RuleTranslator
-	instanceVariableNames: 'grammarClass'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2 subclass: #OMeta2Optimizer
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2 subclass: #OMeta2Flattener
-	instanceVariableNames: 'ws'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-
-!OM2Fail commentStamp: '<historical>' prior: 0!
-I represent a match failure.  Try using #matchAll:with:ifFail: rather than handling me directly.!
-
-!OM2Failer commentStamp: '<historical>' prior: 0!
-I am used to capture left recursion failures.  Do not use me directly, I am an implementation detail.!
-
-!OM2Stream commentStamp: '<historical>' prior: 0!
-I, and my subclasses, are specialized pseudo-streams used by OMeta parsers.  We are implementation details... do not instantiate us.!
-
 !OMeta2Compiler commentStamp: '<historical>' prior: 0!
 I provide the interface that the Smalltalk environment expects.  In turn, I call out to various OMeta parsers that actually perform the compilation.
 
-I use the indirection provided by OMeta2 class methods to allow for overriding of various functionality and make things a bit easier when trying out new extensions and optimization ideas for OMeta.! 
+I use the indirection provided by OMeta2 class methods to allow for overriding of various functionality and make things a bit easier when trying out new extensions and optimization ideas for OMeta.!
 
-!OMeta2Base commentStamp: '<historical>' prior: 0!
-I provide the core language/library runtime support for OMeta that cannot be rewritten as OMeta code.!
 
-!OMeta2 commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/18/2009 16:30'!
+compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBlock
 
-!OMeta2RuleParser commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
+	^ self compile: origCode in: cls notifying: notify ifFail: failBlock! !
 
-!OMeta2RuleTranslator commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'MO 3/26/2024 18:12:06'!
+compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBlock optimizeSpecialSends: doOptimizeSpecialSends
 
-!OMeta2Optimizer commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
+	| origCodeStream parseTree structuredCode translatedCode compilerStage|
+	origCodeStream := origCode asString readStream.
+	self from: origCodeStream class: cls context: nil notifying: notify.
+	[
+		compilerStage := 'Parsing'.
+		parseTree := cls ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
+		compilerStage := 'Optimizing'.
+		parseTree := cls ometa2OptimizerClass optimizeOMetaAst: parseTree.
+		compilerStage := 'Translating'.
+		structuredCode := cls ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
+		compilerStage := 'Flattening'.
+		translatedCode := cls ometa2FlattenerClass match: structuredCode with: #flatten
+	] on: OM2Fail do: [
+		self notify: '<-- parse error around here -->' at: origCodeStream position.
+		^ failBlock value
+	].
+	^ Compiler new
+		compile: translatedCode readStream
+		in: cls
+		classified: aCategory
+		notifying: notify
+		ifFail: failBlock
+		optimizeSpecialSends: doOptimizeSpecialSends! !
 
-!OMeta2Flattener commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
+compile: origCode in: cls notifying: notify ifFail: failBlock
 
+	| origCodeStream parseTree structuredCode translatedCode compilerStage|
+	origCodeStream := origCode asString readStream.
+	self from: origCodeStream class: cls context: nil notifying: notify.
+	[
+		compilerStage := 'Parsing'.
+		parseTree := cls ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
+		compilerStage := 'Optimizing'.
+		parseTree := cls ometa2OptimizerClass optimizeOMetaAst: parseTree.
+		compilerStage := 'Translating'.
+		structuredCode := cls ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
+		compilerStage := 'Flattening'.
+		translatedCode := cls ometa2FlattenerClass match: structuredCode with: #flatten
+	] on: OM2Fail do: [
+		self notify: '<-- parse error around here -->' at: origCodeStream position.
+		^ failBlock value
+	].
+	^ Compiler new
+		compile: translatedCode readStream
+		in: cls
+		notifying: notify
+		ifFail: failBlock! !
+
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'MO 3/26/2024 18:11:21'!
+parse: aStream class: aClass category: aCategory noPattern: noPattern doIt: doIt context: ctxt notifying: req ifFail: aBlock
+
+	^ [
+		| parseTree structuredCode code node compilerStage|
+		compilerStage := 'Parsing'.
+		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
+		compilerStage := 'Optimizing'.
+		parseTree := aClass ometa2OptimizerClass optimizeOMetaAst: parseTree.
+		compilerStage := 'Translating'.
+		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
+		compilerStage := 'Flattening'.
+		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
+		node := Parser new 
+		parse: code readStream 
+		class: aClass 
+		category: aCategory
+		noPattern: noPattern 
+		doIt: doIt
+		context: ctxt 
+		notifying: req 
+		ifFail: aBlock.
+		OMeta2MethodNode adoptInstance: node.
+		node
+	] on: OM2Fail do: [aBlock value]! !
+
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
+parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
+
+	^ [
+		| parseTree structuredCode code node compilerStage|
+		compilerStage := 'Parsing'.
+		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
+		compilerStage := 'Optimizing'.
+		parseTree := aClass ometa2OptimizerClass optimizeOMetaAst: parseTree.
+		compilerStage := 'Translating'.
+		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
+		compilerStage := 'Flattening'.
+		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
+		node := Parser new parse: code readStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
+		OMeta2MethodNode adoptInstance: node.
+		node
+	] on: OM2Fail do: [aBlock value]! !
+
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'hmm 5/24/2010 10:51'!
+parser
+        ^ self parserClass new! !
+
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:10'!
+parserClass
+
+	^ self class! !
+
+
+!classDefinition: #OMeta2MethodNode category: #OMeta2Preload!
 MethodNode subclass: #OMeta2MethodNode
-        instanceVariableNames: ''
-        classVariableNames: ''
-        poolDictionaries: ''
-        category: 'OMeta2Preload'!
-
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
 !OMeta2MethodNode commentStamp: '<historical>' prior: 0!
 I exist so that OMeta methods can be viewed in the code browsers.!
+
 
 !OMeta2MethodNode methodsFor: 'debugger support' stamp: 'hmm 8/25/2012 14:28'!
 schematicTempNamesString
@@ -118,29 +176,16 @@ schematicTempNamesString
 This fixes an error when attempting to prettyPrint OMeta source code. (prettyPrint reveals the actual Smalltalk code generated by OMeta)"
         ^nil! !
 
-!OMeta2 class methodsFor: 'methods' stamp: 'jmv 5/23/2019 10:44:30'!
-methodNodeFor: sourceCode noPattern: aBoolean
-	(OMeta2RuleParser isOMeta2Rule: sourceCode) ifTrue: [ ^ nil ].
-	^ super methodNodeFor: sourceCode noPattern: aBoolean! !
+
+!classDefinition: #OM2Failer category: #OMeta2Preload!
+Object subclass: #OM2Failer
+	instanceVariableNames: 'used'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OM2Failer commentStamp: '<historical>' prior: 0!
+I am used to capture left recursion failures.  Do not use me directly, I am an implementation detail.!
 
-!OM2Fail class methodsFor: 'exceptionInstantiator' stamp: 'pb 9/5/2017 13:01'!
-parserFailedAt: positionInStream
-	^ self new
-		privateParserFailedAt: positionInStream;
-		signal.! !
-
-!OM2Fail methodsFor: 'exceptionDescription' stamp: 'aw 2/26/2009 11:03'!
-defaultAction
-
-	self error: 'match failed'! !
-
-!OM2Fail methodsFor: 'accessing' stamp: 'pb 9/5/2017 13:01'!
-parserFailedAt
-	^ parserFailedAt.! !
-
-!OM2Fail methodsFor: 'private' stamp: 'pb 9/5/2017 13:01'!
-privateParserFailedAt: pos
-	parserFailedAt := pos.! !
 
 !OM2Failer methodsFor: 'initialization' stamp: 'aw 2/16/2009 14:23'!
 initialize
@@ -152,21 +197,28 @@ used
 
 	^ used! !
 
+
 !OM2Failer methodsFor: 'evaluating' stamp: 'aw 2/27/2009 13:42'!
 value
 
 	used := true.
 	OM2Fail signal! !
 
+
+!classDefinition: #OM2Stream category: #OMeta2Preload!
+Object subclass: #OM2Stream
+	instanceVariableNames: 'head tail memo'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OM2Stream commentStamp: '<historical>' prior: 0!
+I, and my subclasses, are specialized pseudo-streams used by OMeta parsers.  We are implementation details... do not instantiate us.!
+
+
 !OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:04'!
 basicTail
 
 	^ tail! !
-
-!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
-ometaForgetEverything
-
-	memo := IdentityDictionary new! !
 
 !OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 11:35'!
 head
@@ -179,11 +231,6 @@ initHead: h tail: t
 	head := h.
 	tail := t! !
 
-!OM2Stream methodsFor: 'initialization' stamp: 'aw 2/16/2009 11:34'!
-initialize
-
-	memo := IdentityDictionary new! !
-
 !OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:13'!
 inputSpecies
 
@@ -195,9 +242,36 @@ memo
 	^ memo! !
 
 !OM2Stream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
+
+	memo := IdentityDictionary new! !
+
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
 ometaPositionInStream
 
 	^ -1! !
+
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 11:35'!
+tail
+
+	^ tail! !
+
+!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:40'!
+transitiveForgetEverything
+
+	| curr |
+	curr := self.
+	[curr notNil] whileTrue: [
+		curr ometaForgetEverything.
+		curr := curr basicTail
+	]! !
+
+
+!OM2Stream methodsFor: 'initialization' stamp: 'aw 2/16/2009 11:34'!
+initialize
+
+	memo := IdentityDictionary new! !
+
 
 !OM2Stream methodsFor: 'printing' stamp: 'aw 2/26/2009 11:05'!
 printOn: aStream
@@ -224,20 +298,148 @@ printOn: aStream
 	].
 	aStream nextPutAll: '...)'! !
 
-!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/16/2009 11:35'!
+
+!classDefinition: #OM2EndOfStream category: #OMeta2Preload!
+OM2Stream subclass: #OM2EndOfStream
+	instanceVariableNames: 'stream pos'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
+head
+
+	OM2Fail signal! !
+
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
+initStream: s pos: p
+
+	stream := s.
+	pos := p! !
+
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:14'!
+inputSpecies
+
+	^ stream originalContents species! !
+
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
+
+	^ pos! !
+
+!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
 tail
 
+	OM2Fail signal! !
+
+
+!classDefinition: #OM2LazyStream category: #OMeta2Preload!
+OM2Stream subclass: #OM2LazyStream
+	instanceVariableNames: 'stream pos'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
+initHead: h stream: s pos: p
+
+	head := h.
+	stream := s.
+	pos := p! !
+
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:15'!
+inputSpecies
+
+	^ stream originalContents species! !
+
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
+
+	^ pos! !
+
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:42'!
+tail
+
+	tail ifNil: [tail := OM2LazyStream for: stream withPos: pos + 1].
 	^ tail! !
 
-!OM2Stream methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:40'!
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OM2LazyStream class' category: #OMeta2Preload!
+OM2LazyStream class
+	instanceVariableNames: ''!
+
+!OM2LazyStream class methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:44'!
+for: aReadStream withPos: pos
+
+	^ aReadStream atEnd
+		ifTrue: [OM2EndOfStream new initStream: aReadStream pos: pos]
+		ifFalse: [self new initHead: aReadStream next stream: aReadStream pos: pos]! !
+
+
+!classDefinition: #OM2StreamDebugger category: #OMeta2Preload!
+OM2Stream subclass: #OM2StreamDebugger
+	instanceVariableNames: 'om2stream'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
+head
+
+	^ om2stream head! !
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:26'!
+initOm2stream: anOM2Stream
+
+	om2stream := anOM2Stream! !
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:27'!
+memo
+
+	^ om2stream memo! !
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
+
+	om2stream ometaForgetEverything! !
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
+tail
+
+	^ om2stream tail! !
+
+!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:29'!
 transitiveForgetEverything
 
-	| curr |
-	curr := self.
-	[curr notNil] whileTrue: [
-		curr ometaForgetEverything.
-		curr := curr basicTail
-	]! !
+	om2stream transitiveForgetEverything! !
+
+
+!OM2StreamDebugger methodsFor: 'printing' stamp: 'aw 2/26/2009 15:57'!
+printOn: aStream
+
+	aStream nextPutAll: 'an OM2StreamDebugger('.
+	om2stream printOn: aStream.
+	aStream nextPut: $)! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OM2StreamDebugger class' category: #OMeta2Preload!
+OM2StreamDebugger class
+	instanceVariableNames: ''!
+
+!OM2StreamDebugger class methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:28'!
+for: anOM2Stream
+
+	^ self new initOm2stream: anOM2Stream! !
+
+
+!classDefinition: #OM2StreamProxy category: #OMeta2Preload!
+OM2Stream subclass: #OM2StreamProxy
+	instanceVariableNames: 'target'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
 
 !OM2StreamProxy methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 11:05'!
 basicTail
@@ -278,6 +480,7 @@ target
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
+!classDefinition: 'OM2StreamProxy class' category: #OMeta2Preload!
 OM2StreamProxy class
 	instanceVariableNames: ''!
 
@@ -286,172 +489,16 @@ for: anOM2Stream
 
 	^ self new initTarget: anOM2Stream! !
 
+
+!classDefinition: #OMeta2Base category: #OMeta2Preload!
+Object subclass: #OMeta2Base
+	instanceVariableNames: 'input om2streams haltingPoint'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2Base commentStamp: '<historical>' prior: 0!
+I provide the core language/library runtime support for OMeta that cannot be rewritten as OMeta code.!
 
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
-ometaForgetEverything
-
-	om2stream ometaForgetEverything! !
-
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
-head
-
-	^ om2stream head! !
-
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:26'!
-initOm2stream: anOM2Stream
-
-	om2stream := anOM2Stream! !
-
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:27'!
-memo
-
-	^ om2stream memo! !
-
-!OM2StreamDebugger methodsFor: 'printing' stamp: 'aw 2/26/2009 15:57'!
-printOn: aStream
-
-	aStream nextPutAll: 'an OM2StreamDebugger('.
-	om2stream printOn: aStream.
-	aStream nextPut: $)! !
-
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
-tail
-
-	^ om2stream tail! !
-
-!OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:29'!
-transitiveForgetEverything
-
-	om2stream transitiveForgetEverything! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-OM2StreamDebugger class
-	instanceVariableNames: ''!
-
-!OM2StreamDebugger class methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 15:28'!
-for: anOM2Stream
-
-	^ self new initOm2stream: anOM2Stream! !
-
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
-initHead: h stream: s pos: p
-
-	head := h.
-	stream := s.
-	pos := p! !
-
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:15'!
-inputSpecies
-
-	^ stream originalContents species! !
-
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
-ometaPositionInStream
-
-	^ pos! !
-
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:42'!
-tail
-
-	tail ifNil: [tail := OM2LazyStream for: stream withPos: pos + 1].
-	^ tail! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-OM2LazyStream class
-	instanceVariableNames: ''!
-
-!OM2LazyStream class methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:44'!
-for: aReadStream withPos: pos
-
-	^ aReadStream atEnd
-		ifTrue: [OM2EndOfStream new initStream: aReadStream pos: pos]
-		ifFalse: [self new initHead: aReadStream next stream: aReadStream pos: pos]! !
-
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
-head
-
-	OM2Fail signal! !
-
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
-initStream: s pos: p
-
-	stream := s.
-	pos := p! !
-
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:14'!
-inputSpecies
-
-	^ stream originalContents species! !
-
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
-ometaPositionInStream
-
-	^ pos! !
-
-!OM2EndOfStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/25/2009 11:29'!
-tail
-
-	OM2Fail signal! !
-
-
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/18/2009 16:30'!
-compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBlock
-
-	^ self compile: origCode in: cls notifying: notify ifFail: failBlock! !
-
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
-compile: origCode in: cls notifying: notify ifFail: failBlock
-
-	| origCodeStream parseTree structuredCode translatedCode compilerStage|
-	origCodeStream := origCode asString readStream.
-	self from: origCodeStream class: cls context: nil notifying: notify.
-	[
-		compilerStage := 'Parsing'.
-		parseTree := cls ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
-		compilerStage := 'Optimizing'.
-		parseTree := cls ometa2OptimizerClass optimizeOMetaAst: parseTree.
-		compilerStage := 'Translating'.
-		structuredCode := cls ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
-		compilerStage := 'Flattening'.
-		translatedCode := cls ometa2FlattenerClass match: structuredCode with: #flatten
-	] on: OM2Fail do: [
-		self notify: '<-- parse error around here -->' at: origCodeStream position.
-		^ failBlock value
-	].
-	^ Compiler new
-		compile: translatedCode readStream
-		in: cls
-		notifying: notify
-		ifFail: failBlock! !
-
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'aw 2/27/2009 13:10'!
-parserClass
-
-	^ self class! !
-
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
-parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
-
-	^ [
-		| parseTree structuredCode code node compilerStage|
-		compilerStage := 'Parsing'.
-		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
-		compilerStage := 'Optimizing'.
-		parseTree := aClass ometa2OptimizerClass optimizeOMetaAst: parseTree.
-		compilerStage := 'Translating'.
-		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
-		compilerStage := 'Flattening'.
-		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
-		node := Parser new parse: code readStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
-		OMeta2MethodNode adoptInstance: node.
-		node
-	] on: OM2Fail do: [aBlock value]! !
-
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'hmm 5/24/2010 10:51'!
-parser
-        ^ self parserClass new! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 15:13'!
 anything
@@ -468,6 +515,20 @@ applyRule
 	aRule := self privateOMetaApply: #anything.
 	^ self privateOMetaApply: aRule! !
 
+!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 16:16'!
+seq
+
+	| xs |
+	xs := self privateOMetaApply: #anything.
+	xs do: [:x |
+		" may want to inline #privateOMetaApply:withArgs: below as an
+		  optimization, since this rule gets used a lot "
+		self privateOMetaApply: #exactly withArgument: x
+	].
+	^ xs
+	! !
+
+
 !OMeta2Base methodsFor: 'external access' stamp: 'pb 5/5/2020 19:00'!
 applyRule: aRule
 	"Entry point for external (i.e. non-rule) code to apply an arbitrary rule."
@@ -477,6 +538,33 @@ applyRule: aRule
 applyRule: aRule withArgs: args
 	"Entry point for external (i.e. non-rule) code to apply an arbitrary rule with arguments."
 	^ self privateOMetaApply: aRule withArgs: args! !
+
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+initOMetaInputStream: i
+
+	input := i! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaForgetEverything
+
+	input transitiveForgetEverything.
+	om2streams valuesDo: [:s | s transitiveForgetEverything]! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaHaltingPoint: anOM2Stream
+
+	haltingPoint := anOM2Stream! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:10'!
+ometaInputStream
+
+	^ input! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+ometaPositionInStream
+	"FIXME - called by examples.  Replace calls with @<>?"
+	^ input ometaPositionInStream! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
 privateOMetaApply: aRule
@@ -514,18 +602,18 @@ privateOMetaApply: aRule
 	^ memoRec key! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
+privateOMetaApply: aRule withArgs: args
+	"Apply taking an argument array, args. Non-rule code should not send directly as I am an implementation detail and subject to change."
+	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
+	^ self perform: aRule! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
 privateOMetaApply: aRule withArgument: arg
 	"Apply taking a single argument, arg. Non-rule code should not send directly as I am an implementation detail and subject to change."
 	input := OM2Stream new
 		initHead: arg
 		tail: input.
 	^ self perform: aRule.! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 5/5/2020 19:00'!
-privateOMetaApply: aRule withArgs: args
-	"Apply taking an argument array, args. Non-rule code should not send directly as I am an implementation detail and subject to change."
-	args reverseDo: [:a | input := OM2Stream new initHead: a tail: input].
-	^ self perform: aRule! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 pvtOMetaConsumedBy: aBlock
@@ -551,21 +639,6 @@ pvtOMetaForeignParser
 	ans := g privateOMetaApply: aRule.
 	input := g ometaInputStream target.
 	^ ans! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 5/2/2020 19:00'!
-pvtOMetaGetExternalSmalltalkRecognizerClass
-	"Use indirection to avoid hard-coding the parser name"
-	^ OMeta2CuisSmalltalkRecognizer.! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-ometaForgetEverything
-
-	input transitiveForgetEverything.
-	om2streams valuesDo: [:s | s transitiveForgetEverything]! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
-pvtOMetaIsForm: obj
-	^ (obj isCollection and: [obj isSequenceable and: [obj isSymbol not]])! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
 pvtOMetaForm: aBlock
@@ -593,10 +666,10 @@ pvtOMetaGenericMany: aBlock into: anOrderedCollection
 		true
 	] whileTrue! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-ometaHaltingPoint: anOM2Stream
-
-	haltingPoint := anOM2Stream! !
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/2/2020 19:00'!
+pvtOMetaGetExternalSmalltalkRecognizerClass
+	"Use indirection to avoid hard-coding the parser name"
+	^ OMeta2CuisSmalltalkRecognizer.! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 pvtOMetaIndexConsumedBy: aBlock
@@ -607,21 +680,9 @@ pvtOMetaIndexConsumedBy: aBlock
 	to := self ometaPositionInStream.
 	^ from -> to! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-initOMetaInputStream: i
-
-	input := i! !
-
-!OMeta2Base methodsFor: 'initialization' stamp: 'aw 2/26/2009 11:16'!
-initialize
-
-	super initialize.
-	om2streams := IdentityDictionary new! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 14:10'!
-ometaInputStream
-
-	^ input! !
+!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
+pvtOMetaIsForm: obj
+	^ (obj isCollection and: [obj isSequenceable and: [obj isSymbol not]])! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 pvtOMetaLookahead: aBlock
@@ -653,6 +714,14 @@ pvtOMetaNot: aBlock
 	].
 	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
+!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+pvtOMetaOpt: aBlock
+
+	^ self pvtOMetaOr: {
+		[aBlock value].
+		[nil]
+	}! !
+
 !OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
 pvtOMetaOr: choices
 
@@ -665,37 +734,11 @@ pvtOMetaOr: choices
 	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-pvtOMetaOpt: aBlock
-
-	^ self pvtOMetaOr: {
-		[aBlock value].
-		[nil]
-	}! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
-ometaPositionInStream
-	"FIXME - called by examples.  Replace calls with @<>?"
-	^ input ometaPositionInStream! !
-
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
 pvtOMetaPred: aBooleanValue
 
 	" may want to have the compiler inline this automatically, for performance "
 	aBooleanValue ifTrue: [^ true].
 	OM2Fail parserFailedAt: input ometaPositionInStream! !
-
-!OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 16:16'!
-seq
-
-	| xs |
-	xs := self privateOMetaApply: #anything.
-	xs do: [:x |
-		" may want to inline #privateOMetaApply:withArgs: below as an
-		  optimization, since this rule gets used a lot "
-		self privateOMetaApply: #exactly withArgument: x
-	].
-	^ xs
-	! !
 
 !OMeta2Base methodsFor: 'private' stamp: 'aw 2/16/2009 15:03'!
 pvtOMetaSuper: superclass apply: aRule withArgs: args
@@ -709,10 +752,28 @@ pvtOMetaSuper: superclass apply: aRule withArgument: argument
 	input := OM2Stream new initHead: argument tail: input.
 	^ self perform: aRule withArguments: #() inSuperclass: superclass! !
 
+
+!OMeta2Base methodsFor: 'initialization' stamp: 'aw 2/26/2009 11:16'!
+initialize
+
+	super initialize.
+	om2streams := IdentityDictionary new! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
+!classDefinition: 'OMeta2Base class' category: #OMeta2Preload!
 OMeta2Base class
 	instanceVariableNames: ''!
+
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:52'!
+debugMatch: anObject with: aRule
+
+	^ self debugMatch: anObject with: aRule withArgs: #()! !
+
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:58'!
+debugMatch: anObject with: aRule withArgs: args
+
+	^ self debugMatchAll: {anObject} readStream with: aRule withArgs: args! !
 
 !OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:35'!
 debugMatchAll: aSequenceableCollection with: aRule
@@ -724,15 +785,16 @@ debugMatchAll: aSequenceableCollection with: aRule withArgs: args
 
 	^ self matchStream: aSequenceableCollection readStream with: aRule withArgs: args withPlaybackDebugging: true! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:52'!
-debugMatch: anObject with: aRule
+!OMeta2Base class methodsFor: 'matching' stamp: 'pb 3/14/2016 02:39'!
+match: anObject with: aRule
+	"Recommended for use with structured data (i.e. arrays of arrays etc)"
 
-	^ self debugMatch: anObject with: aRule withArgs: #()! !
+	^ self match: anObject with: aRule withArgs: #()! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:58'!
-debugMatch: anObject with: aRule withArgs: args
+!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:55'!
+match: anObject with: aRule withArgs: args
 
-	^ self debugMatchAll: {anObject} readStream with: aRule withArgs: args! !
+	^ self matchAll: {anObject} readStream with: aRule withArgs: args! !
 
 !OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/18/2009 15:39'!
 matchAll: aSequenceableCollection with: aRule
@@ -751,6 +813,37 @@ matcherOn: aReadStream
 	input := OM2LazyStream for: aReadStream withPos: 1.
 	matcher := self new initOMetaInputStream: input.
 	^ matcher! !
+
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
+matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
+	| input matcher |
+	input := OM2LazyStream
+		for: aReadStream
+		withPos: 1.
+	matcher := self new initOMetaInputStream: input.
+	^ self
+		pvtMatchOMetaStream: input
+		matcher: matcher
+		with: aRule
+		withArgs: args
+		withPlaybackDebugging: debugging! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2FlattenerClass
+	^ OMeta2Flattener! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2OptimizerClass
+	^ OMeta2Optimizer! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2RuleParserClass
+	^ OMeta2RuleParser! !
+
+!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
+ometa2RuleTranslatorClass
+	^ OMeta2RuleTranslator! !
 
 !OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
 pvtMatchOMetaStream: input matcher: matcher with: aRule withArgs: args withPlaybackDebugging: debugging
@@ -790,99 +883,17 @@ pvtMatchOMetaStream: input matcher: matcher with: aRule withArgs: args withPlayb
 			matcher applyRule: #end ].
 	^ ans! !
 
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 4/25/2020 01:00'!
-matchStream: aReadStream with: aRule withArgs: args withPlaybackDebugging: debugging
-	| input matcher |
-	input := OM2LazyStream
-		for: aReadStream
-		withPos: 1.
-	matcher := self new initOMetaInputStream: input.
-	^ self
-		pvtMatchOMetaStream: input
-		matcher: matcher
-		with: aRule
-		withArgs: args
-		withPlaybackDebugging: debugging! !
 
-!OMeta2Base class methodsFor: 'matching' stamp: 'pb 3/14/2016 02:39'!
-match: anObject with: aRule
-	"Recommended for use with structured data (i.e. arrays of arrays etc)"
-
-	^ self match: anObject with: aRule withArgs: #()! !
-
-!OMeta2Base class methodsFor: 'matching' stamp: 'aw 2/26/2009 12:55'!
-match: anObject with: aRule withArgs: args
-
-	^ self matchAll: {anObject} readStream with: aRule withArgs: args! !
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-OMeta2 subclass: #OMeta2SqueakSmalltalkRecognizer
-	instanceVariableNames: 'useArgTypeTable'
-	classVariableNames: 'ArgTypeTable TypeTable'
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2SqueakSmalltalkRecognizer subclass: #OMeta2CuisSmalltalkRecognizer
+
+!classDefinition: #OMeta2 category: #OMeta2Preload!
+OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2 subclass: #OMeta2NullOptimizer
-	instanceVariableNames: 'didSomething'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2NullOptimizer subclass: #OMeta2AndOrOptimizer
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-OMeta2NullOptimizer subclass: #OMeta2FinalizeOptimizer
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OMeta2'!
-
-!OMeta2SqueakSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
+	category: 'OMeta2Preload'!
+!OMeta2 commentStamp: '<historical>' prior: 0!
 Smalltalk implementation!
 
-!OMeta2CuisSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
-
-!OMeta2NullOptimizer commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
-
-!OMeta2AndOrOptimizer commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
-
-!OMeta2FinalizeOptimizer commentStamp: '<historical>' prior: 0!
-Smalltalk implementation!
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 char
@@ -1041,11 +1052,11 @@ range
 	self pvtOMetaPred: t1 <= t3 & (t3 <= t2).
 	^ t3! !
 
-!OMeta2 methodsFor: 'private-ometa2preload'!
+!OMeta2 methodsFor: 'private-ometa2preload' stamp: 'MO 3/26/2024 18:09:31'!
 space
 	| t1 |
 	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 asciiValue <= 32.
+	self pvtOMetaPred: t1 codePoint <= 32.
 	^ t1! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
@@ -1080,6 +1091,393 @@ upper
 	t1 := self privateOMetaApply: #char.
 	self pvtOMetaPred: t1 isUppercase.
 	^ t1! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OMeta2 class' category: #OMeta2Preload!
+OMeta2 class
+	instanceVariableNames: ''!
+
+!OMeta2 class methodsFor: 'methods' stamp: 'jmv 5/23/2019 10:44:30'!
+methodNodeFor: sourceCode noPattern: aBoolean
+	(OMeta2RuleParser isOMeta2Rule: sourceCode) ifTrue: [ ^ nil ].
+	^ super methodNodeFor: sourceCode noPattern: aBoolean! !
+
+
+!classDefinition: #OMeta2Flattener category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2Flattener
+	instanceVariableNames: 'ws'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2Flattener commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
+
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
+flatten
+	| t1 |
+	t1 := self privateOMetaApply: #anything.
+	self privateOMetaApply: #iFlatten withArgument: t1.
+	^ ws contents! !
+
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
+iFlatten
+	| t1 |
+	^ self pvtOMetaOr: {[t1 := self privateOMetaApply: #string.
+		ws nextPutAll: t1]. [self
+			pvtOMetaForm: [self
+				pvtOMetaMany: [self privateOMetaApply: #iFlatten]]]}! !
+
+!OMeta2Flattener methodsFor: 'private-ometa2preload'!
+initialize
+	super initialize.
+	ws := (String new: 64) writeStream! !
+
+
+!classDefinition: #OMeta2NullOptimizer category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2NullOptimizer
+	instanceVariableNames: 'didSomething'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2NullOptimizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+and
+	| t1 |
+	^ true
+		ifTrue: [t1 := self
+						pvtOMetaMany: [self privateOMetaApply: #trans].
+			t1 addFirst: #And;
+				 yourself]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+consby
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#ConsBy. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+form
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Form. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+helped
+	^ self pvtOMetaPred: didSomething! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+idxconsby
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#IdxConsBy. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+initialize
+	super initialize.
+	didSomething := false! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+lookahead
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Lookahead. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+many
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Many. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+many1
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Many1. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+not
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Not. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+opt
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#Opt. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+optimize
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			self privateOMetaApply: #helped.
+			t1]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+or
+	| t1 |
+	^ true
+		ifTrue: [t1 := self
+						pvtOMetaMany: [self privateOMetaApply: #trans].
+			t1 addFirst: #Or;
+				 yourself]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+rule
+	| t1 t2 t3 |
+	^ true
+		ifTrue: [t2 := self privateOMetaApply: #anything.
+			t3 := self privateOMetaApply: #anything.
+			t1 := self privateOMetaApply: #trans.
+			{#Rule. t2. t3. t1}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+set
+	| t1 t2 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #anything.
+			t2 := self privateOMetaApply: #trans.
+			{#Set. t1. t2}]! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+setHelped
+	^ didSomething := true! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+trans
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| ans t |
+	^ self pvtOMetaOr:
+		{
+			[
+			self pvtOMetaForm: [
+				t := self privateOMetaApply: #anything.
+				t := t asLowercase asSymbol.
+				self pvtOMetaPred: (self class canUnderstand: t).
+				ans := self
+					privateOMetaApply: #applyRule
+					withArgument: t ].
+			ans ]. 
+			[ self privateOMetaApply: #anything ]
+		}! !
+
+!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
+trueiftrue
+	| t1 |
+	^ true
+		ifTrue: [t1 := self privateOMetaApply: #trans.
+			{#TrueIfTrue. t1}]! !
+
+
+!classDefinition: #OMeta2AndOrOptimizer category: #OMeta2Preload!
+OMeta2NullOptimizer subclass: #OMeta2AndOrOptimizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2AndOrOptimizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
+
+!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
+and
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x xs |
+	^ self pvtOMetaOr:
+		{
+			[
+			x _ self privateOMetaApply: #trans.
+			self privateOMetaApply: #end.
+			self privateOMetaApply: #setHelped.
+			x ]. 
+			[
+			xs _ self
+				privateOMetaApply: #transInside
+				withArgument: #And.
+			xs
+				addFirst: #And;
+				yourself ]
+		}! !
+
+!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
+or
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x xs |
+	^ self pvtOMetaOr:
+		{
+			[
+			x := self privateOMetaApply: #trans.
+			self privateOMetaApply: #end.
+			self privateOMetaApply: #setHelped.
+			x ]. 
+			[
+			xs := self
+				privateOMetaApply: #transInside
+				withArgument: #Or.
+			xs
+				addFirst: #Or;
+				yourself ]
+		}! !
+
+!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
+transInside
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| t x xs ys |
+	^ true ifTrue: [
+		t := self privateOMetaApply: #anything.
+		self pvtOMetaOr:
+			{
+				[
+				self pvtOMetaForm: [
+					self
+						privateOMetaApply: #exactly
+						withArgument: t.
+					xs := self
+						privateOMetaApply: #transInside
+						withArgument: t ].
+				ys := self
+					privateOMetaApply: #transInside
+					withArgument: t.
+				self privateOMetaApply: #setHelped.
+				xs , ys ]. 
+				[
+				x := self privateOMetaApply: #trans.
+				xs := self
+					privateOMetaApply: #transInside
+					withArgument: t.
+				xs
+					addFirst: x;
+					yourself ]. 
+				[
+				self privateOMetaApply: #empty.
+				OrderedCollection new ]
+			} ]! !
+
+
+!classDefinition: #OMeta2FinalizeOptimizer category: #OMeta2Preload!
+OMeta2NullOptimizer subclass: #OMeta2FinalizeOptimizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2FinalizeOptimizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
+
+!OMeta2FinalizeOptimizer methodsFor: 'private-ometa2preload'!
+rule
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| body name temps |
+	^ true ifTrue: [
+		name := self privateOMetaApply: #anything.
+		temps := self privateOMetaApply: #anything.
+		body := self privateOMetaApply: #trans.
+		OrderedCollection new
+			add: #Rule;
+			add: name;
+			add: temps;
+			add:
+				((#(#Or #TrueIfTrue) includes: body first)
+					ifTrue: [
+						body ]
+					ifFalse: [
+						self setHelped.
+						{#TrueIfTrue. body} ]);
+			yourself ].! !
+
+!OMeta2FinalizeOptimizer methodsFor: 'private-ometa2preload'!
+set
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| name val |
+	^ true ifTrue: [
+		name := self privateOMetaApply: #anything.
+		val := self privateOMetaApply: #trans.
+		{
+			#Set. 
+			name. 
+			val first = #And
+				ifTrue: [
+					self setHelped.
+					{#TrueIfTrue. val} ]
+				ifFalse: [ val ]
+		} ].! !
+
+
+!classDefinition: #OMeta2Optimizer category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2Optimizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2Optimizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
+
+!OMeta2Optimizer methodsFor: 'private-ometa2preload'!
+finalOptimizeRule
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| ans |
+	^ true ifTrue: [
+		ans _ self privateOMetaApply: #anything.
+		self pvtOMetaMany: [
+			ans _ self
+				privateOMetaApply: #pvtOMetaForeignParser
+				withArgs:
+					{OMeta2FinalizeOptimizer. #optimize. ans} ].
+		ans ]! !
+
+!OMeta2Optimizer methodsFor: 'private-ometa2preload'!
+optimizeRule
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| ans |
+	^ true ifTrue: [
+		ans := self privateOMetaApply: #anything.
+		self pvtOMetaMany: [
+			ans := self
+				privateOMetaApply: #pvtOMetaForeignParser
+				withArgs:
+					{OMeta2AndOrOptimizer. #optimize. ans} ].
+		ans ]! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OMeta2Optimizer class' category: #OMeta2Preload!
+OMeta2Optimizer class
+	instanceVariableNames: ''!
+
+!OMeta2Optimizer class methodsFor: 'private-ometa2preload'!
+optimizeOMetaAst: ast
+	^ self
+		match:
+			(self
+				match: ast
+				with: #optimizeRule)
+		with: #finalOptimizeRule.! !
+
+
+!classDefinition: #OMeta2RuleParser category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2RuleParser
+	instanceVariableNames: 'temps'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2RuleParser commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 application
@@ -1271,17 +1669,6 @@ numberLiteral
 	^ {#App. #exactly. (t1 * (String withAll: t2) asNumber) storeString}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
-optIter
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '*'.
-		{#Many. t1}]. [self privateOMetaApply: #token withArgument: '+'.
-		{#Many1. t1}]. [self privateOMetaApply: #token withArgument: '?'.
-		self
-			pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $[].
-		{#Opt. t1}]. [t1]}! !
-
-!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 ometaRule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| n x xs |
@@ -1317,23 +1704,15 @@ ometaRule
 		} ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
-squeakRule
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| squeakCode |
-	^ true ifTrue: [
-		self pvtOMetaNot: [
-			self pvtOMetaMany: [
-				self
-					pvtOMetaSuper: OMeta2
-					apply: #space
-					withArgs: #() ].
-			self privateOMetaApply: #nsName.
-			self privateOMetaApply: #expr4.
-			self
-				privateOMetaApply: #token
-				withArgument: '=' ].
-		squeakCode _ self pvtOMetaConsumedBy: [ self pvtOMetaMany: [ self privateOMetaApply: #char ]].
-		{#Squeak. squeakCode} ]! !
+optIter
+	| t1 |
+	t1 := self privateOMetaApply: #anything.
+	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '*'.
+		{#Many. t1}]. [self privateOMetaApply: #token withArgument: '+'.
+		{#Many1. t1}]. [self privateOMetaApply: #token withArgument: '?'.
+		self
+			pvtOMetaNot: [self privateOMetaApply: #exactly withArgument: $[].
+		{#Opt. t1}]. [t1]}! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rule
@@ -1468,6 +1847,25 @@ squeakInnerBlock
 		ans ]! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
+squeakRule
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| squeakCode |
+	^ true ifTrue: [
+		self pvtOMetaNot: [
+			self pvtOMetaMany: [
+				self
+					pvtOMetaSuper: OMeta2
+					apply: #space
+					withArgs: #() ].
+			self privateOMetaApply: #nsName.
+			self privateOMetaApply: #expr4.
+			self
+				privateOMetaApply: #token
+				withArgument: '=' ].
+		squeakCode _ self pvtOMetaConsumedBy: [ self pvtOMetaMany: [ self privateOMetaApply: #char ]].
+		{#Squeak. squeakCode} ]! !
+
+!OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 stringLiteral
 	| t1 |
 	self privateOMetaApply: #token withArgument: ''''.
@@ -1500,6 +1898,7 @@ tokenSugar
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
+!classDefinition: 'OMeta2RuleParser class' category: #OMeta2Preload!
 OMeta2RuleParser class
 	instanceVariableNames: ''!
 
@@ -1509,43 +1908,256 @@ isOMeta2Rule: t1
 		on: OM2Fail
 		do: [false]! !
 
+
+!classDefinition: #OMeta2RuleTranslator category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2RuleTranslator
+	instanceVariableNames: 'grammarClass'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2RuleTranslator commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
 
-!OMeta2Optimizer class methodsFor: 'private-ometa2preload'!
-optimizeOMetaAst: ast
-	^ self
-		match:
-			(self
-				match: ast
-				with: #optimizeRule)
-		with: #finalOptimizeRule.! !
 
-
-!OMeta2Optimizer methodsFor: 'private-ometa2preload'!
-optimizeRule
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+and
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| ans |
+	| xs |
 	^ true ifTrue: [
-		ans := self privateOMetaApply: #anything.
-		self pvtOMetaMany: [
-			ans := self
-				privateOMetaApply: #pvtOMetaForeignParser
-				withArgs:
-					{OMeta2AndOrOptimizer. #optimize. ans} ].
-		ans ]! !
+		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
+		{
+			self
+				delim: xs
+				with: '. '
+		} ]! !
 
-
-!OMeta2Optimizer methodsFor: 'private-ometa2preload'!
-finalOptimizeRule
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+app
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| ans |
+	| args rule |
 	^ true ifTrue: [
-		ans _ self privateOMetaApply: #anything.
-		self pvtOMetaMany: [
-			ans _ self
-				privateOMetaApply: #pvtOMetaForeignParser
-				withArgs:
-					{OMeta2FinalizeOptimizer. #optimize. ans} ].
-		ans ]! !
+		self
+			flag: #privateOMetaApply:;
+			flag: #privateOMetaApply:withArgs:.
+		rule := self privateOMetaApply: #symbol.
+		self pvtOMetaOr:
+			{
+				[
+				args := self pvtOMetaMany1: [ self privateOMetaApply: #anything ].
+				args size = 1
+					ifTrue: [
+						{'(self privateOMetaApply: '. rule storeString. ' withArgument: '. args first. ')'} ]
+					ifFalse: [
+						{
+							'(self privateOMetaApply: '. 
+							rule storeString. 
+							' withArgs: {'. 
+							self
+								delim: args
+								with: '. '. 
+							'})'
+						} ]]. 
+				[
+				{'(self privateOMetaApply: '. rule storeString. ')'} ]
+			} ]! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+consby
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaConsumedBy: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+delim: t1 with: t2 
+	| t3 t4 |
+	t3 := true.
+	t4 := OrderedCollection new.
+	t1
+		do: [:t5 | 
+			t3
+				ifTrue: [t3 := false]
+				ifFalse: [t4 add: t2].
+			t4 add: t5].
+	^ t4! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+form
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaForm: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+idxconsby
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaIndexConsumedBy: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+lookahead
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaLookahead: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+many
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaMany: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+many1
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaMany1: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+not
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaNot: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+opt
+	| t1 |
+	t1 := self privateOMetaApply: #trans.
+	^ {'(self pvtOMetaOpt: ['. t1. '])'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+or
+	| t1 t2 |
+	t1 := self
+				pvtOMetaMany: [t2 := self privateOMetaApply: #trans.
+					{'['. t2. ']'}].
+	^ {'(self pvtOMetaOr: {'. self delim: t1 with: '. '. '})'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+rule
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| body name temps |
+	^ true ifTrue: [
+		name := self privateOMetaApply: #symbol.
+		temps := self privateOMetaApply: #anything.
+		temps := temps select: [ :t |
+			(grammarClass instVarNames includes: t) not ].
+		body := self privateOMetaApply: #trans.
+		{
+			name. 
+			self class constOMetaGeneratorString. 
+			' |'. 
+			self
+				delim: temps asSortedCollection
+				with: ' '. 
+			' | ^ true ifTrue: ['. 
+			body. 
+			']'
+		} ]! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+semact
+	| t1 |
+	t1 := self privateOMetaApply: #string.
+	^ {'('. t1. ')'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+semblkact
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #string.
+		{'true ifTrue:['. x. ']'} ]! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+semblkpred
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		self flag: #pvtOMetaPred:.
+		x _ self privateOMetaApply: #string.
+		{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'} ]! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+sempred
+	| t1 |
+	t1 := self privateOMetaApply: #string.
+	^ {'(self pvtOMetaPred: ('. t1. '))'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+set
+	| t1 t2 |
+	t1 := self privateOMetaApply: #symbol.
+	t2 := self privateOMetaApply: #trans.
+	^ {'('. t1 asString. ' := '. t2. ')'}! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+squeak
+	^ self privateOMetaApply: #string! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+superapp
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| args rule |
+	^ true ifTrue: [
+		self flag: #pvtOMetaSuper:apply:withArgs:.
+		rule := self privateOMetaApply: #symbol.
+		args := self pvtOMetaMany: [ self privateOMetaApply: #anything ].
+		args size = 1
+			ifTrue: [
+				{'(self pvtOMetaSuper: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'} ]
+			ifFalse: [
+				{
+					'(self pvtOMetaSuper: '. 
+					grammarClass superclass name. 
+					' apply: '. 
+					rule storeString. 
+					' withArgs: {'. 
+					self
+						delim: args
+						with: '. '. 
+					'})'
+				} ]]! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+trans
+	| t1 t2 |
+	self
+		pvtOMetaForm: [t1 := self privateOMetaApply: #symbol.
+			t2 := self privateOMetaApply: t1 asLowercase asSymbol].
+	^ t2! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+translate
+	grammarClass := self privateOMetaApply: #anything.
+	^ self privateOMetaApply: #trans! !
+
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
+trueiftrue
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| xs |
+	^ true ifTrue: [
+		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
+		{'(true ifTrue: ['. xs. '])'} ]! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OMeta2RuleTranslator class' category: #OMeta2Preload!
+OMeta2RuleTranslator class
+	instanceVariableNames: ''!
+
+!OMeta2RuleTranslator class methodsFor: 'constants' stamp: 'pb 5/23/2018 03:01:33'!
+constOMetaGeneratorString
+	"Not called yet but needs to exist for OMeta2.pck.st"
+        ^ '"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"'.! !
+
+
+!classDefinition: #OMeta2SqueakSmalltalkRecognizer category: #OMeta2Preload!
+OMeta2 subclass: #OMeta2SqueakSmalltalkRecognizer
+	instanceVariableNames: 'useArgTypeTable'
+	classVariableNames: 'ArgTypeTable TypeTable'
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2SqueakSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
+
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 arrayConstr
@@ -1814,6 +2426,27 @@ pvtGetTypeTable
 		ifFalse: [ TypeTable ]! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
+squeakArgExprOrWrappedInnerBlock
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| expr inner |
+	^ self pvtOMetaOr:
+		{
+			[
+			self
+				privateOMetaApply: #token
+				withArgument: '['.
+			inner _ self privateOMetaApply: #squeakInnerBlock.
+			self
+				privateOMetaApply: #token
+				withArgument: ']'.
+			'(true ifTrue: [' , inner , '])' ]. 
+			[
+			useArgTypeTable _ true.
+			expr _ self privateOMetaApply: #squeakExpr.
+			expr ]
+		}! !
+
+!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 squeakExpr
 	^ self
 		pvtOMetaConsumedBy: [self privateOMetaApply: #expr]! !
@@ -1886,27 +2519,6 @@ squeakInnerBlock
 					[ self privateOMetaApply: #empty ]
 				} ].
 		innerBlock ]! !
-
-!OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
-squeakArgExprOrWrappedInnerBlock
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| expr inner |
-	^ self pvtOMetaOr:
-		{
-			[
-			self
-				privateOMetaApply: #token
-				withArgument: '['.
-			inner _ self privateOMetaApply: #squeakInnerBlock.
-			self
-				privateOMetaApply: #token
-				withArgument: ']'.
-			'(true ifTrue: [' , inner , '])' ]. 
-			[
-			useArgTypeTable _ true.
-			expr _ self privateOMetaApply: #squeakExpr.
-			expr ]
-		}! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 symbol
@@ -2005,6 +2617,7 @@ unit
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
+!classDefinition: 'OMeta2SqueakSmalltalkRecognizer class' category: #OMeta2Preload!
 OMeta2SqueakSmalltalkRecognizer class
 	instanceVariableNames: ''!
 
@@ -2016,8 +2629,16 @@ initialize
 		at: 44
 		put: #xLetter! !
 
+
+!classDefinition: #OMeta2CuisSmalltalkRecognizer category: #OMeta2Preload!
+OMeta2SqueakSmalltalkRecognizer subclass: #OMeta2CuisSmalltalkRecognizer
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'OMeta2Preload'!
+!OMeta2CuisSmalltalkRecognizer commentStamp: '<historical>' prior: 0!
+Smalltalk implementation!
 
-OMeta2SqueakSmalltalkRecognizer initialize!
 
 !OMeta2CuisSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 backtickExpr
@@ -2134,526 +2755,8 @@ unit
 					{} ]
 		}! !
 
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-and
-	| t1 |
-	^ true
-		ifTrue: [t1 := self
-						pvtOMetaMany: [self privateOMetaApply: #trans].
-			t1 addFirst: #And;
-				 yourself]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-consby
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#ConsBy. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-form
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Form. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-helped
-	^ self pvtOMetaPred: didSomething! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-idxconsby
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#IdxConsBy. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-initialize
-	super initialize.
-	didSomething := false! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-lookahead
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Lookahead. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-many
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Many. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-many1
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Many1. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-not
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Not. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-opt
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#Opt. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-optimize
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			self privateOMetaApply: #helped.
-			t1]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-or
-	| t1 |
-	^ true
-		ifTrue: [t1 := self
-						pvtOMetaMany: [self privateOMetaApply: #trans].
-			t1 addFirst: #Or;
-				 yourself]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-rule
-	| t1 t2 t3 |
-	^ true
-		ifTrue: [t2 := self privateOMetaApply: #anything.
-			t3 := self privateOMetaApply: #anything.
-			t1 := self privateOMetaApply: #trans.
-			{#Rule. t2. t3. t1}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-set
-	| t1 t2 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #anything.
-			t2 := self privateOMetaApply: #trans.
-			{#Set. t1. t2}]! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-setHelped
-	^ didSomething := true! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-trans
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| ans t |
-	^ self pvtOMetaOr:
-		{
-			[
-			self pvtOMetaForm: [
-				t := self privateOMetaApply: #anything.
-				t := t asLowercase asSymbol.
-				self pvtOMetaPred: (self class canUnderstand: t).
-				ans := self
-					privateOMetaApply: #applyRule
-					withArgument: t ].
-			ans ]. 
-			[ self privateOMetaApply: #anything ]
-		}! !
-
-!OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
-trueiftrue
-	| t1 |
-	^ true
-		ifTrue: [t1 := self privateOMetaApply: #trans.
-			{#TrueIfTrue. t1}]! !
-
-!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
-and
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| x xs |
-	^ self pvtOMetaOr:
-		{
-			[
-			x _ self privateOMetaApply: #trans.
-			self privateOMetaApply: #end.
-			self privateOMetaApply: #setHelped.
-			x ]. 
-			[
-			xs _ self
-				privateOMetaApply: #transInside
-				withArgument: #And.
-			xs
-				addFirst: #And;
-				yourself ]
-		}! !
-
-!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
-or
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| x xs |
-	^ self pvtOMetaOr:
-		{
-			[
-			x := self privateOMetaApply: #trans.
-			self privateOMetaApply: #end.
-			self privateOMetaApply: #setHelped.
-			x ]. 
-			[
-			xs := self
-				privateOMetaApply: #transInside
-				withArgument: #Or.
-			xs
-				addFirst: #Or;
-				yourself ]
-		}! !
-
-!OMeta2AndOrOptimizer methodsFor: 'private-ometa2preload'!
-transInside
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| t x xs ys |
-	^ true ifTrue: [
-		t := self privateOMetaApply: #anything.
-		self pvtOMetaOr:
-			{
-				[
-				self pvtOMetaForm: [
-					self
-						privateOMetaApply: #exactly
-						withArgument: t.
-					xs := self
-						privateOMetaApply: #transInside
-						withArgument: t ].
-				ys := self
-					privateOMetaApply: #transInside
-					withArgument: t.
-				self privateOMetaApply: #setHelped.
-				xs , ys ]. 
-				[
-				x := self privateOMetaApply: #trans.
-				xs := self
-					privateOMetaApply: #transInside
-					withArgument: t.
-				xs
-					addFirst: x;
-					yourself ]. 
-				[
-				self privateOMetaApply: #empty.
-				OrderedCollection new ]
-			} ]! !
-
-!OMeta2FinalizeOptimizer methodsFor: 'private-ometa2preload'!
-rule
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| body name temps |
-	^ true ifTrue: [
-		name := self privateOMetaApply: #anything.
-		temps := self privateOMetaApply: #anything.
-		body := self privateOMetaApply: #trans.
-		OrderedCollection new
-			add: #Rule;
-			add: name;
-			add: temps;
-			add:
-				((#(#Or #TrueIfTrue) includes: body first)
-					ifTrue: [
-						body ]
-					ifFalse: [
-						self setHelped.
-						{#TrueIfTrue. body} ]);
-			yourself ].! !
-
-!OMeta2FinalizeOptimizer methodsFor: 'private-ometa2preload'!
-set
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| name val |
-	^ true ifTrue: [
-		name := self privateOMetaApply: #anything.
-		val := self privateOMetaApply: #trans.
-		{
-			#Set. 
-			name. 
-			val first = #And
-				ifTrue: [
-					self setHelped.
-					{#TrueIfTrue. val} ]
-				ifFalse: [ val ]
-		} ].! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-semact
-	| t1 |
-	t1 := self privateOMetaApply: #string.
-	^ {'('. t1. ')'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-semblkact
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| x |
-	^ true ifTrue: [
-		x := self privateOMetaApply: #string.
-		{'true ifTrue:['. x. ']'} ]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-and
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| xs |
-	^ true ifTrue: [
-		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
-		{
-			self
-				delim: xs
-				with: '. '
-		} ]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-app
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| args rule |
-	^ true ifTrue: [
-		self
-			flag: #privateOMetaApply:;
-			flag: #privateOMetaApply:withArgs:.
-		rule := self privateOMetaApply: #symbol.
-		self pvtOMetaOr:
-			{
-				[
-				args := self pvtOMetaMany1: [ self privateOMetaApply: #anything ].
-				args size = 1
-					ifTrue: [
-						{'(self privateOMetaApply: '. rule storeString. ' withArgument: '. args first. ')'} ]
-					ifFalse: [
-						{
-							'(self privateOMetaApply: '. 
-							rule storeString. 
-							' withArgs: {'. 
-							self
-								delim: args
-								with: '. '. 
-							'})'
-						} ]]. 
-				[
-				{'(self privateOMetaApply: '. rule storeString. ')'} ]
-			} ]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-consby
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaConsumedBy: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-delim: t1 with: t2 
-	| t3 t4 |
-	t3 := true.
-	t4 := OrderedCollection new.
-	t1
-		do: [:t5 | 
-			t3
-				ifTrue: [t3 := false]
-				ifFalse: [t4 add: t2].
-			t4 add: t5].
-	^ t4! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-form
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaForm: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-idxconsby
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaIndexConsumedBy: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-lookahead
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaLookahead: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-many
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaMany: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-many1
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaMany1: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-not
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaNot: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-opt
-	| t1 |
-	t1 := self privateOMetaApply: #trans.
-	^ {'(self pvtOMetaOpt: ['. t1. '])'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-or
-	| t1 t2 |
-	t1 := self
-				pvtOMetaMany: [t2 := self privateOMetaApply: #trans.
-					{'['. t2. ']'}].
-	^ {'(self pvtOMetaOr: {'. self delim: t1 with: '. '. '})'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-sempred
-	| t1 |
-	t1 := self privateOMetaApply: #string.
-	^ {'(self pvtOMetaPred: ('. t1. '))'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-semblkpred
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| x |
-	^ true ifTrue: [
-		self flag: #pvtOMetaPred:.
-		x _ self privateOMetaApply: #string.
-		{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'} ]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-rule
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| body name temps |
-	^ true ifTrue: [
-		name := self privateOMetaApply: #symbol.
-		temps := self privateOMetaApply: #anything.
-		temps := temps select: [ :t |
-			(grammarClass instVarNames includes: t) not ].
-		body := self privateOMetaApply: #trans.
-		{
-			name. 
-			self class constOMetaGeneratorString. 
-			' |'. 
-			self
-				delim: temps asSortedCollection
-				with: ' '. 
-			' | ^ true ifTrue: ['. 
-			body. 
-			']'
-		} ]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-set
-	| t1 t2 |
-	t1 := self privateOMetaApply: #symbol.
-	t2 := self privateOMetaApply: #trans.
-	^ {'('. t1 asString. ' := '. t2. ')'}! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-squeak
-	^ self privateOMetaApply: #string! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-superapp
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| args rule |
-	^ true ifTrue: [
-		self flag: #pvtOMetaSuper:apply:withArgs:.
-		rule := self privateOMetaApply: #symbol.
-		args := self pvtOMetaMany: [ self privateOMetaApply: #anything ].
-		args size = 1
-			ifTrue: [
-				{'(self pvtOMetaSuper: '. grammarClass superclass name. ' apply: '. rule storeString. ' withArgument: '. args first. ')'} ]
-			ifFalse: [
-				{
-					'(self pvtOMetaSuper: '. 
-					grammarClass superclass name. 
-					' apply: '. 
-					rule storeString. 
-					' withArgs: {'. 
-					self
-						delim: args
-						with: '. '. 
-					'})'
-				} ]]! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-trans
-	| t1 t2 |
-	self
-		pvtOMetaForm: [t1 := self privateOMetaApply: #symbol.
-			t2 := self privateOMetaApply: t1 asLowercase asSymbol].
-	^ t2! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-translate
-	grammarClass := self privateOMetaApply: #anything.
-	^ self privateOMetaApply: #trans! !
-
-!OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
-trueiftrue
-	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
-	| xs |
-	^ true ifTrue: [
-		xs := self pvtOMetaMany: [ self privateOMetaApply: #trans ].
-		{'(true ifTrue: ['. xs. '])'} ]! !
-
-!OMeta2RuleTranslator class methodsFor: 'constants' stamp: 'pb 5/23/2018 03:01:33'!
-constOMetaGeneratorString
-	"Not called yet but needs to exist for OMeta2.pck.st"
-        ^ '"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"'.! !
-
-!OMeta2Flattener methodsFor: 'private-ometa2preload'!
-flatten
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	self privateOMetaApply: #iFlatten withArgument: t1.
-	^ ws contents! !
-
-!OMeta2Flattener methodsFor: 'private-ometa2preload'!
-iFlatten
-	| t1 |
-	^ self pvtOMetaOr: {[t1 := self privateOMetaApply: #string.
-		ws nextPutAll: t1]. [self
-			pvtOMetaForm: [self
-				pvtOMetaMany: [self privateOMetaApply: #iFlatten]]]}! !
-
-!OMeta2Flattener methodsFor: 'private-ometa2preload'!
-initialize
-	super initialize.
-	ws := (String new: 64) writeStream! !
-
-
-
-
-
-
+OMeta2SqueakSmalltalkRecognizer initialize!
 
 !OMeta2Base class methodsFor: 'accessing' stamp: 'aw 2/20/2009 14:52'!
 compilerClass
         ^ OMeta2Compiler! !
-
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
-ometa2RuleParserClass
-	^ OMeta2RuleParser! !
-
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
-ometa2OptimizerClass
-	^ OMeta2Optimizer! !
-
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
-ometa2RuleTranslatorClass
-	^ OMeta2RuleTranslator! !
-
-!OMeta2Base class methodsFor: 'private-ometa2preload' stamp: 'pb 6/08/2015 15:45'!
-ometa2FlattenerClass
-	^ OMeta2Flattener! !
-
-
-OM2Fail initialize!
-OMeta2SqueakSmalltalkRecognizer initialize!
-
-"-- END OF STAGE 1 BOOTSTRAP --"!
