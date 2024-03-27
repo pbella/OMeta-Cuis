@@ -1,4 +1,4 @@
-'From Cuis6.3 [latest update: #6293] on 27 March 2024 at 8:42:16 pm'!
+'From Cuis6.3 [latest update: #6293] on 27 March 2024 at 8:51:05 pm'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,7 +11,7 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 18!
+!provides: 'OMeta2' 2 19!
 SystemOrganization addCategory: #OMeta2!
 SystemOrganization addCategory: 'OMeta2-Preload'!
 SystemOrganization addCategory: 'OMeta2-Extensions'!
@@ -1224,7 +1224,7 @@ privateConvertAssignmentsOffset: delta! !
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'pb 6/17/2015 00:31'!
 privateFormatAndConvert! !
 
-!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'MO 3/26/2024 19:05:42'!
+!SHTextStylerOMeta2 methodsFor: 'private' stamp: 'MO 3/27/2024 20:50:37'!
 privateStyle
 	| ranges |
 	ranges := self pvtExtractRangesFromSource.
@@ -1236,10 +1236,13 @@ privateStyle
 		ranges
 				].
 	ranges ifNotNil: [
+		[
 		self
 			setAttributesIn: formattedText
 			fromRanges: ranges
-			in: nil ].! !
+			in: nil
+		] on: Error do: []. 
+			].! !
 
 !SHTextStylerOMeta2 methodsFor: 'private' stamp: 'MO 3/26/2024 18:44:54'!
 pvtExtractRangesFromSource
