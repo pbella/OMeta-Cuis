@@ -401,22 +401,13 @@ compile: origCode in: cls classified: aCategory notifying: notify ifFail: failBl
 
 	^ self compile: origCode in: cls notifying: notify ifFail: failBlock! !
 
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 7/3/2021 14:00'!
 compile: origCode in: cls notifying: notify ifFail: failBlock
 
-	| origCodeStream parseTree structuredCode translatedCode compilerStage|
+	| origCodeStream translatedCode |
 	origCodeStream := origCode asString readStream.
 	self from: origCodeStream class: cls context: nil notifying: notify.
-	[
-		compilerStage := 'Parsing'.
-		parseTree := cls ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
-		compilerStage := 'Optimizing'.
-		parseTree := cls ometa2OptimizerClass optimizeOMetaAst: parseTree.
-		compilerStage := 'Translating'.
-		structuredCode := cls ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {cls}.
-		compilerStage := 'Flattening'.
-		translatedCode := cls ometa2FlattenerClass match: structuredCode with: #flatten
-	] on: OM2Fail do: [
+	[ translatedCode := cls generateSmalltalkWithOMeta2Stream: origCodeStream ] on: OM2Fail do: [
 		self notify: '<-- parse error around here -->' at: origCodeStream position.
 		^ failBlock value
 	].
@@ -431,20 +422,13 @@ parserClass
 
 	^ self class! !
 
-!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 4/27/2020 22:00'!
-parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
+!OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'pb 7/3/2021 14:00'!
+parse: aStream class: cls noPattern: noPattern context: ctxt notifying: req ifFail: aBlock
 
 	^ [
-		| parseTree structuredCode code node compilerStage|
-		compilerStage := 'Parsing'.
-		parseTree := aClass ometa2RuleParserClass matchAll: aStream contents with: #rule.
-		compilerStage := 'Optimizing'.
-		parseTree := aClass ometa2OptimizerClass optimizeOMetaAst: parseTree.
-		compilerStage := 'Translating'.
-		structuredCode := aClass ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {aClass}.
-		compilerStage := 'Flattening'.
-		code := aClass ometa2FlattenerClass match: structuredCode with: #flatten.
-		node := Parser new parse: code readStream class: aClass noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
+		| code node |
+		code := cls generateSmalltalkWithOMeta2Stream: aStream.
+		node := Parser new parse: code readStream class: cls noPattern: noPattern context: ctxt notifying: req ifFail: aBlock.
 		OMeta2MethodNode adoptInstance: node.
 		node
 	] on: OM2Fail do: [aBlock value]! !
@@ -452,6 +436,30 @@ parse: aStream class: aClass noPattern: noPattern context: ctxt notifying: req i
 !OMeta2Compiler methodsFor: 'private-ometa2preload' stamp: 'hmm 5/24/2010 10:51'!
 parser
         ^ self parserClass new! !
+
+!OMeta2Base class methodsFor: 'ometa2preload' stamp: 'pb 7/3/2021 14:00'!
+generateSmalltalkWithOMeta2Stream: origCodeStream
+	| parseTree structuredCode translatedCode compilerStage|
+	compilerStage := 'Parsing'.
+	parseTree := self ometa2RuleParserClass matchStream: origCodeStream with: #rule withArgs: #() withPlaybackDebugging: false.
+	compilerStage := 'Optimizing'.
+	parseTree := self ometa2OptimizerClass optimizeOMetaAst: parseTree.
+	compilerStage := 'Translating'.
+	structuredCode := self ometa2RuleTranslatorClass match: parseTree with: #translate withArgs: {self}.
+	compilerStage := 'Flattening'.
+	^ translatedCode := self ometa2FlattenerClass match: structuredCode with: #flatten! !
+
+!OMeta2Base class methodsFor: 'ometa2preload' stamp: 'pb 7/3/2021 14:00'!
+generateSmalltalkWithSelector: aRuleSelector
+	| source |
+	source := (self methodDict at: aRuleSelector)
+		getSourceFor: aRuleSelector
+		in: self.
+	^ self generateSmalltalkWithOMeta2Stream: source readStream.! !
+
+!OMeta2Base methodsFor: 'private' stamp: 'pb 7/3/2021 14:00'!
+pvtOMetaSignalParseFailure
+	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
 !OMeta2Base methodsFor: 'ometa grammar' stamp: 'aw 2/16/2009 15:13'!
 anything
@@ -567,12 +575,12 @@ ometaForgetEverything
 pvtOMetaIsForm: obj
 	^ (obj isCollection and: [obj isSequenceable and: [obj isSymbol not]])! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 5/24/2019 21:00'!
+!OMeta2Base methodsFor: 'private' stamp: 'pb 7/3/2021 14:00'!
 pvtOMetaForm: aBlock
 
 	| v origInput |
 	v := self privateOMetaApply: #anything.
-	self pvtOMetaPred: (self pvtOMetaIsForm: v).
+	(self pvtOMetaIsForm: v) ifFalse: [self pvtOMetaSignalParseFailure].
 	origInput := input.
 	input := om2streams at: v ifAbsentPut: [OM2LazyStream for: v readStream withPos: 1].
 	aBlock value.
@@ -677,10 +685,10 @@ ometaPositionInStream
 	"FIXME - called by examples.  Replace calls with @<>?"
 	^ input ometaPositionInStream! !
 
-!OMeta2Base methodsFor: 'private' stamp: 'pb 4/25/2020 01:00'!
+!OMeta2Base methodsFor: 'private' stamp: 'pb 9/1/2021 01:00'!
 pvtOMetaPred: aBooleanValue
 
-	" may want to have the compiler inline this automatically, for performance "
+	"Compiler will inline this automatically for performance for the general case.  However, some parsers may call explicitly."
 	aBooleanValue ifTrue: [^ true].
 	OM2Fail parserFailedAt: input ometaPositionInStream! !
 
@@ -886,17 +894,21 @@ Smalltalk implementation!
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 char
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: (t1 isKindOf: Character).
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		x class == Character or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 digit
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 isDigit.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x isDigit ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 empty
@@ -909,11 +921,13 @@ end
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 exactly
-	| t1 t2 |
-	t1 := self privateOMetaApply: #anything.
-	t2 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: t1 = t2.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| got wanted |
+	^ true ifTrue: [
+		wanted := self privateOMetaApply: #anything.
+		got := self privateOMetaApply: #anything.
+		wanted = got or: [ self pvtOMetaSignalParseFailure ].
+		wanted ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 firstAndRest
@@ -986,17 +1000,21 @@ fromToOrEnd
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 letter
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 isLetter.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x isLetter ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 letterOrDigit
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 isAlphaNumeric.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x isAlphaNumeric ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 listOf
@@ -1011,10 +1029,12 @@ listOf
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 lower
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 isLowercase.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x isLowercase ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 notLast
@@ -1027,26 +1047,32 @@ notLast
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 number
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: t1 isNumber.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		x isNumber or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 range
-	| t1 t2 t3 |
-	t1 := self privateOMetaApply: #anything.
-	t2 := self privateOMetaApply: #anything.
-	t3 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: t1 <= t3 & (t3 <= t2).
-	^ t3! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| a b x |
+	^ true ifTrue: [
+		a := self privateOMetaApply: #anything.
+		b := self privateOMetaApply: #anything.
+		x := self privateOMetaApply: #anything.
+		a <= x & (x <= b) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 space
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 asciiValue <= 32.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x numericValue <= 32 ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 spaces
@@ -1055,17 +1081,21 @@ spaces
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 string
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: t1 isString.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		x isString or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 symbol
-	| t1 |
-	t1 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: t1 isSymbol.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		x isSymbol or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 token
@@ -1076,10 +1106,12 @@ token
 
 !OMeta2 methodsFor: 'private-ometa2preload'!
 upper
-	| t1 |
-	t1 := self privateOMetaApply: #char.
-	self pvtOMetaPred: t1 isUppercase.
-	^ t1! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		x := self privateOMetaApply: #anything.
+		(x class == Character and: [ x isUppercase ]) or: [ self pvtOMetaSignalParseFailure ].
+		x ].! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 application
@@ -1343,14 +1375,25 @@ rule
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 rulePart
-	| t1 t2 t3 |
-	t1 := self privateOMetaApply: #anything.
-	self pvtOMetaPred: (self privateOMetaApply: #name)
-			= t1.
-	t2 := self privateOMetaApply: #expr4.
-	^ self pvtOMetaOr: {[self privateOMetaApply: #token withArgument: '='.
-		t3 := self privateOMetaApply: #expr.
-		{#And. t2. t3}]. [t2]}! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| b1 b2 n ruleName |
+	^ true ifTrue: [
+		ruleName := self privateOMetaApply: #anything.
+		n := self privateOMetaApply: #name.
+		n = ruleName or: [ self pvtOMetaSignalParseFailure ].
+		b1 := self privateOMetaApply: #expr4.
+		self pvtOMetaOr:
+			{
+				[
+				self
+					privateOMetaApply: #token
+					withArgument: '='.
+				b2 := self privateOMetaApply: #expr.
+				{#And. b1. b2} ]. 
+				[
+				self privateOMetaApply: #empty.
+				b1 ]
+			} ].! !
 
 !OMeta2RuleParser methodsFor: 'private-ometa2preload'!
 ruleProduction
@@ -1923,7 +1966,7 @@ tcBinaryChar
 	| x |
 	^ true ifTrue: [
 		x := self privateOMetaApply: #char.
-		self pvtOMetaPred: (self pvtGetTypeTable at: x asciiValue) == #xBinary ]! !
+		(self pvtGetTypeTable at: x asciiValue) == #xBinary or: [ self pvtOMetaSignalParseFailure ]].! !
 
 !OMeta2SqueakSmalltalkRecognizer methodsFor: 'private-ometa2preload'!
 tsArraySymbol
@@ -2159,7 +2202,9 @@ form
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 helped
-	^ self pvtOMetaPred: didSomething! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	^ true ifTrue: [
+		didSomething or: [ self pvtOMetaSignalParseFailure ]].! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 idxconsby
@@ -2256,13 +2301,13 @@ trans
 			self pvtOMetaForm: [
 				t := self privateOMetaApply: #anything.
 				t := t asLowercase asSymbol.
-				self pvtOMetaPred: (self class canUnderstand: t).
+				(self class canUnderstand: t) or: [ self pvtOMetaSignalParseFailure ].
 				ans := self
 					privateOMetaApply: #applyRule
 					withArgument: t ].
 			ans ]. 
 			[ self privateOMetaApply: #anything ]
-		}! !
+		}.! !
 
 !OMeta2NullOptimizer methodsFor: 'private-ometa2preload'!
 trueiftrue
@@ -2383,6 +2428,14 @@ set
 				ifFalse: [ val ]
 		} ].! !
 
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload' stamp: 'pb 7/3/2021 14:00'!
+pvtGenerateProgn: bodyStr comment: optionalCommentStr
+	| commentStr |
+	commentStr := optionalCommentStr
+		ifNil: ['']
+		ifNotNil: ['"', optionalCommentStr, '"'].
+	^ 'true ifTrue: [', commentStr, bodyStr, ']'! !
+
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 semact
 	| t1 |
@@ -2395,7 +2448,7 @@ semblkact
 	| x |
 	^ true ifTrue: [
 		x := self privateOMetaApply: #string.
-		{'true ifTrue:['. x. ']'} ]! !
+		{self pvtGenerateProgn: x comment: nil} ]! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 and
@@ -2510,9 +2563,12 @@ or
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 sempred
-	| t1 |
-	t1 := self privateOMetaApply: #string.
-	^ {'(self pvtOMetaPred: ('. t1. '))'}! !
+	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
+	| x |
+	^ true ifTrue: [
+		self flag: #pvtOMetaPred:.
+		x := self privateOMetaApply: #string.
+		{'(('. x. ') or: [self pvtOMetaSignalParseFailure])'} ].! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 semblkpred
@@ -2521,29 +2577,34 @@ semblkpred
 	^ true ifTrue: [
 		self flag: #pvtOMetaPred:.
 		x _ self privateOMetaApply: #string.
-		{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'} ]! !
+		{'(['.x.'] value or: [self pvtOMetaSignalParseFailure])'} ]! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 rule
 	"Generated by OMeta... edit the rule (i.e. show...->source), not this Smalltalk code"
 	| body name temps |
 	^ true ifTrue: [
-		name := self privateOMetaApply: #symbol.
-		temps := self privateOMetaApply: #anything.
-		temps := temps select: [ :t |
+		name _ self privateOMetaApply: #symbol.
+		temps _ self privateOMetaApply: #anything.
+		temps _ temps select: [ :t |
 			(grammarClass instVarNames includes: t) not ].
-		body := self privateOMetaApply: #trans.
-		{
-			name. 
-			self class constOMetaGeneratorString. 
-			' |'. 
-			self
-				delim: temps asSortedCollection
-				with: ' '. 
-			' | ^ true ifTrue: ['. 
-			body. 
-			']'
-		} ]! !
+		body _ self privateOMetaApply: #trans.
+		true ifTrue: [ | oc tift |
+			tift _ false.
+			oc _ OrderedCollection new.
+			oc
+				add: name;
+				add: self class constOMetaGeneratorString;
+				add: ' |';
+				add:
+					(self
+						delim: temps asSortedCollection
+						with: ' ');
+				add: ' | ^ '.
+			tift
+				ifTrue: [ oc add: (self pvtGenerateProgn: body comment: 'from #rule') ]
+				ifFalse: [ oc add: body ].
+			oc ]].! !
 
 !OMeta2RuleTranslator methodsFor: 'private-ometa2preload'!
 set

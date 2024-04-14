@@ -1,4 +1,4 @@
-'From Cuis 5.0 [latest update: #4219] on QDate(2020-06-16) at 11:00:22 am'!
+'From Cuis 5.0 [latest update: #4642] on 6 July 2021 at 12:10:19 am'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,17 +11,17 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 16!
-SystemOrganization addCategory: #OMeta2!
+!provides: 'OMeta2' 2 17!
+SystemOrganization addCategory: 'OMeta2'!
 
 
-!classDefinition: #OMeta2Package category: #OMeta2!
+!classDefinition: #OMeta2Package category: 'OMeta2'!
 CodePackage subclass: #OMeta2Package
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2Package class' category: #OMeta2!
+!classDefinition: 'OMeta2Package class' category: 'OMeta2'!
 OMeta2Package class
 	instanceVariableNames: ''!
 
@@ -48,103 +48,103 @@ prePackageInstall
 isAbstract
 	^ thisContext methodClass == self class.! !
 OMeta2Package prePackageInstall!
-!classDefinition: #OMeta2 category: #OMeta2!
+!classDefinition: #OMeta2 category: 'OMeta2'!
 OMeta2Base subclass: #OMeta2
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2 class' category: #OMeta2!
+!classDefinition: 'OMeta2 class' category: 'OMeta2'!
 OMeta2 class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Flattener category: #OMeta2!
+!classDefinition: #OMeta2Flattener category: 'OMeta2'!
 OMeta2 subclass: #OMeta2Flattener
 	instanceVariableNames: 'ws'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2Flattener class' category: #OMeta2!
+!classDefinition: 'OMeta2Flattener class' category: 'OMeta2'!
 OMeta2Flattener class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2NullOptimizer category: #OMeta2!
+!classDefinition: #OMeta2NullOptimizer category: 'OMeta2'!
 OMeta2 subclass: #OMeta2NullOptimizer
 	instanceVariableNames: 'didSomething'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2NullOptimizer class' category: #OMeta2!
+!classDefinition: 'OMeta2NullOptimizer class' category: 'OMeta2'!
 OMeta2NullOptimizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2AndOrOptimizer category: #OMeta2!
+!classDefinition: #OMeta2AndOrOptimizer category: 'OMeta2'!
 OMeta2NullOptimizer subclass: #OMeta2AndOrOptimizer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2AndOrOptimizer class' category: #OMeta2!
+!classDefinition: 'OMeta2AndOrOptimizer class' category: 'OMeta2'!
 OMeta2AndOrOptimizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2FinalizeOptimizer category: #OMeta2!
+!classDefinition: #OMeta2FinalizeOptimizer category: 'OMeta2'!
 OMeta2NullOptimizer subclass: #OMeta2FinalizeOptimizer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2FinalizeOptimizer class' category: #OMeta2!
+!classDefinition: 'OMeta2FinalizeOptimizer class' category: 'OMeta2'!
 OMeta2FinalizeOptimizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Optimizer category: #OMeta2!
+!classDefinition: #OMeta2Optimizer category: 'OMeta2'!
 OMeta2 subclass: #OMeta2Optimizer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2Optimizer class' category: #OMeta2!
+!classDefinition: 'OMeta2Optimizer class' category: 'OMeta2'!
 OMeta2Optimizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2RuleParser category: #OMeta2!
+!classDefinition: #OMeta2RuleParser category: 'OMeta2'!
 OMeta2 subclass: #OMeta2RuleParser
 	instanceVariableNames: 'temps'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2RuleParser class' category: #OMeta2!
+!classDefinition: 'OMeta2RuleParser class' category: 'OMeta2'!
 OMeta2RuleParser class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2RuleTranslator category: #OMeta2!
+!classDefinition: #OMeta2RuleTranslator category: 'OMeta2'!
 OMeta2 subclass: #OMeta2RuleTranslator
 	instanceVariableNames: 'grammarClass'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2RuleTranslator class' category: #OMeta2!
+!classDefinition: 'OMeta2RuleTranslator class' category: 'OMeta2'!
 OMeta2RuleTranslator class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2SqueakSmalltalkRecognizer category: #OMeta2!
+!classDefinition: #OMeta2SqueakSmalltalkRecognizer category: 'OMeta2'!
 OMeta2 subclass: #OMeta2SqueakSmalltalkRecognizer
 	instanceVariableNames: 'useArgTypeTable'
 	classVariableNames: 'ArgTypeTable TypeTable'
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2SqueakSmalltalkRecognizer class' category: #OMeta2!
+!classDefinition: 'OMeta2SqueakSmalltalkRecognizer class' category: 'OMeta2'!
 OMeta2SqueakSmalltalkRecognizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2CuisSmalltalkRecognizer category: #OMeta2!
+!classDefinition: #OMeta2CuisSmalltalkRecognizer category: 'OMeta2'!
 OMeta2SqueakSmalltalkRecognizer subclass: #OMeta2CuisSmalltalkRecognizer
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2'!
-!classDefinition: 'OMeta2CuisSmalltalkRecognizer class' category: #OMeta2!
+!classDefinition: 'OMeta2CuisSmalltalkRecognizer class' category: 'OMeta2'!
 OMeta2CuisSmalltalkRecognizer class
 	instanceVariableNames: ''!
 
@@ -731,6 +731,14 @@ isOMeta2Rule: aString
 		do: [ :ex |
 			ex return: false ].! !
 
+!OMeta2RuleTranslator methodsFor: 'private-ometa2preload' stamp: 'pb 7/3/2021 14:00'!
+pvtGenerateProgn: bodyStr comment: optionalCommentStr
+	| commentStr |
+	commentStr := optionalCommentStr
+		ifNil: ['']
+		ifNotNil: ['"', optionalCommentStr, '"'].
+	^ 'true ifTrue: [', commentStr, bodyStr, ']'! !
+
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/28/2020 23:53:08'!
 and =
 	trans*:xs -> [{self delim: xs with: '. '}]! !
@@ -806,7 +814,7 @@ or =
 	[self flag: #pvtOMetaOr:]
 	(trans:x -> [{'['. x. ']'}])*:xs -> [{'(self pvtOMetaOr: {'. self delim: xs with: '. '. '})'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 02:50:16'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 7/6/2021 00:09:29'!
 rule =
 	symbol:name
 	anything:temps [temps select: [:t | (grammarClass instVarNames includes: t) not]]:temps
@@ -820,27 +828,27 @@ rule =
 			add: ' |';
 			add: (self delim: temps asSortedCollection with: ' ');
 			add: ' | ^ '.
-		tift ifTrue: [oc add: 'true ifTrue: ["from #rule"'].
-		oc add: body.
-		tift ifTrue: [oc add: ']'].
+		tift
+			ifTrue: [oc add: (self pvtGenerateProgn: body comment: 'from #rule')]
+			ifFalse: [oc add: body].
 		oc]
 ! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:07'!
 semact = string:x -> [{'('. x. ')'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 00:07:28'!
-semblkact = string:x -> [{'true ifTrue:['. x. ']'}]! !
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 7/6/2021 00:10:10'!
+semblkact = string:x -> [{self pvtGenerateProgn: x comment: nil}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/29/2020 00:33:01'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 7/3/2021 14:00:00'!
 semblkpred =
 	[self flag: #pvtOMetaPred:]
-	string:x -> [{'(self pvtOMetaPred: (true ifTrue:['. x. ']))'}]! !
+	string:x -> [{'(['. x. '] value or: [self pvtOMetaSignalParseFailure])'}]! !
 
-!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 4/15/2020 03:31:43'!
+!OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 7/3/2021 14:00:00'!
 sempred =
 	[self flag: #pvtOMetaPred:]
-	string:x -> [{'(self pvtOMetaPred: ('. x. '))'}]! !
+	string:x -> [{'(('. x. ') or: [self pvtOMetaSignalParseFailure])'}]! !
 
 !OMeta2RuleTranslator methodsFor: 'private' stamp: 'pb 5/22/2015 19:12'!
 set =
