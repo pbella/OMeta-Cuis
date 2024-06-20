@@ -1,4 +1,4 @@
-'From Cuis6.3 [latest update: #6293] on 27 March 2024 at 8:51:05 pm'!
+'From Cuis7.0 [latest update: #6452] on 20 June 2024 at 3:40:09 pm'!
 'Description OMeta2 (often referred to just as ''OMeta'') is a PEG-based (Parsing Expression Grammar) Object Oriented pattern matching language.   More simply put, it''s a parser which you can use to write other parsers.  A few of its unique characteristics:
 
 1) It is a parasitic language which is a hybrid of its own OMeta syntax and the host language, in this case Smalltalk.
@@ -11,12 +11,12 @@ Note: OMeta2Preload.st needs to be filed in before loading this package (handled
 This package is based on the original work by Alessandro Warth http://www.tinlizzie.org/ometa/OMeta.sar with updates from OMeta2-Preload-hmm.14.mcz OMeta2-Postload-hmm.12.mcz and modified and extended by Phil Bellalouna for Cuis.
 
 Since the original implementation of OMeta2 has been abandoned by its author, I''ve decided to not retain absolute compatiblity with it.  Mostly this means that I''ve made a few minor extensions to the core language that are (mostly) backwards compatible and fixed some bugs.'!
-!provides: 'OMeta2' 2 19!
+!provides: 'OMeta2' 2 20!
 SystemOrganization addCategory: #OMeta2!
-SystemOrganization addCategory: 'OMeta2-Preload'!
-SystemOrganization addCategory: 'OMeta2-Extensions'!
-SystemOrganization addCategory: 'OMeta2-Examples'!
-SystemOrganization addCategory: 'OMeta2-Tests'!
+SystemOrganization addCategory: #'OMeta2-Preload'!
+SystemOrganization addCategory: #'OMeta2-Extensions'!
+SystemOrganization addCategory: #'OMeta2-Examples'!
+SystemOrganization addCategory: #'OMeta2-Tests'!
 
 
 !classDefinition: #OMeta2Package category: #OMeta2!
@@ -52,163 +52,163 @@ prePackageInstall
 			show: 'Finished loading OMeta2Preload.st';
 			finishEntry ].! !
 OMeta2Package prePackageInstall!
-!classDefinition: #OMeta2DebugError category: 'OMeta2-Extensions'!
+!classDefinition: #OMeta2DebugError category: #'OMeta2-Extensions'!
 Error subclass: #OMeta2DebugError
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'OMeta2DebugError class' category: 'OMeta2-Extensions'!
+!classDefinition: 'OMeta2DebugError class' category: #'OMeta2-Extensions'!
 OMeta2DebugError class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2Fail category: 'OMeta2-Preload'!
+!classDefinition: #OM2Fail category: #'OMeta2-Preload'!
 Exception subclass: #OM2Fail
 	instanceVariableNames: 'parserFailedAt'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2Fail class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2Fail class' category: #'OMeta2-Preload'!
 OM2Fail class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Compiler category: 'OMeta2-Preload'!
+!classDefinition: #OMeta2Compiler category: #'OMeta2-Preload'!
 Compiler subclass: #OMeta2Compiler
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OMeta2Compiler class' category: 'OMeta2-Preload'!
+!classDefinition: 'OMeta2Compiler class' category: #'OMeta2-Preload'!
 OMeta2Compiler class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2MethodNode category: 'OMeta2-Preload'!
+!classDefinition: #OMeta2MethodNode category: #'OMeta2-Preload'!
 MethodNode subclass: #OMeta2MethodNode
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OMeta2MethodNode class' category: 'OMeta2-Preload'!
+!classDefinition: 'OMeta2MethodNode class' category: #'OMeta2-Preload'!
 OMeta2MethodNode class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2DebugTests category: 'OMeta2-Tests'!
+!classDefinition: #OMeta2DebugTests category: #'OMeta2-Tests'!
 TestCase subclass: #OMeta2DebugTests
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Tests'!
-!classDefinition: 'OMeta2DebugTests class' category: 'OMeta2-Tests'!
+!classDefinition: 'OMeta2DebugTests class' category: #'OMeta2-Tests'!
 OMeta2DebugTests class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2ExampleTests category: 'OMeta2-Tests'!
+!classDefinition: #OMeta2ExampleTests category: #'OMeta2-Tests'!
 TestCase subclass: #OMeta2ExampleTests
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Tests'!
-!classDefinition: 'OMeta2ExampleTests class' category: 'OMeta2-Tests'!
+!classDefinition: 'OMeta2ExampleTests class' category: #'OMeta2-Tests'!
 OMeta2ExampleTests class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2StepByStepTests category: 'OMeta2-Tests'!
+!classDefinition: #OMeta2StepByStepTests category: #'OMeta2-Tests'!
 TestCase subclass: #OMeta2StepByStepTests
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Tests'!
-!classDefinition: 'OMeta2StepByStepTests class' category: 'OMeta2-Tests'!
+!classDefinition: 'OMeta2StepByStepTests class' category: #'OMeta2-Tests'!
 OMeta2StepByStepTests class
 	instanceVariableNames: ''!
 
-!classDefinition: #SHTextStylerOMeta2 category: 'OMeta2-Extensions'!
+!classDefinition: #SHTextStylerOMeta2 category: #'OMeta2-Extensions'!
 SHTextStyler subclass: #SHTextStylerOMeta2
 	instanceVariableNames: 'smalltalkFallbackStyler useSmalltalkStyler'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'SHTextStylerOMeta2 class' category: 'OMeta2-Extensions'!
+!classDefinition: 'SHTextStylerOMeta2 class' category: #'OMeta2-Extensions'!
 SHTextStylerOMeta2 class
 	instanceVariableNames: 'textAttributes'!
 
-!classDefinition: #SHTextStylerOtherOMeta2 category: 'OMeta2-Extensions'!
+!classDefinition: #SHTextStylerOtherOMeta2 category: #'OMeta2-Extensions'!
 SHTextStylerOMeta2 subclass: #SHTextStylerOtherOMeta2
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'SHTextStylerOtherOMeta2 class' category: 'OMeta2-Extensions'!
+!classDefinition: 'SHTextStylerOtherOMeta2 class' category: #'OMeta2-Extensions'!
 SHTextStylerOtherOMeta2 class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2Failer category: 'OMeta2-Preload'!
+!classDefinition: #OM2Failer category: #'OMeta2-Preload'!
 Object subclass: #OM2Failer
 	instanceVariableNames: 'used'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2Failer class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2Failer class' category: #'OMeta2-Preload'!
 OM2Failer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2Stream category: 'OMeta2-Preload'!
+!classDefinition: #OM2Stream category: #'OMeta2-Preload'!
 Object subclass: #OM2Stream
 	instanceVariableNames: 'head tail memo'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2Stream class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2Stream class' category: #'OMeta2-Preload'!
 OM2Stream class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2EndOfStream category: 'OMeta2-Preload'!
+!classDefinition: #OM2EndOfStream category: #'OMeta2-Preload'!
 OM2Stream subclass: #OM2EndOfStream
 	instanceVariableNames: 'stream pos'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2EndOfStream class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2EndOfStream class' category: #'OMeta2-Preload'!
 OM2EndOfStream class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2LazyStream category: 'OMeta2-Preload'!
+!classDefinition: #OM2LazyStream category: #'OMeta2-Preload'!
 OM2Stream subclass: #OM2LazyStream
-	instanceVariableNames: 'stream pos'
+	instanceVariableNames: 'stream pos blockEvaluated'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2LazyStream class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2LazyStream class' category: #'OMeta2-Preload'!
 OM2LazyStream class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2StreamDebugger category: 'OMeta2-Preload'!
+!classDefinition: #OM2StreamDebugger category: #'OMeta2-Preload'!
 OM2Stream subclass: #OM2StreamDebugger
 	instanceVariableNames: 'om2stream'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2StreamDebugger class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2StreamDebugger class' category: #'OMeta2-Preload'!
 OM2StreamDebugger class
 	instanceVariableNames: ''!
 
-!classDefinition: #OM2StreamProxy category: 'OMeta2-Preload'!
+!classDefinition: #OM2StreamProxy category: #'OMeta2-Preload'!
 OM2Stream subclass: #OM2StreamProxy
 	instanceVariableNames: 'target'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OM2StreamProxy class' category: 'OMeta2-Preload'!
+!classDefinition: 'OM2StreamProxy class' category: #'OMeta2-Preload'!
 OM2StreamProxy class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Base category: 'OMeta2-Preload'!
+!classDefinition: #OMeta2Base category: #'OMeta2-Preload'!
 Object subclass: #OMeta2Base
 	instanceVariableNames: 'input om2streams haltingPoint'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Preload'!
-!classDefinition: 'OMeta2Base class' category: 'OMeta2-Preload'!
+!classDefinition: 'OMeta2Base class' category: #'OMeta2-Preload'!
 OMeta2Base class
 	instanceVariableNames: ''!
 
@@ -292,13 +292,13 @@ OMeta2 subclass: #OMeta2RuleTranslator
 OMeta2RuleTranslator class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2DebugRuleTranslator category: 'OMeta2-Extensions'!
+!classDefinition: #OMeta2DebugRuleTranslator category: #'OMeta2-Extensions'!
 OMeta2RuleTranslator subclass: #OMeta2DebugRuleTranslator
 	instanceVariableNames: 'transLogId transLog tempSequenceId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'OMeta2DebugRuleTranslator class' category: 'OMeta2-Extensions'!
+!classDefinition: 'OMeta2DebugRuleTranslator class' category: #'OMeta2-Extensions'!
 OMeta2DebugRuleTranslator class
 	instanceVariableNames: ''!
 
@@ -322,173 +322,173 @@ OMeta2SqueakSmalltalkRecognizer subclass: #OMeta2CuisSmalltalkRecognizer
 OMeta2CuisSmalltalkRecognizer class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Debug category: 'OMeta2-Extensions'!
+!classDefinition: #OMeta2Debug category: #'OMeta2-Extensions'!
 OMeta2 subclass: #OMeta2Debug
 	instanceVariableNames: 'om2ApplyPc om2ApplyWithArgsPc om2DebugRoot om2Eos om2TraceLog om2Trans om2TransId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'OMeta2Debug class' category: 'OMeta2-Extensions'!
+!classDefinition: 'OMeta2Debug class' category: #'OMeta2-Extensions'!
 OMeta2Debug class
 	instanceVariableNames: 'LastMatcher'!
 
-!classDefinition: #OMeta2DebugExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2DebugExample category: #'OMeta2-Examples'!
 OMeta2Debug subclass: #OMeta2DebugExample
 	instanceVariableNames: 'delimCol delimRow'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2DebugExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2DebugExample class' category: #'OMeta2-Examples'!
 OMeta2DebugExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2ExtendedRuleParser category: 'OMeta2-Extensions'!
+!classDefinition: #OMeta2ExtendedRuleParser category: #'OMeta2-Extensions'!
 OMeta2 subclass: #OMeta2ExtendedRuleParser
 	instanceVariableNames: 'ast curNode temps blockLevel'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'OMeta2ExtendedRuleParser class' category: 'OMeta2-Extensions'!
+!classDefinition: 'OMeta2ExtendedRuleParser class' category: #'OMeta2-Extensions'!
 OMeta2ExtendedRuleParser class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2RuleIntrospection category: 'OMeta2-Extensions'!
+!classDefinition: #OMeta2RuleIntrospection category: #'OMeta2-Extensions'!
 OMeta2 subclass: #OMeta2RuleIntrospection
 	instanceVariableNames: 'result'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'OMeta2RuleIntrospection class' category: 'OMeta2-Extensions'!
+!classDefinition: 'OMeta2RuleIntrospection class' category: #'OMeta2-Extensions'!
 OMeta2RuleIntrospection class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2CsvExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2CsvExample category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2CsvExample
 	instanceVariableNames: 'delimRow delimCol curRow rows'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2CsvExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2CsvExample class' category: #'OMeta2-Examples'!
 OMeta2CsvExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2Examples category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2Examples category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2Examples
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2Examples class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2Examples class' category: #'OMeta2-Examples'!
 OMeta2Examples class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2ExamplesCoverage category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2ExamplesCoverage category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2ExamplesCoverage
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2ExamplesCoverage class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2ExamplesCoverage class' category: #'OMeta2-Examples'!
 OMeta2ExamplesCoverage class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2ExtendedSyntaxExamples category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2ExtendedSyntaxExamples category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2ExtendedSyntaxExamples
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2ExtendedSyntaxExamples class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2ExtendedSyntaxExamples class' category: #'OMeta2-Examples'!
 OMeta2ExtendedSyntaxExamples class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2LambdaCalculusParserExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2LambdaCalculusParserExample category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2LambdaCalculusParserExample
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2LambdaCalculusParserExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2LambdaCalculusParserExample class' category: #'OMeta2-Examples'!
 OMeta2LambdaCalculusParserExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2LispExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2LispExample category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2LispExample
 	instanceVariableNames: 'env envStack envStackPointer'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2LispExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2LispExample class' category: #'OMeta2-Examples'!
 OMeta2LispExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2StepByStepExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2StepByStepExample category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2StepByStepExample
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2StepByStepExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2StepByStepExample class' category: #'OMeta2-Examples'!
 OMeta2StepByStepExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2TreeWalkerExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2TreeWalkerExample category: #'OMeta2-Examples'!
 OMeta2 subclass: #OMeta2TreeWalkerExample
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2TreeWalkerExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2TreeWalkerExample class' category: #'OMeta2-Examples'!
 OMeta2TreeWalkerExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #SyntaxTreeNode category: 'OMeta2-Extensions'!
+!classDefinition: #SyntaxTreeNode category: #'OMeta2-Extensions'!
 Object subclass: #SyntaxTreeNode
 	instanceVariableNames: 'node properties children'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Extensions'!
-!classDefinition: 'SyntaxTreeNode class' category: 'OMeta2-Extensions'!
+!classDefinition: 'SyntaxTreeNode class' category: #'OMeta2-Extensions'!
 SyntaxTreeNode class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2TreeExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2TreeExample category: #'OMeta2-Examples'!
 Object subclass: #OMeta2TreeExample
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2TreeExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2TreeExample class' category: #'OMeta2-Examples'!
 OMeta2TreeExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2TreeEmptyExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2TreeEmptyExample category: #'OMeta2-Examples'!
 OMeta2TreeExample subclass: #OMeta2TreeEmptyExample
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2TreeEmptyExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2TreeEmptyExample class' category: #'OMeta2-Examples'!
 OMeta2TreeEmptyExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2TreeLeafExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2TreeLeafExample category: #'OMeta2-Examples'!
 OMeta2TreeExample subclass: #OMeta2TreeLeafExample
 	instanceVariableNames: 'value'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2TreeLeafExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2TreeLeafExample class' category: #'OMeta2-Examples'!
 OMeta2TreeLeafExample class
 	instanceVariableNames: ''!
 
-!classDefinition: #OMeta2TreeNodeExample category: 'OMeta2-Examples'!
+!classDefinition: #OMeta2TreeNodeExample category: #'OMeta2-Examples'!
 OMeta2TreeExample subclass: #OMeta2TreeNodeExample
 	instanceVariableNames: 'leftTree rightTree'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'OMeta2-Examples'!
-!classDefinition: 'OMeta2TreeNodeExample class' category: 'OMeta2-Examples'!
+!classDefinition: 'OMeta2TreeNodeExample class' category: #'OMeta2-Examples'!
 OMeta2TreeNodeExample class
 	instanceVariableNames: ''!
 
@@ -1696,12 +1696,14 @@ tail
 
 	OM2Fail signal! !
 
-!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:50'!
+!OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'MO 6/20/2024 15:30:03'!
 initHead: h stream: s pos: p
 
 	head := h.
 	stream := s.
-	pos := p! !
+	pos := p.
+	
+	blockEvaluated := false! !
 
 !OM2LazyStream methodsFor: 'private-ometa2preload' stamp: 'aw 2/19/2009 23:15'!
 inputSpecies
@@ -1719,12 +1721,18 @@ tail
 	tail ifNil: [tail := OM2LazyStream for: stream withPos: pos + 1].
 	^ tail! !
 
-!OM2LazyStream class methodsFor: 'private-ometa2preload' stamp: 'aw 2/20/2009 14:44'!
+!OM2LazyStream methodsFor: 'as yet unclassified' stamp: 'MO 6/20/2024 15:27:44'!
+head
+	"Lazy block evaluation (must be done only once!!!!!!) to enable infinite streams (e.g. Network)"
+	blockEvaluated ifFalse: [head := head valueWithArguments: {}. blockEvaluated := true].
+	^head! !
+
+!OM2LazyStream class methodsFor: 'private-ometa2preload' stamp: 'MO 6/20/2024 15:28:23'!
 for: aReadStream withPos: pos
 
 	^ aReadStream atEnd
 		ifTrue: [OM2EndOfStream new initStream: aReadStream pos: pos]
-		ifFalse: [self new initHead: aReadStream next stream: aReadStream pos: pos]! !
+		ifFalse: [self new initHead: [aReadStream next] stream: aReadStream pos: pos]! !
 
 !OM2StreamDebugger methodsFor: 'private-ometa2preload' stamp: 'aw 2/26/2009 13:40'!
 head
